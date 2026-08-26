@@ -1,0 +1,100 @@
+<mat-toolbar color="primary" class="app-toolbar">
+  <button
+    mat-icon-button
+    class="menu-toggle"
+    (click)="toggleMobileMenu()"
+    aria-label="Toggle navigation menu"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+    <mat-icon class="brand-icon">auto_awesome</mat-icon>
+    <span class="brand-text">TrainingHub</span>
+  </a>
+
+  <nav class="nav-links">
+    @for (item of navItems; track item.path) {
+      <a mat-button [routerLink]="item.path" routerLinkActive="active-link" class="nav-link">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <span class="spacer"></span>
+
+  <!-- Logged out: show role picker -->
+  @if (!isLoggedIn()) {
+    <button
+      mat-stroked-button
+      class="auth-trigger"
+      [matMenuTriggerFor]="roleMenu"
+      aria-label="Select role to sign in"
+    >
+      <mat-icon>account_circle</mat-icon>
+      <span class="auth-label">Sign in as</span>
+      <mat-icon class="dropdown-caret">arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu #roleMenu="matMenu" class="role-menu">
+      <button mat-menu-item (click)="loginAs('user')">
+        <mat-icon class="role-icon user">person</mat-icon>
+        <span>User</span>
+        <!-- <small class="role-hint">Browse courses & earn certificates</small> -->
+      </button>
+      <button mat-menu-item (click)="loginAs('instructor')">
+        <mat-icon class="role-icon instructor">co_present</mat-icon>
+        <span>Instructor</span>
+        <!-- <small class="role-hint">Create & manage courses</small> -->
+      </button>
+      <button mat-menu-item (click)="loginAs('admin')">
+        <mat-icon class="role-icon admin">admin_panel_settings</mat-icon>
+        <span>Admin</span>
+        <!-- <small class="role-hint">Full platform control</small> -->
+      </button>
+    </mat-menu>
+  }
+
+  <!-- Logged in: show role badge + account menu -->
+  @if (isLoggedIn()) {
+    <span class="role-badge" [class]="currentRole()!">{{ currentRole() }}</span>
+
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="accountMenu"
+      aria-label="Account menu"
+      class="account-btn"
+    >
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #accountMenu="matMenu" class="account-menu">
+      <div class="account-header" menuitem disabled>
+        <strong>{{ currentUser()?.name }}</strong>
+        <span class="account-email">{{ currentUser()?.email }}</span>
+      </div>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Sign out</span>
+      </button>
+    </mat-menu>
+  }
+</mat-toolbar>
+
+<!-- Mobile dropdown panel -->
+@if (isMobileMenuOpen()) {
+  <div class="mobile-nav">
+    @for (item of navItems; track item.path) {
+      <a
+        mat-button
+        [routerLink]="item.path"
+        routerLinkActive="active-link"
+        class="mobile-nav-link"
+        (click)="closeMobileMenu()"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </div>
+}
+<router-outlet></router-outlet>
