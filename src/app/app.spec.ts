@@ -7,20 +7,14 @@ describe('App', () => {
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter([])],
-    })
-      .compileComponents();
+    }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it('should create the root routing shell', () => {
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+    fixture.detectChanges();
 
-  it('should render the application brand', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand-text')?.textContent).toContain('LearnHub');
+    expect(fixture.componentInstance).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
   });
 });
