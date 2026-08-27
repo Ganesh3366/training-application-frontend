@@ -1,0 +1,174 @@
+<section class="auth-dialog" aria-labelledby="auth-dialog-title">
+  <div class="dialog-heading">
+    <div>      
+      <h2 id="auth-dialog-title">
+        {{ activeMode() === 'login' ? 'Welcome back' : 'Create your account' }}
+      </h2>
+    </div>
+    <button mat-icon-button type="button" (click)="close()" aria-label="Close authentication dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="mode-tabs" aria-label="Authentication mode">
+    <button
+      type="button"
+      [attr.aria-pressed]="activeMode() === 'login'"
+      [class.active]="activeMode() === 'login'"
+      (click)="switchMode('login')"
+    >
+      Log In
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="activeMode() === 'signup'"
+      [class.active]="activeMode() === 'signup'"
+      (click)="switchMode('signup')"
+    >
+      Sign Up
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <div class="social-providers" aria-label="Social providers">
+      <span class="social-provider">
+        <img src="images/social/facebook.png" alt="Facebook" />
+      </span>
+      <span class="social-provider">
+        <img src="images/social/google.png" alt="Google" />
+      </span>
+    </div>
+
+    <div class="or-divider" aria-hidden="true">
+      <span></span>
+      <span>OR</span>
+      <span></span>
+    </div>
+
+    @if (activeMode() === 'login') {
+      <form class="flat-form" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+        <div class="flat-field">
+          <input
+            id="login-email"
+            aria-label="Email address"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="Email"
+            [attr.aria-invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched"
+            [attr.aria-describedby]="loginForm.controls.email.invalid && loginForm.controls.email.touched ? 'login-email-error' : null"
+          />
+          @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) {
+            <p id="login-email-error" class="field-error">Email is required.</p>
+          } @else if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) {
+            <p id="login-email-error" class="field-error">Enter a valid email address.</p>
+          }
+        </div>
+
+        <div class="flat-field">
+          <input
+            id="login-password"
+            aria-label="Password"
+            type="password"
+            formControlName="password"
+            autocomplete="current-password"
+            placeholder="Password"
+            [attr.aria-invalid]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
+            [attr.aria-describedby]="loginForm.controls.password.invalid && loginForm.controls.password.touched ? 'login-password-error' : null"
+          />
+          @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) {
+            <p id="login-password-error" class="field-error">Password is required.</p>
+          }
+        </div>
+
+        <button mat-flat-button type="submit" class="submit-button">Log In</button>
+      </form>
+
+      <p class="mode-prompt">
+        Don't have an account?
+        <button type="button" (click)="switchMode('signup')">Sign Up</button>
+      </p>
+    } @else {
+      <form class="flat-form signup-form" [formGroup]="signupForm" (ngSubmit)="submit()" novalidate>
+        <div class="name-fields">
+          <div class="flat-field">
+            <input
+              id="signup-first-name"
+              aria-label="First name"
+              formControlName="firstName"
+              autocomplete="given-name"
+              placeholder="First Name"
+              [attr.aria-invalid]="signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched"
+              [attr.aria-describedby]="signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched ? 'first-name-error' : null"
+            />
+            @if (signupForm.controls.firstName.touched && signupForm.controls.firstName.hasError('required')) {
+              <p id="first-name-error" class="field-error">First name is required.</p>
+            }
+          </div>
+
+          <div class="flat-field">
+            <input
+              id="signup-last-name"
+              aria-label="Last name"
+              formControlName="lastName"
+              autocomplete="family-name"
+              placeholder="Last Name"
+              [attr.aria-invalid]="signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched"
+              [attr.aria-describedby]="signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched ? 'last-name-error' : null"
+            />
+            @if (signupForm.controls.lastName.touched && signupForm.controls.lastName.hasError('required')) {
+              <p id="last-name-error" class="field-error">Last name is required.</p>
+            }
+          </div>
+        </div>
+
+        <div class="flat-field">
+          <input
+            id="signup-email"
+            aria-label="Email address"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="Email"
+            [attr.aria-invalid]="signupForm.controls.email.invalid && signupForm.controls.email.touched"
+            [attr.aria-describedby]="signupForm.controls.email.invalid && signupForm.controls.email.touched ? 'signup-email-error' : null"
+          />
+          @if (signupForm.controls.email.touched && signupForm.controls.email.hasError('required')) {
+            <p id="signup-email-error" class="field-error">Email is required.</p>
+          } @else if (signupForm.controls.email.touched && signupForm.controls.email.hasError('email')) {
+            <p id="signup-email-error" class="field-error">Enter a valid email address.</p>
+          }
+        </div>
+
+        <div class="flat-field">
+          <input
+            id="signup-password"
+            aria-label="Password"
+            type="password"
+            formControlName="password"
+            autocomplete="new-password"
+            placeholder="Password"
+            [attr.aria-invalid]="signupForm.controls.password.invalid && signupForm.controls.password.touched"
+            [attr.aria-describedby]="signupForm.controls.password.invalid && signupForm.controls.password.touched ? 'signup-password-error' : null"
+          />
+          @if (signupForm.controls.password.touched && signupForm.controls.password.hasError('required')) {
+            <p id="signup-password-error" class="field-error">Password is required.</p>
+          } @else if (signupForm.controls.password.touched && signupForm.controls.password.hasError('minlength')) {
+            <p id="signup-password-error" class="field-error">Password must be at least 8 characters.</p>
+          }
+        </div>
+
+        <button mat-flat-button type="submit" class="submit-button">Sign Up</button>
+      </form>
+
+      <p class="mode-prompt">
+        Already have an account?
+        <button type="button" (click)="switchMode('login')">Log In</button>
+      </p>
+    }
+
+    @if (submissionMessage()) {
+      <p class="submission-message" role="status">{{ submissionMessage() }}</p>
+    }
+  </mat-dialog-content>
+</section>

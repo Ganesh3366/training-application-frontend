@@ -13,13 +13,8 @@
       </nav>
       <div class="auth-actions">
         @if (!isLoggedIn()) {
-          <button mat-stroked-button class="login-button" [matMenuTriggerFor]="roleMenu">Log In</button>
-          <button mat-flat-button class="signup-button" (click)="loginAs('user')">Sign Up</button>
-          <mat-menu #roleMenu="matMenu">
-            <button mat-menu-item (click)="loginAs('user')"><mat-icon>person</mat-icon>User</button>
-            <button mat-menu-item (click)="loginAs('instructor')"><mat-icon>co_present</mat-icon>Instructor</button>
-            <button mat-menu-item (click)="loginAs('admin')"><mat-icon>admin_panel_settings</mat-icon>Admin</button>
-          </mat-menu>
+          <button mat-stroked-button class="login-button" (click)="openLoginDialog()">Log In</button>
+          <button mat-flat-button class="signup-button" (click)="openSignupDialog()">Sign Up</button>
         } @else {
           <span class="role-badge">{{ currentRole() }}</span>
           <button mat-stroked-button [matMenuTriggerFor]="accountMenu" class="account-button">
@@ -41,13 +36,8 @@
         <a routerLink="/how-it-works" (click)="closeMobileMenu()">How It Works</a>
         <a routerLink="/certification" (click)="closeMobileMenu()">Certification</a>
         @if (!isLoggedIn()) {
-          <button mat-stroked-button [matMenuTriggerFor]="mobileRoleMenu">Log In</button>
-          <button mat-flat-button class="signup-button" (click)="loginAs('user')">Sign Up</button>
-          <mat-menu #mobileRoleMenu="matMenu">
-            <button mat-menu-item (click)="loginAs('user')">User</button>
-            <button mat-menu-item (click)="loginAs('instructor')">Instructor</button>
-            <button mat-menu-item (click)="loginAs('admin')">Admin</button>
-          </mat-menu>
+          <button mat-stroked-button (click)="openLoginDialog()">Log In</button>
+          <button mat-flat-button class="signup-button" (click)="openSignupDialog()">Sign Up</button>
         }
       </nav>
     }
