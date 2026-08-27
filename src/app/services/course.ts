@@ -12,6 +12,7 @@ export class CourseService {
       instructor: 'John Doe',
       duration: 10,
       level: 'Beginner',
+      category: 'Information Technology (IT)',
     },
     {
       id: 2,
@@ -20,6 +21,7 @@ export class CourseService {
       instructor: 'Jane Smith',
       duration: 15,
       level: 'Advanced',
+      category: 'Information Technology (IT)',
     },
     {
       id: 3,
@@ -28,6 +30,34 @@ export class CourseService {
       instructor: 'Alice Johnson',
       duration: 12,
       level: 'Intermediate',
+      category: 'Information Technology (IT)',
+    },
+    {
+      id: 4,
+      title: 'Responsive Web Design',
+      description: 'Build adaptable interfaces that work across desktop, tablet, and mobile screens.',
+      instructor: 'Michael Chen',
+      duration: 8,
+      level: 'Beginner',
+      category: 'Information Technology (IT)',
+    },
+    {
+      id: 5,
+      title: 'Angular State Management',
+      description: 'Manage application state with clear, maintainable reactive patterns.',
+      instructor: 'Priya Sharma',
+      duration: 14,
+      level: 'Advanced',
+      category: 'Engineering',
+    },
+    {
+      id: 6,
+      title: 'Modern CSS Layouts',
+      description: 'Create structured page layouts using Flexbox, Grid, and responsive CSS.',
+      instructor: 'David Wilson',
+      duration: 9,
+      level: 'Intermediate',
+      category: 'Information Technology (IT)',
     },
   ];
 

@@ -12,6 +12,18 @@ export interface NavItem {
   icon: string;
 }
 
+export type CourseCategory =
+  | 'Information Technology (IT)'
+  | 'Health'
+  | 'Business'
+  | 'Sales & Marketing'
+  | 'Management'
+  | 'Engineering'
+  | 'Electrical & Electronics'
+  | 'Artificial Intelligence (AI)'
+  | 'Finance'
+  | 'Agriculture';
+
 export interface Course {
   id: number;
   title: string;
@@ -19,4 +31,5 @@ export interface Course {
   instructor: string;
   duration: number; // in hours
   level: 'Beginner' | 'Intermediate' | 'Advanced';
+  category: CourseCategory;
 }
