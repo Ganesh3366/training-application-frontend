@@ -1,100 +1,67 @@
-<mat-toolbar color="primary" class="app-toolbar">
-  <button
-    mat-icon-button
-    class="menu-toggle"
-    (click)="toggleMobileMenu()"
-    aria-label="Toggle navigation menu"
-  >
-    <mat-icon>menu</mat-icon>
-  </button>
-
-  <a routerLink="/" class="brand" (click)="closeMobileMenu()">
-    <mat-icon class="brand-icon">auto_awesome</mat-icon>
-    <span class="brand-text">TrainingHub</span>
-  </a>
-
-  <nav class="nav-links">
-    @for (item of navItems; track item.path) {
-      <a mat-button [routerLink]="item.path" routerLinkActive="active-link" class="nav-link">
-        <mat-icon>{{ item.icon }}</mat-icon>
-        <span>{{ item.label }}</span>
-      </a>
-    }
-  </nav>
-
-  <span class="spacer"></span>
-
-  <!-- Logged out: show role picker -->
-  @if (!isLoggedIn()) {
-    <button
-      mat-stroked-button
-      class="auth-trigger"
-      [matMenuTriggerFor]="roleMenu"
-      aria-label="Select role to sign in"
-    >
-      <mat-icon>account_circle</mat-icon>
-      <span class="auth-label">Sign in as</span>
-      <mat-icon class="dropdown-caret">arrow_drop_down</mat-icon>
-    </button>
-    <mat-menu #roleMenu="matMenu" class="role-menu">
-      <button mat-menu-item (click)="loginAs('user')">
-        <mat-icon class="role-icon user">person</mat-icon>
-        <span>User</span>
-        <!-- <small class="role-hint">Browse courses & earn certificates</small> -->
-      </button>
-      <button mat-menu-item (click)="loginAs('instructor')">
-        <mat-icon class="role-icon instructor">co_present</mat-icon>
-        <span>Instructor</span>
-        <!-- <small class="role-hint">Create & manage courses</small> -->
-      </button>
-      <button mat-menu-item (click)="loginAs('admin')">
-        <mat-icon class="role-icon admin">admin_panel_settings</mat-icon>
-        <span>Admin</span>
-        <!-- <small class="role-hint">Full platform control</small> -->
-      </button>
-    </mat-menu>
-  }
-
-  <!-- Logged in: show role badge + account menu -->
-  @if (isLoggedIn()) {
-    <span class="role-badge" [class]="currentRole()!">{{ currentRole() }}</span>
-
+<header class="site-header">
+  <div class="header-inner">
+    <a routerLink="/" class="brand" (click)="closeMobileMenu()" aria-label="SkillForge home">
+      <span class="brand-mark"><mat-icon>school</mat-icon></span>
+      <span class="brand-copy"><strong>SkillForge</strong><small>Learn Skills. Build Confidence.</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+        >Home</a
+      >
+      <a routerLink="/courses" routerLinkActive="active">Courses</a>
+      <a routerLink="/how-it-works" routerLinkActive="active">How It Works</a>
+      <a routerLink="/certification" routerLinkActive="active">Certification</a>
+    </nav>
+    <div class="auth-actions">
+      @if (!isLoggedIn()) {
+        <button mat-stroked-button class="login-button" [matMenuTriggerFor]="roleMenu">
+          Log In
+        </button>
+        <button mat-flat-button class="signup-button" (click)="loginAs('user')">Sign Up</button>
+        <mat-menu #roleMenu="matMenu">
+          <button mat-menu-item (click)="loginAs('user')"><mat-icon>person</mat-icon>User</button>
+          <button mat-menu-item (click)="loginAs('instructor')">
+            <mat-icon>co_present</mat-icon>Instructor
+          </button>
+          <button mat-menu-item (click)="loginAs('admin')">
+            <mat-icon>admin_panel_settings</mat-icon>Admin
+          </button>
+        </mat-menu>
+      } @else {
+        <span class="role-badge">{{ currentRole() }}</span>
+        <button mat-stroked-button [matMenuTriggerFor]="accountMenu" class="account-button">
+          <mat-icon>account_circle</mat-icon>{{ currentUser()?.name }}
+        </button>
+        <mat-menu #accountMenu="matMenu">
+          <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon>Sign out</button>
+        </mat-menu>
+      }
+    </div>
     <button
       mat-icon-button
-      [matMenuTriggerFor]="accountMenu"
-      aria-label="Account menu"
-      class="account-btn"
+      class="menu-toggle"
+      (click)="toggleMobileMenu()"
+      aria-label="Toggle navigation menu"
     >
-      <mat-icon>account_circle</mat-icon>
+      <mat-icon>{{ isMobileMenuOpen() ? 'close' : 'menu' }}</mat-icon>
     </button>
-    <mat-menu #accountMenu="matMenu" class="account-menu">
-      <div class="account-header" menuitem disabled>
-        <strong>{{ currentUser()?.name }}</strong>
-        <span class="account-email">{{ currentUser()?.email }}</span>
-      </div>
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Sign out</span>
-      </button>
-    </mat-menu>
-  }
-</mat-toolbar>
-
-<!-- Mobile dropdown panel -->
-@if (isMobileMenuOpen()) {
-  <div class="mobile-nav">
-    @for (item of navItems; track item.path) {
-      <a
-        mat-button
-        [routerLink]="item.path"
-        routerLinkActive="active-link"
-        class="mobile-nav-link"
-        (click)="closeMobileMenu()"
-      >
-        <mat-icon>{{ item.icon }}</mat-icon>
-        <span>{{ item.label }}</span>
-      </a>
-    }
   </div>
-}
+  @if (isMobileMenuOpen()) {
+    <nav class="mobile-nav" aria-label="Mobile navigation">
+      <a routerLink="/" (click)="closeMobileMenu()">Home</a>
+      <a routerLink="/courses" (click)="closeMobileMenu()">Courses</a>
+      <a routerLink="/how-it-works" (click)="closeMobileMenu()">How It Works</a>
+      <a routerLink="/certification" (click)="closeMobileMenu()">Certification</a>
+      @if (!isLoggedIn()) {
+        <button mat-stroked-button [matMenuTriggerFor]="mobileRoleMenu">Log In</button>
+        <button mat-flat-button class="signup-button" (click)="loginAs('user')">Sign Up</button>
+        <mat-menu #mobileRoleMenu="matMenu">
+          <button mat-menu-item (click)="loginAs('user')">User</button>
+          <button mat-menu-item (click)="loginAs('instructor')">Instructor</button>
+          <button mat-menu-item (click)="loginAs('admin')">Admin</button>
+        </mat-menu>
+      }
+    </nav>
+  }
+</header>
 <router-outlet></router-outlet>
