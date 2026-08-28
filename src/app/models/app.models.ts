@@ -40,3 +40,22 @@ export interface CourseModule {
   description: string | null;
   position: number;
 }
+
+export type ModuleContentType = 'TEXT' | 'VIDEO';
+
+export interface ModuleContent {
+  id: number;
+  type: ModuleContentType;
+  title: string;
+  textContent: string | null;
+  videoUrl: string | null;
+  position: number;
+}
+
+export interface CourseModuleDetail {
+  id: number;
+  title: string;
+  description: string | null;
+  position: number;
+  contents: ModuleContent[];
+}

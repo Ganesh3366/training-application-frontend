@@ -21,6 +21,11 @@ export const routes: Routes = [
           import('./pages/course-details/course-details').then((m) => m.CourseDetails),
       },
       {
+        path: 'courses/:courseId/modules/:moduleId',
+        loadComponent: () =>
+          import('./pages/module-learning/module-learning').then((m) => m.ModuleLearning),
+      },
+      {
         path: 'certification',
         loadComponent: () =>
           import('./pages/certification/certification').then((m) => m.Certification),

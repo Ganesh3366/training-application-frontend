@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Course, CourseModule } from '../../models/app.models';
 import { CourseService } from '../../services/course';
@@ -8,6 +8,7 @@ import { CourseService } from '../../services/course';
 @Component({
   selector: 'app-course-details',
   standalone: true,
+  imports: [RouterLink],
   template: `
     <div class="course-details">
       @if (loading()) {
@@ -28,11 +29,13 @@ import { CourseService } from '../../services/course';
           @if (modules().length === 0) {
             <p>No modules are available yet.</p>
           } @else {
+            <a class="start-learning" [routerLink]="['/courses', courseId, 'modules', modules()[0].id]">Start Learning</a>
             <ol class="module-list">
               @for (module of modules(); track module.id) {
                 <li>
                   <h3>{{ module.title }}</h3>
                   @if (module.description) { <p>{{ module.description }}</p> }
+                  <a [routerLink]="['/courses', courseId, 'modules', module.id]">Open Module</a>
                 </li>
               }
             </ol>
@@ -53,6 +56,8 @@ import { CourseService } from '../../services/course';
     .module-list li { padding: 10px 0; border-top: 1px solid #e3ebf5; }
     .module-list h3 { margin: 0; font-size: 16px; }
     .module-list p { margin-bottom: 0; }
+    a { color: #0873db; font-weight: 700; }
+    .start-learning { display: inline-block; margin-bottom: 12px; padding: 10px 16px; border-radius: 8px; color: #fff; background: #0873db; text-decoration: none; }
     @media (max-width: 640px) { .course-details { padding: 22px 18px; } section { padding: 20px; } }
   `,
 })
@@ -64,17 +69,17 @@ export class CourseDetails {
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly notFound = signal(false);
+  readonly courseId = Number(this.route.snapshot.paramMap.get('id'));
 
   constructor() {
-    const courseId = Number(this.route.snapshot.paramMap.get('id'));
-    if (!Number.isInteger(courseId) || courseId <= 0) {
+    if (!Number.isInteger(this.courseId) || this.courseId <= 0) {
       this.showNotFound();
       return;
     }
 
     forkJoin({
-      course: this.courseService.getCourseById(courseId),
-      modules: this.courseService.getModules(courseId),
+      course: this.courseService.getCourseById(this.courseId),
+      modules: this.courseService.getModules(this.courseId),
     }).subscribe({
       next: ({ course, modules }) => {
         this.course.set(course);

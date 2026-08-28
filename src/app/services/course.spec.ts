@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Course, CourseModule } from '../models/app.models';
+import { Course, CourseModule, CourseModuleDetail } from '../models/app.models';
 import { CourseService } from './course';
 
 describe('CourseService', () => {
@@ -37,6 +37,16 @@ describe('CourseService', () => {
     const request = http.expectOne('/api/courses/7/modules');
     expect(request.request.method).toBe('GET');
     request.flush(modules);
+  });
+
+  it('gets a module with its contents', () => {
+    const module: CourseModuleDetail = {
+      id: 2, title: 'Basics', description: null, position: 1, contents: [],
+    };
+    service.getModule(7, 2).subscribe((result) => expect(result).toEqual(module));
+    const request = http.expectOne('/api/courses/7/modules/2');
+    expect(request.request.method).toBe('GET');
+    request.flush(module);
   });
 });
 

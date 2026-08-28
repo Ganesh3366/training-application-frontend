@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
 import { Course, CourseModule } from '../../models/app.models';
 import { CourseService } from '../../services/course';
@@ -11,6 +11,7 @@ describe('CourseDetails', () => {
     TestBed.configureTestingModule({
       imports: [CourseDetails],
       providers: [
+        provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '3' }) } } },
         { provide: CourseService, useValue: { getCourseById: () => courseResponse, getModules: () => moduleResponse } },
       ],
@@ -28,6 +29,19 @@ describe('CourseDetails', () => {
     expect(text).toContain('Backend Integration');
     expect(text).toContain('HTTP Basics');
     expect(text).toContain('Requests and responses');
+  });
+
+  it('links Start Learning and each module using the course and module ids', () => {
+    const modules: CourseModule[] = [
+      { id: 9, title: 'HTTP Basics', description: null, position: 1 },
+      { id: 12, title: 'HTTP Advanced', description: null, position: 2 },
+    ];
+    const fixture = create(of(course), of(modules));
+    const links = [...fixture.nativeElement.querySelectorAll('a')] as HTMLAnchorElement[];
+    expect(links.find((link) => link.textContent?.includes('Start Learning'))?.getAttribute('href'))
+      .toBe('/courses/3/modules/9');
+    expect(links.filter((link) => link.textContent?.includes('Open Module')).map((link) => link.getAttribute('href')))
+      .toEqual(['/courses/3/modules/9', '/courses/3/modules/12']);
   });
 
   it('displays not found for a 404', () => {
