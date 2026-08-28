@@ -1,8 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { CourseModuleDetail, ModuleQuiz, QuizResult, QuizSubmission } from '../../models/app.models';
+import { AppUser, CourseModuleDetail, ModuleQuiz, QuizResult, QuizSubmission } from '../../models/app.models';
+import { AuthService } from '../../services/auth';
 import { CourseService } from '../../services/course';
 import { ModuleLearning } from './module-learning';
 
@@ -16,6 +18,8 @@ describe('ModuleLearning', () => {
     getQuiz = () => quizResponse,
     submissionResponse: Observable<QuizResult> = of(passedResult),
     submitQuiz = (_courseId: number, _moduleId: number, _submission: QuizSubmission) => submissionResponse,
+    currentUser = signal<AppUser | null>(user),
+    authResolved = signal(true),
   ): ComponentFixture<ModuleLearning> {
     TestBed.configureTestingModule({
       imports: [ModuleLearning],
@@ -23,6 +27,10 @@ describe('ModuleLearning', () => {
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ courseId, moduleId }) } } },
         { provide: CourseService, useValue: { getModule, getQuiz, submitQuiz } },
+        {
+          provide: AuthService,
+          useValue: { currentUser, authResolved, isLoggedIn: computed(() => currentUser() !== null) },
+        },
       ],
     });
     const fixture = TestBed.createComponent(ModuleLearning);
@@ -175,6 +183,74 @@ describe('ModuleLearning', () => {
       .filter((radio: HTMLInputElement) => radio.checked)).toHaveLength(2);
     expect((fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it('shows module content and a login message without requesting the quiz when logged out', () => {
+    const getQuiz = vi.fn(() => of(moduleQuiz));
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
+      of(passedResult), () => of(passedResult), signal<AppUser | null>(null), signal(true),
+    );
+    expect(fixture.nativeElement.textContent).toContain('Plain text lesson');
+    expect(fixture.nativeElement.textContent).toContain('Log in to take this quiz.');
+    expect(getQuiz).not.toHaveBeenCalled();
+  });
+
+  it('loads the quiz when the user logs in without leaving the page', () => {
+    const currentUser = signal<AppUser | null>(null);
+    const getQuiz = vi.fn(() => of(moduleQuiz));
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
+      of(passedResult), () => of(passedResult), currentUser, signal(true),
+    );
+    currentUser.set(user);
+    fixture.detectChanges();
+    expect(getQuiz).toHaveBeenCalledTimes(1);
+    expect(fixture.nativeElement.textContent).toContain('HTTP Knowledge Check');
+  });
+
+  it('clears quiz state on logout and loads a fresh quiz after login again', () => {
+    const currentUser = signal<AppUser | null>(user);
+    const getQuiz = vi.fn(() => of(moduleQuiz));
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
+      of(passedResult), () => of(passedResult), currentUser, signal(true),
+    );
+    selectAllAnswers(fixture);
+    (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.quiz-result')).not.toBeNull();
+
+    currentUser.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('fieldset')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.quiz-result')).toBeNull();
+    expect(fixture.componentInstance.selectedAnswers().size).toBe(0);
+    expect(fixture.componentInstance.submissionError()).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Log in to take this quiz.');
+
+    currentUser.set(user);
+    fixture.detectChanges();
+    expect(getQuiz).toHaveBeenCalledTimes(2);
+    expect(fixture.nativeElement.textContent).toContain('HTTP Knowledge Check');
+  });
+
+  it('shows pending access state until auth restoration resolves, then loads once', () => {
+    const currentUser = signal<AppUser | null>(null);
+    const authResolved = signal(false);
+    const getQuiz = vi.fn(() => of(moduleQuiz));
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
+      of(passedResult), () => of(passedResult), currentUser, authResolved,
+    );
+    expect(fixture.nativeElement.textContent).toContain('Checking quiz access...');
+    expect(fixture.nativeElement.textContent).not.toContain('Log in to take this quiz.');
+    expect(getQuiz).not.toHaveBeenCalled();
+
+    currentUser.set(user);
+    authResolved.set(true);
+    fixture.detectChanges();
+    expect(getQuiz).toHaveBeenCalledTimes(1);
+  });
 });
 
 const moduleDetail: CourseModuleDetail = {
@@ -239,6 +315,8 @@ const passedResult: QuizResult = {
   passingScore: 70,
   passed: true,
 };
+
+const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
 
 function selectAllAnswers(fixture: ComponentFixture<ModuleLearning>): void {
   const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;

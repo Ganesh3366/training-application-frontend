@@ -39,11 +39,13 @@ describe('AuthService', () => {
   });
 
   it('restores an authenticated user and shares one me request', () => {
+    expect(service.authResolved()).toBe(false);
     service.loadCurrentUser().subscribe();
     service.loadCurrentUser().subscribe();
     const me = http.expectOne('/api/auth/me');
     me.flush(user);
     expect(service.currentUser()).toEqual(user);
+    expect(service.authResolved()).toBe(true);
   });
 
   it('performs a fresh me request after an unauthenticated result completes', () => {
@@ -74,6 +76,7 @@ describe('AuthService', () => {
     http.expectOne('/api/auth/csrf').flush(csrf);
     http.expectOne('/api/auth/logout').flush(null);
     expect(service.currentUser()).toBeNull();
+    expect(service.authResolved()).toBe(true);
 
     service.loadCurrentUser().subscribe();
     http.expectOne('/api/auth/me').flush(null, { status: 401, statusText: 'Unauthorized' });

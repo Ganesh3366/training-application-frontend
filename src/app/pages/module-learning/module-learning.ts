@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -10,6 +10,7 @@ import {
   QuizSubmission,
 } from '../../models/app.models';
 import { CourseService } from '../../services/course';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-module-learning',
@@ -60,7 +61,14 @@ import { CourseService } from '../../services/course';
           }
         </section>
 
-        @if (quizLoading()) {
+        @if (!authResolved()) {
+          <section class="quiz-section"><p role="status">Checking quiz access...</p></section>
+        } @else if (!isLoggedIn()) {
+          <section class="quiz-section">
+            <h2>Quiz</h2>
+            <p role="status">Log in to take this quiz.</p>
+          </section>
+        } @else if (quizLoading()) {
           <section class="quiz-section"><p role="status">Loading quiz...</p></section>
         } @else if (quizUnavailable()) {
           <section class="quiz-section"><p>Quiz is not available for this module yet.</p></section>
@@ -160,6 +168,7 @@ import { CourseService } from '../../services/course';
 export class ModuleLearning {
   private readonly route = inject(ActivatedRoute);
   private readonly courseService = inject(CourseService);
+  private readonly auth = inject(AuthService);
   private readonly sanitizer = inject(DomSanitizer);
   readonly courseId = Number(this.route.snapshot.paramMap.get('courseId'));
   readonly moduleId = Number(this.route.snapshot.paramMap.get('moduleId'));
@@ -167,8 +176,10 @@ export class ModuleLearning {
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly notFound = signal(false);
+  readonly authResolved = this.auth.authResolved;
+  readonly isLoggedIn = this.auth.isLoggedIn;
   readonly quiz = signal<ModuleQuiz | null>(null);
-  readonly quizLoading = signal(true);
+  readonly quizLoading = signal(false);
   readonly quizUnavailable = signal(false);
   readonly quizLoadError = signal<string | null>(null);
   readonly selectedAnswers = signal<ReadonlyMap<number, number>>(new Map());
@@ -179,6 +190,7 @@ export class ModuleLearning {
     const questions = this.quiz()?.questions ?? [];
     return questions.length > 0 && questions.every((question) => this.selectedAnswers().has(question.id));
   });
+  private quizStateVersion = 0;
 
   constructor() {
     if (!this.isPositiveInteger(this.courseId) || !this.isPositiveInteger(this.moduleId)) {
@@ -200,17 +212,42 @@ export class ModuleLearning {
       },
     });
 
+    effect(() => {
+      const authResolved = this.authResolved();
+      const user = this.auth.currentUser();
+      this.quizStateVersion++;
+      this.resetQuizState();
+
+      if (authResolved && user) this.loadQuiz(this.quizStateVersion);
+    });
+  }
+
+  private loadQuiz(version: number): void {
+    this.quizLoading.set(true);
     this.courseService.getQuiz(this.courseId, this.moduleId).subscribe({
       next: (quiz) => {
+        if (version !== this.quizStateVersion) return;
         this.quiz.set(quiz);
         this.quizLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
+        if (version !== this.quizStateVersion) return;
         if (error.status === 404) this.quizUnavailable.set(true);
         else this.quizLoadError.set('Unable to load quiz. Please try again later.');
         this.quizLoading.set(false);
       },
     });
+  }
+
+  private resetQuizState(): void {
+    this.quiz.set(null);
+    this.quizLoading.set(false);
+    this.quizUnavailable.set(false);
+    this.quizLoadError.set(null);
+    this.selectedAnswers.set(new Map());
+    this.submissionLoading.set(false);
+    this.submissionError.set(null);
+    this.quizResult.set(null);
   }
 
   selectAnswer(questionId: number, optionId: number): void {
@@ -233,12 +270,15 @@ export class ModuleLearning {
 
     this.submissionLoading.set(true);
     this.submissionError.set(null);
+    const version = this.quizStateVersion;
     this.courseService.submitQuiz(this.courseId, this.moduleId, submission).subscribe({
       next: (result) => {
+        if (version !== this.quizStateVersion) return;
         this.quizResult.set(result);
         this.submissionLoading.set(false);
       },
       error: () => {
+        if (version !== this.quizStateVersion) return;
         this.submissionError.set('Unable to submit quiz. Please try again.');
         this.submissionLoading.set(false);
       },
