@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -34,11 +34,28 @@ const CATEGORY_ICONS: ReadonlyArray<Pick<CategoryCard, 'name' | 'icon'>> = [
 })
 export class Courses {
   private readonly courseService = inject(CourseService);
-  readonly courses: Course[] = this.courseService.getCourses();
-  readonly categories: CategoryCard[] = CATEGORY_ICONS.map((category) => ({
-    ...category,
-    courseCount: this.courses.filter((course) => course.category === category.name).length,
-  }));
+  readonly courses = signal<Course[]>([]);
+  readonly loading = signal(true);
+  readonly errorMessage = signal<string | null>(null);
+  readonly categories = computed<CategoryCard[]>(() =>
+    CATEGORY_ICONS.map((category) => ({
+      ...category,
+      courseCount: this.courses().filter((course) => course.category === category.name).length,
+    })),
+  );
+
+  constructor() {
+    this.courseService.getCourses().subscribe({
+      next: (courses) => {
+        this.courses.set(courses);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.errorMessage.set('Unable to load courses.');
+        this.loading.set(false);
+      },
+    });
+  }
 
   courseIcon(course: Course): string {
     const icons: Record<Course['level'], string> = {

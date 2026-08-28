@@ -6,7 +6,7 @@
     </header>
 
     <div class="category-grid">
-      @for (category of categories; track category.name) {
+      @for (category of categories(); track category.name) {
         <article class="category-card">
           <div class="category-icon" aria-hidden="true">
             <mat-icon>{{ category.icon }}</mat-icon>
@@ -21,8 +21,15 @@
     </div>
   </section>
 
+  @if (loading()) {
+    <p class="status-message" role="status">Loading courses...</p>
+  } @else if (errorMessage()) {
+    <p class="status-message status-error" role="alert">{{ errorMessage() }}</p>
+  } @else if (courses().length === 0) {
+    <p class="status-message">No courses are available yet.</p>
+  } @else {
   <section class="course-grid" aria-label="Available courses">
-    @for (course of courses; track course.id) {
+    @for (course of courses(); track course.id) {
       <mat-card class="course-card">
         <div class="card-visual">
           <span class="level-badge">{{ course.level }}</span>
@@ -63,4 +70,5 @@
       </mat-card>
     }
   </section>
+  }
 </div>

@@ -33,3 +33,10 @@ export interface Course {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   category: CourseCategory;
 }
+
+export interface CourseModule {
+  id: number;
+  title: string;
+  description: string | null;
+  position: number;
+}
