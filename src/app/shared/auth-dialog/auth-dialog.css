@@ -217,6 +217,8 @@ form {
   outline-offset: 3px;
 }
 
+.submit-button:disabled { opacity: 0.65; }
+
 .mode-prompt {
   margin: 12px 0 0;
   color: #536073;
@@ -242,6 +244,12 @@ form {
   background: #eef7ff;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.submission-message.error-message {
+  border-color: #e5a9a9;
+  color: #8f1717;
+  background: #fff4f4;
 }
 
 @media (max-width: 520px) {

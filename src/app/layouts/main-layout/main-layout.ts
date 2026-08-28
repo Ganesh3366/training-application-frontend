@@ -30,6 +30,11 @@ export class MainLayout {
   readonly isLoggedIn = this.auth.isLoggedIn;
   readonly currentRole = this.auth.currentRole;
   readonly isMobileMenuOpen = signal(false);
+  readonly logoutPending = signal(false);
+
+  constructor() {
+    this.auth.loadCurrentUser().subscribe({ error: () => undefined });
+  }
 
   toggleMobileMenu(): void {
     this.isMobileMenuOpen.update((value) => !value);
@@ -59,7 +64,12 @@ export class MainLayout {
   }
 
   logout(): void {
-    this.auth.logout();
+    if (this.logoutPending()) return;
+    this.logoutPending.set(true);
     this.closeMobileMenu();
+    this.auth.logout().subscribe({
+      next: () => this.logoutPending.set(false),
+      error: () => this.logoutPending.set(false),
+    });
   }
 }

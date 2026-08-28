@@ -81,7 +81,9 @@
           }
         </div>
 
-        <button mat-flat-button type="submit" class="submit-button">Log In</button>
+        <button mat-flat-button type="submit" class="submit-button" [disabled]="submitting()">
+          {{ submitting() ? 'Logging in...' : 'Log In' }}
+        </button>
       </form>
 
       <p class="mode-prompt">
@@ -158,7 +160,9 @@
           }
         </div>
 
-        <button mat-flat-button type="submit" class="submit-button">Sign Up</button>
+        <button mat-flat-button type="submit" class="submit-button" [disabled]="submitting()">
+          {{ submitting() ? 'Creating account...' : 'Sign Up' }}
+        </button>
       </form>
 
       <p class="mode-prompt">
@@ -168,7 +172,8 @@
     }
 
     @if (submissionMessage()) {
-      <p class="submission-message" role="status">{{ submissionMessage() }}</p>
+      <p class="submission-message" [class.error-message]="submissionIsError()"
+        [attr.role]="submissionIsError() ? 'alert' : 'status'">{{ submissionMessage() }}</p>
     }
   </mat-dialog-content>
 </section>

@@ -1,9 +1,27 @@
-export type Role = 'user' | 'instructor' | 'admin';
+export type Role = 'USER' | 'INSTRUCTOR' | 'ADMIN';
 
 export interface AppUser {
+  id: number;
   name: string;
   email: string;
   role: Role;
+}
+
+export interface SignupRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface CsrfTokenResponse {
+  token: string;
+  headerName: string;
+  parameterName: string;
 }
 
 export interface NavItem {

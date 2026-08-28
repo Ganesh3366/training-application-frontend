@@ -21,7 +21,9 @@
             <mat-icon>account_circle</mat-icon>{{ currentUser()?.name }}
           </button>
           <mat-menu #accountMenu="matMenu">
-            <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon>Sign out</button>
+            <button mat-menu-item (click)="logout()" [disabled]="logoutPending()">
+              <mat-icon>logout</mat-icon>{{ logoutPending() ? 'Signing out...' : 'Sign out' }}
+            </button>
           </mat-menu>
         }
       </div>
@@ -38,6 +40,11 @@
         @if (!isLoggedIn()) {
           <button mat-stroked-button (click)="openLoginDialog()">Log In</button>
           <button mat-flat-button class="signup-button" (click)="openSignupDialog()">Sign Up</button>
+        } @else {
+          <span>{{ currentUser()?.name }}</span>
+          <button mat-stroked-button (click)="logout()" [disabled]="logoutPending()">
+            {{ logoutPending() ? 'Signing out...' : 'Sign out' }}
+          </button>
         }
       </nav>
     }
