@@ -1,7 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { Course, CourseModule, CourseModuleDetail } from '../models/app.models';
+import {
+  Course,
+  CourseModule,
+  CourseModuleDetail,
+  ModuleQuiz,
+  QuizResult,
+  QuizSubmission,
+} from '../models/app.models';
 import { CourseService } from './course';
 
 describe('CourseService', () => {
@@ -47,6 +54,50 @@ describe('CourseService', () => {
     const request = http.expectOne('/api/courses/7/modules/2');
     expect(request.request.method).toBe('GET');
     request.flush(module);
+  });
+
+  it('gets a module quiz from the nested URL', () => {
+    const quiz: ModuleQuiz = {
+      id: 1,
+      title: 'Angular Fundamentals Quiz',
+      passingScore: 70,
+      questions: [{
+        id: 10,
+        questionText: 'What is a component?',
+        position: 1,
+        options: [{ id: 100, optionText: 'A UI building block', position: 1 }],
+      }],
+    };
+
+    service.getQuiz(7, 2).subscribe((result) => {
+      expect(result).toEqual(quiz);
+      expect(result.questions[0].options[0].optionText).toBe('A UI building block');
+    });
+    const request = http.expectOne('/api/courses/7/modules/2/quiz');
+    expect(request.request.method).toBe('GET');
+    request.flush(quiz);
+  });
+
+  it('submits quiz answers to the nested URL and returns the result', () => {
+    const submission: QuizSubmission = {
+      answers: [{ questionId: 10, optionId: 100 }],
+    };
+    const quizResult: QuizResult = {
+      totalQuestions: 1,
+      correctAnswers: 1,
+      score: 100,
+      passingScore: 70,
+      passed: true,
+    };
+
+    service.submitQuiz(7, 2, submission).subscribe((result) => {
+      expect(result).toEqual(quizResult);
+      expect(result.passed).toBe(true);
+    });
+    const request = http.expectOne('/api/courses/7/modules/2/quiz/submit');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(submission);
+    request.flush(quizResult);
   });
 });
 

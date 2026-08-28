@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Course, CourseModule, CourseModuleDetail } from '../models/app.models';
+import {
+  Course,
+  CourseModule,
+  CourseModuleDetail,
+  ModuleQuiz,
+  QuizResult,
+  QuizSubmission,
+} from '../models/app.models';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
@@ -21,5 +28,20 @@ export class CourseService {
 
   getModule(courseId: number, moduleId: number): Observable<CourseModuleDetail> {
     return this.http.get<CourseModuleDetail>(`/api/courses/${courseId}/modules/${moduleId}`);
+  }
+
+  getQuiz(courseId: number, moduleId: number): Observable<ModuleQuiz> {
+    return this.http.get<ModuleQuiz>(`/api/courses/${courseId}/modules/${moduleId}/quiz`);
+  }
+
+  submitQuiz(
+    courseId: number,
+    moduleId: number,
+    submission: QuizSubmission,
+  ): Observable<QuizResult> {
+    return this.http.post<QuizResult>(
+      `/api/courses/${courseId}/modules/${moduleId}/quiz/submit`,
+      submission,
+    );
   }
 }

@@ -59,3 +59,40 @@ export interface CourseModuleDetail {
   position: number;
   contents: ModuleContent[];
 }
+
+export interface QuizAnswerOption {
+  id: number;
+  optionText: string;
+  position: number;
+}
+
+export interface QuizQuestion {
+  id: number;
+  questionText: string;
+  position: number;
+  options: QuizAnswerOption[];
+}
+
+export interface ModuleQuiz {
+  id: number;
+  title: string;
+  passingScore: number;
+  questions: QuizQuestion[];
+}
+
+export interface QuizAnswer {
+  questionId: number;
+  optionId: number;
+}
+
+export interface QuizSubmission {
+  answers: QuizAnswer[];
+}
+
+export interface QuizResult {
+  totalQuestions: number;
+  correctAnswers: number;
+  score: number;
+  passingScore: number;
+  passed: boolean;
+}
