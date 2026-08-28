@@ -1,8 +1,14 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CourseModuleDetail, ModuleContent } from '../../models/app.models';
+import {
+  CourseModuleDetail,
+  ModuleContent,
+  ModuleQuiz,
+  QuizResult,
+  QuizSubmission,
+} from '../../models/app.models';
 import { CourseService } from '../../services/course';
 
 @Component({
@@ -53,6 +59,69 @@ import { CourseService } from '../../services/course';
             </div>
           }
         </section>
+
+        @if (quizLoading()) {
+          <section class="quiz-section"><p role="status">Loading quiz...</p></section>
+        } @else if (quizUnavailable()) {
+          <section class="quiz-section"><p>Quiz is not available for this module yet.</p></section>
+        } @else if (quizLoadError()) {
+          <section class="quiz-section"><p role="alert">{{ quizLoadError() }}</p></section>
+        } @else if (quiz(); as moduleQuiz) {
+          <section class="quiz-section">
+            <h2>{{ moduleQuiz.title }}</h2>
+            <p>Passing score: {{ moduleQuiz.passingScore }}%</p>
+
+            @if (moduleQuiz.questions.length === 0) {
+              <p>No quiz questions are available yet.</p>
+            } @else {
+              <form (submit)="submitQuiz($event)">
+                @for (question of moduleQuiz.questions; track question.id) {
+                  <fieldset>
+                    <legend>{{ question.questionText }}</legend>
+                    @for (option of question.options; track option.id) {
+                      <div class="quiz-option">
+                        <input
+                          type="radio"
+                          [id]="'quiz-option-' + option.id"
+                          [name]="'quiz-question-' + question.id"
+                          [value]="option.id"
+                          [checked]="selectedAnswers().get(question.id) === option.id"
+                          [disabled]="submissionLoading() || quizResult() !== null"
+                          (change)="selectAnswer(question.id, option.id)">
+                        <label [for]="'quiz-option-' + option.id">{{ option.optionText }}</label>
+                      </div>
+                    }
+                  </fieldset>
+                }
+
+                @if (!quizResult()) {
+                  <button
+                    class="submit-quiz"
+                    type="submit"
+                    [disabled]="!allQuestionsAnswered() || submissionLoading()">
+                    {{ submissionLoading() ? 'Submitting...' : 'Submit Quiz' }}
+                  </button>
+                }
+              </form>
+
+              @if (submissionError()) {
+                <p class="quiz-error" role="alert">{{ submissionError() }}</p>
+              }
+
+              @if (quizResult(); as result) {
+                <div class="quiz-result" role="status" aria-live="polite">
+                  <h3>{{ result.passed ? 'Passed' : 'Not Passed' }}</h3>
+                  <p>Score: {{ result.score }}%</p>
+                  <p>Correct answers: {{ result.correctAnswers }} / {{ result.totalQuestions }}</p>
+                  <p>Passing score: {{ result.passingScore }}%</p>
+                  @if (!result.passed) {
+                    <button class="retry-quiz" type="button" (click)="retryQuiz()">Retry Quiz</button>
+                  }
+                </div>
+              }
+            }
+          </section>
+        }
       }
     </div>
   `,
@@ -72,6 +141,19 @@ import { CourseService } from '../../services/course';
     .video-frame { position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 10px; background: #06183a; }
     iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
     .empty-message { margin-top: 24px; }
+    .quiz-section h2 { font-size: 24px; }
+    fieldset { margin: 20px 0; padding: 18px; border: 1px solid #dce7f5; border-radius: 10px; }
+    legend { padding: 0 6px; color: #06183a; font-weight: 700; }
+    .quiz-option { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; }
+    .quiz-option input { margin-top: 3px; accent-color: #0873db; }
+    .quiz-option input:focus-visible { outline: 3px solid #73b7f5; outline-offset: 3px; }
+    .quiz-option label { color: #17243a; line-height: 1.4; cursor: pointer; }
+    button { padding: 10px 16px; border: 0; border-radius: 8px; color: #fff; background: #0873db; font: inherit; font-weight: 700; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #06183a; outline-offset: 3px; }
+    button:disabled { color: #718096; background: #dce7f5; cursor: not-allowed; }
+    .quiz-error { color: #9b1c1c; font-weight: 700; }
+    .quiz-result { margin-top: 20px; padding: 18px; border: 2px solid #0873db; border-radius: 10px; }
+    .quiz-result h3 { margin-top: 0; color: #06183a; }
     @media (max-width: 640px) { .learning-page { padding: 22px 18px; } section { padding: 20px; } }
   `,
 })
@@ -85,6 +167,18 @@ export class ModuleLearning {
   readonly loading = signal(true);
   readonly errorMessage = signal<string | null>(null);
   readonly notFound = signal(false);
+  readonly quiz = signal<ModuleQuiz | null>(null);
+  readonly quizLoading = signal(true);
+  readonly quizUnavailable = signal(false);
+  readonly quizLoadError = signal<string | null>(null);
+  readonly selectedAnswers = signal<ReadonlyMap<number, number>>(new Map());
+  readonly submissionLoading = signal(false);
+  readonly submissionError = signal<string | null>(null);
+  readonly quizResult = signal<QuizResult | null>(null);
+  readonly allQuestionsAnswered = computed(() => {
+    const questions = this.quiz()?.questions ?? [];
+    return questions.length > 0 && questions.every((question) => this.selectedAnswers().has(question.id));
+  });
 
   constructor() {
     if (!this.isPositiveInteger(this.courseId) || !this.isPositiveInteger(this.moduleId)) {
@@ -105,6 +199,56 @@ export class ModuleLearning {
         }
       },
     });
+
+    this.courseService.getQuiz(this.courseId, this.moduleId).subscribe({
+      next: (quiz) => {
+        this.quiz.set(quiz);
+        this.quizLoading.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 404) this.quizUnavailable.set(true);
+        else this.quizLoadError.set('Unable to load quiz. Please try again later.');
+        this.quizLoading.set(false);
+      },
+    });
+  }
+
+  selectAnswer(questionId: number, optionId: number): void {
+    const answers = new Map(this.selectedAnswers());
+    answers.set(questionId, optionId);
+    this.selectedAnswers.set(answers);
+  }
+
+  submitQuiz(event: Event): void {
+    event.preventDefault();
+    const quiz = this.quiz();
+    if (!quiz || !this.allQuestionsAnswered() || this.submissionLoading()) return;
+
+    const submission: QuizSubmission = {
+      answers: quiz.questions.map((question) => ({
+        questionId: question.id,
+        optionId: this.selectedAnswers().get(question.id)!,
+      })),
+    };
+
+    this.submissionLoading.set(true);
+    this.submissionError.set(null);
+    this.courseService.submitQuiz(this.courseId, this.moduleId, submission).subscribe({
+      next: (result) => {
+        this.quizResult.set(result);
+        this.submissionLoading.set(false);
+      },
+      error: () => {
+        this.submissionError.set('Unable to submit quiz. Please try again.');
+        this.submissionLoading.set(false);
+      },
+    });
+  }
+
+  retryQuiz(): void {
+    this.selectedAnswers.set(new Map());
+    this.quizResult.set(null);
+    this.submissionError.set(null);
   }
 
   videoEmbedUrl(content: ModuleContent): SafeResourceUrl | null {

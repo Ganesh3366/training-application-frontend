@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { CourseModuleDetail } from '../../models/app.models';
+import { CourseModuleDetail, ModuleQuiz, QuizResult, QuizSubmission } from '../../models/app.models';
 import { CourseService } from '../../services/course';
 import { ModuleLearning } from './module-learning';
 
@@ -12,13 +12,17 @@ describe('ModuleLearning', () => {
     courseId = '3',
     moduleId = '9',
     getModule = () => response,
+    quizResponse: Observable<ModuleQuiz> = of(moduleQuiz),
+    getQuiz = () => quizResponse,
+    submissionResponse: Observable<QuizResult> = of(passedResult),
+    submitQuiz = (_courseId: number, _moduleId: number, _submission: QuizSubmission) => submissionResponse,
   ): ComponentFixture<ModuleLearning> {
     TestBed.configureTestingModule({
       imports: [ModuleLearning],
       providers: [
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ courseId, moduleId }) } } },
-        { provide: CourseService, useValue: { getModule } },
+        { provide: CourseService, useValue: { getModule, getQuiz, submitQuiz } },
       ],
     });
     const fixture = TestBed.createComponent(ModuleLearning);
@@ -78,6 +82,99 @@ describe('ModuleLearning', () => {
     expect(fixture.nativeElement.textContent).toContain('Module not found.');
     expect(getModule).not.toHaveBeenCalled();
   });
+
+  it('loads the quiz for valid route ids and renders its questions and options', () => {
+    const getQuiz = vi.fn(() => of(moduleQuiz));
+    const fixture = create(of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz);
+
+    expect(getQuiz).toHaveBeenCalledWith(3, 9);
+    expect(fixture.nativeElement.textContent).toContain('HTTP Knowledge Check');
+    expect(fixture.nativeElement.querySelectorAll('fieldset')).toHaveLength(2);
+    expect(fixture.nativeElement.querySelectorAll('input[type="radio"]')).toHaveLength(4);
+  });
+
+  it('keeps submit disabled until every question has an answer', () => {
+    const fixture = create(of(moduleDetail));
+    const submit = fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement;
+    const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+
+    expect(submit.disabled).toBe(true);
+    radios[0].click();
+    fixture.detectChanges();
+    expect(submit.disabled).toBe(true);
+    radios[2].click();
+    fixture.detectChanges();
+    expect(submit.disabled).toBe(false);
+  });
+
+  it('submits only the selected question and option ids', () => {
+    const submitQuiz = vi.fn(() => of(passedResult));
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
+      of(passedResult), submitQuiz,
+    );
+    selectAllAnswers(fixture);
+    (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
+
+    expect(submitQuiz).toHaveBeenCalledWith(3, 9, {
+      answers: [{ questionId: 201, optionId: 301 }, { questionId: 202, optionId: 303 }],
+    });
+  });
+
+  it('renders the backend-authoritative passed result without a retry action', () => {
+    const fixture = create(of(moduleDetail));
+    selectAllAnswers(fixture);
+    (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Passed');
+    expect(fixture.nativeElement.textContent).toContain('Score: 100%');
+    expect(fixture.nativeElement.textContent).toContain('Correct answers: 2 / 2');
+    expect(fixture.nativeElement.querySelector('.retry-quiz')).toBeNull();
+  });
+
+  it('shows Retry Quiz for a failed result and retry clears result and selections', () => {
+    const failedResult: QuizResult = { ...passedResult, correctAnswers: 1, score: 50, passed: false };
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
+      of(failedResult), () => of(failedResult),
+    );
+    selectAllAnswers(fixture);
+    (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Not Passed');
+
+    (fixture.nativeElement.querySelector('.retry-quiz') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.quiz-result')).toBeNull();
+    expect([...fixture.nativeElement.querySelectorAll('input[type="radio"]')]
+      .every((radio: HTMLInputElement) => !radio.checked)).toBe(true);
+    expect((fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('keeps module content visible when the quiz is unavailable', () => {
+    const quizError = new HttpErrorResponse({ status: 404 });
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), throwError(() => quizError),
+    );
+    expect(fixture.nativeElement.textContent).toContain('Plain text lesson');
+    expect(fixture.nativeElement.textContent).toContain('Quiz is not available for this module yet.');
+  });
+
+  it('preserves selected answers after a submission error', () => {
+    const fixture = create(
+      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
+      throwError(() => new Error('server error')),
+    );
+    selectAllAnswers(fixture);
+    (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Unable to submit quiz. Please try again.');
+    expect([...fixture.nativeElement.querySelectorAll('input[type="radio"]')]
+      .filter((radio: HTMLInputElement) => radio.checked)).toHaveLength(2);
+    expect((fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled).toBe(false);
+  });
 });
 
 const moduleDetail: CourseModuleDetail = {
@@ -107,4 +204,45 @@ function withVideo(videoUrl: string): CourseModuleDetail {
       position: 1,
     }],
   };
+}
+
+const moduleQuiz: ModuleQuiz = {
+  id: 20,
+  title: 'HTTP Knowledge Check',
+  passingScore: 70,
+  questions: [
+    {
+      id: 201,
+      questionText: 'Which method reads data?',
+      position: 1,
+      options: [
+        { id: 301, optionText: 'GET', position: 1 },
+        { id: 302, optionText: 'POST', position: 2 },
+      ],
+    },
+    {
+      id: 202,
+      questionText: 'Which status means success?',
+      position: 2,
+      options: [
+        { id: 303, optionText: '200', position: 1 },
+        { id: 304, optionText: '500', position: 2 },
+      ],
+    },
+  ],
+};
+
+const passedResult: QuizResult = {
+  totalQuestions: 2,
+  correctAnswers: 2,
+  score: 100,
+  passingScore: 70,
+  passed: true,
+};
+
+function selectAllAnswers(fixture: ComponentFixture<ModuleLearning>): void {
+  const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+  radios[0].click();
+  radios[2].click();
+  fixture.detectChanges();
 }
