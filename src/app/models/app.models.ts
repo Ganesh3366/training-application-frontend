@@ -59,6 +59,23 @@ export interface CourseModule {
   position: number;
 }
 
+export interface ModuleProgress {
+  moduleId: number;
+  completed: boolean;
+  attemptsCount: number;
+  lastScore: number | null;
+  bestScore: number | null;
+  completedAt: string | null;
+}
+
+export interface CourseProgress {
+  courseId: number;
+  totalModules: number;
+  completedModules: number;
+  pendingModules: number;
+  modules: ModuleProgress[];
+}
+
 export type ModuleContentType = 'TEXT' | 'VIDEO';
 
 export interface ModuleContent {

@@ -5,6 +5,7 @@ import {
   Course,
   CourseModule,
   CourseModuleDetail,
+  CourseProgress,
   ModuleQuiz,
   QuizResult,
   QuizSubmission,
@@ -24,6 +25,10 @@ export class CourseService {
 
   getModules(courseId: number): Observable<CourseModule[]> {
     return this.http.get<CourseModule[]>(`/api/courses/${courseId}/modules`);
+  }
+
+  getCourseProgress(courseId: number): Observable<CourseProgress> {
+    return this.http.get<CourseProgress>(`/api/courses/${courseId}/progress`);
   }
 
   getModule(courseId: number, moduleId: number): Observable<CourseModuleDetail> {

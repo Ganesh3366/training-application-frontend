@@ -5,6 +5,7 @@ import {
   Course,
   CourseModule,
   CourseModuleDetail,
+  CourseProgress,
   ModuleQuiz,
   QuizResult,
   QuizSubmission,
@@ -44,6 +45,18 @@ describe('CourseService', () => {
     const request = http.expectOne('/api/courses/7/modules');
     expect(request.request.method).toBe('GET');
     request.flush(modules);
+  });
+
+  it('gets course progress without sending a user id', () => {
+    const progress: CourseProgress = {
+      courseId: 7, totalModules: 1, completedModules: 0, pendingModules: 1,
+      modules: [{ moduleId: 2, completed: false, attemptsCount: 0, lastScore: null, bestScore: null, completedAt: null }],
+    };
+    service.getCourseProgress(7).subscribe((result) => expect(result).toEqual(progress));
+    const request = http.expectOne('/api/courses/7/progress');
+    expect(request.request.method).toBe('GET');
+    expect(request.request.params.keys()).toEqual([]);
+    request.flush(progress);
   });
 
   it('gets a module with its contents', () => {
