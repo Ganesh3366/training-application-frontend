@@ -41,6 +41,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'management/courses/:courseId/modules',
+        canActivate: [managementRoleGuard],
+        loadComponent: () =>
+          import('./pages/module-content-management/module-content-management').then(
+            (m) => m.ModuleContentManagementComponent,
+          ),
+      },
+      {
         path: 'certification',
         loadComponent: () =>
           import('./pages/certification/certification').then((m) => m.Certification),

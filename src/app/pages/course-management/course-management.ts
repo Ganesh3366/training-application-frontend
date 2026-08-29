@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +28,7 @@ import { COURSE_CATEGORY_LABELS, COURSE_LEVEL_LABELS } from './course-management
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    RouterLink,
   ],
   templateUrl: './course-management.html',
   styleUrl: './course-management.css',

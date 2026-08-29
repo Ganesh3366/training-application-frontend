@@ -92,6 +92,11 @@ export interface CourseModule {
   position: number;
 }
 
+export interface CourseModuleManagementRequest {
+  title: string;
+  description: string | null;
+}
+
 export interface ModuleProgress {
   moduleId: number;
   completed: boolean;
@@ -126,6 +131,13 @@ export interface ModuleContent {
   textContent: string | null;
   videoUrl: string | null;
   position: number;
+}
+
+export interface ModuleContentManagementRequest {
+  type: ModuleContentType;
+  title: string;
+  textContent: string | null;
+  videoUrl: string | null;
 }
 
 export interface CourseModuleDetail {

@@ -1,0 +1,147 @@
+<div class="management-page">
+  <a class="back-link" routerLink="/management/courses"
+    ><mat-icon aria-hidden="true">arrow_back</mat-icon>Back to Course Management</a
+  >
+  @if (loading()) {
+    <section class="state" role="status">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Loading modules and content...</p>
+    </section>
+  } @else if (loadError()) {
+    <section class="state" role="alert">
+      <mat-icon aria-hidden="true">cloud_off</mat-icon>
+      <h1>Module management unavailable</h1>
+      <p>{{ loadError() }}</p>
+      @if (!invalidCourseId) {
+        <button mat-stroked-button type="button" (click)="loadPage()">Try again</button>
+      }
+    </section>
+  } @else if (course(); as selectedCourse) {
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">Course Management</p>
+        <h1>Modules &amp; Content</h1>
+        <p>
+          Manage the learning structure for <strong>{{ selectedCourse.title }}</strong
+          >.
+        </p>
+      </div>
+      <button mat-flat-button class="primary" type="button" (click)="openModuleForm(null)">
+        <mat-icon aria-hidden="true">add</mat-icon>Add Module
+      </button>
+    </header>
+    @if (actionError()) {
+      <div class="alert" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon><span>{{ actionError() }}</span
+        ><button mat-button type="button" (click)="actionError.set(null)">Dismiss</button>
+      </div>
+    }
+    @if (modules().length === 0) {
+      <section class="state empty">
+        <mat-icon aria-hidden="true">view_list</mat-icon>
+        <h2>No modules yet</h2>
+        <p>Add the first module to start organizing this course.</p>
+        <button mat-flat-button class="primary" type="button" (click)="openModuleForm(null)">
+          Add Module
+        </button>
+      </section>
+    } @else {
+      <section class="module-list" aria-label="Course modules">
+        @for (module of modules(); track module.id) {
+          <article class="module-card">
+            <header class="module-header">
+              <div class="position" aria-label="Module position {{ module.position }}">
+                {{ module.position }}
+              </div>
+              <div class="module-copy">
+                <h2>{{ module.title }}</h2>
+                @if (module.description) {
+                  <p>{{ module.description }}</p>
+                }
+              </div>
+              <div class="module-actions">
+                <button
+                  mat-button
+                  type="button"
+                  (click)="openModuleForm(module)"
+                  [attr.aria-label]="'Edit module ' + module.title"
+                >
+                  <mat-icon aria-hidden="true">edit</mat-icon>Edit
+                </button>
+                <button
+                  mat-button
+                  class="delete"
+                  type="button"
+                  (click)="confirmModuleDelete(module)"
+                  [disabled]="deletingKey() !== null"
+                  [attr.aria-label]="'Delete module ' + module.title"
+                >
+                  <mat-icon aria-hidden="true">delete_outline</mat-icon
+                  >{{ deletingKey() === 'module-' + module.id ? 'Deleting...' : 'Delete' }}
+                </button>
+              </div>
+            </header>
+            <div class="content-section">
+              <div class="content-heading">
+                <div>
+                  <h3>Module content</h3>
+                  <p>
+                    {{ contentsFor(module.id).length }}
+                    {{ contentsFor(module.id).length === 1 ? 'item' : 'items' }}
+                  </p>
+                </div>
+                <button mat-stroked-button type="button" (click)="openContentForm(module.id, null)">
+                  <mat-icon aria-hidden="true">add</mat-icon>Add Content
+                </button>
+              </div>
+              @if (contentsFor(module.id).length === 0) {
+                <p class="empty-content">No content has been added to this module.</p>
+              } @else {
+                <ol class="content-list">
+                  @for (content of contentsFor(module.id); track content.id) {
+                    <li>
+                      <span
+                        class="content-position"
+                        aria-label="Content position {{ content.position }}"
+                        >{{ content.position }}</span
+                      >
+                      <span class="type-badge"
+                        ><mat-icon aria-hidden="true">{{
+                          content.type === 'TEXT' ? 'article' : 'play_circle'
+                        }}</mat-icon
+                        >{{ content.type === 'TEXT' ? 'Text' : 'Video' }}</span
+                      >
+                      <div class="content-copy">
+                        <h4>{{ content.title }}</h4>
+                        <p>{{ contentPreview(content) }}</p>
+                      </div>
+                      <div class="content-actions">
+                        <button
+                          mat-button
+                          type="button"
+                          (click)="openContentForm(module.id, content)"
+                          [attr.aria-label]="'Edit content ' + content.title"
+                        >
+                          Edit</button
+                        ><button
+                          mat-button
+                          class="delete"
+                          type="button"
+                          (click)="confirmContentDelete(module.id, content)"
+                          [disabled]="deletingKey() !== null"
+                          [attr.aria-label]="'Delete content ' + content.title"
+                        >
+                          {{ deletingKey() === 'content-' + content.id ? 'Deleting...' : 'Delete' }}
+                        </button>
+                      </div>
+                    </li>
+                  }
+                </ol>
+              }
+            </div>
+          </article>
+        }
+      </section>
+    }
+  }
+</div>

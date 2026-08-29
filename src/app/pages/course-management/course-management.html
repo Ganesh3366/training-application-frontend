@@ -85,6 +85,13 @@
                   {{ course.duration }} {{ course.duration === 1 ? 'hour' : 'hours' }}
                 </td>
                 <td role="cell" data-label="Actions" class="row-actions">
+                  <a
+                    mat-button
+                    [routerLink]="['/management/courses', course.id, 'modules']"
+                    [attr.aria-label]="'Manage modules for ' + course.title"
+                  >
+                    <mat-icon aria-hidden="true">view_list</mat-icon>Manage Modules
+                  </a>
                   <button
                     mat-button
                     type="button"

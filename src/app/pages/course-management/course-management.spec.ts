@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { provideRouter } from '@angular/router';
 import { defer, Observable, of, Subject, throwError } from 'rxjs';
 import { CourseManagementResponse } from '../../models/app.models';
 import { CourseManagementService } from '../../services/course-management';
@@ -20,7 +21,7 @@ describe('CourseManagementComponent', () => {
     };
     TestBed.configureTestingModule({
       imports: [CourseManagementComponent],
-      providers: [{ provide: CourseManagementService, useValue: service }],
+      providers: [provideRouter([]), { provide: CourseManagementService, useValue: service }],
     });
     const fixture = TestBed.createComponent(CourseManagementComponent);
     const component = fixture.componentInstance;
@@ -45,6 +46,11 @@ describe('CourseManagementComponent', () => {
     expect(
       fixture.nativeElement.querySelector('button[aria-label="Edit Angular Basics"]'),
     ).not.toBeNull();
+    expect(
+      fixture.nativeElement
+        .querySelector('a[aria-label="Manage modules for Angular Basics"]')
+        ?.getAttribute('href'),
+    ).toBe('/management/courses/7/modules');
   });
 
   it('shows an actionable empty state', () => {

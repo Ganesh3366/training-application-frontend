@@ -1,0 +1,56 @@
+.form-dialog {
+  width: min(700px, 100%);
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 24px 8px;
+}
+header p {
+  margin: 0 0 4px;
+  color: #0871d4;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h2 {
+  margin: 0;
+  color: #06183a;
+}
+form {
+  display: grid;
+  gap: 5px;
+  padding-top: 8px;
+}
+mat-form-field {
+  width: 100%;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 14px;
+}
+.error {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border-radius: 8px;
+  color: #8f1d1d;
+  background: #fff0f0;
+}
+.primary {
+  color: #fff !important;
+  background: #0873db !important;
+}
+mat-dialog-actions {
+  padding: 8px 24px 22px;
+}
+@media (max-width: 560px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
