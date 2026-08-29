@@ -1,1057 +1,1599 @@
-# SkillForge AI-Assisted Development and Prompt History
+# **SkillForge AI-Assisted Development and Prompt History**
 
-This document records how AI tools are used during the development of SkillForge.
+This document records the significant AI-assisted development prompts used during the development of SkillForge.
 
-## AI Tools Used
+## **AI Tools Used**
 
-- ChatGPT
-- Codex
+\- ChatGPT — requirement analysis, architecture discussion, security review, code review, testing guidance, debugging, optimization, and preparation of focused implementation prompts.
 
-AI is used to support software engineering, architecture, implementation, debugging, review, testing, Git workflow, and documentation.
+\- OpenAI Codex — focused frontend and backend implementation.
 
-AI is **not** treated as the final decision-maker.
+## **1. Angular CourseService Architecture**
 
-The developer remains responsible for understanding, approving, testing, modifying, and committing the submitted solution.
+### **Why This Prompt Was Used**
 
----
+To separate course data from the Angular "Courses" component and create a reusable service layer that could later be connected to a backend API.
 
-# 1. Development Principle
+### **Codex Prompt**
 
-The main development principle for SkillForge is:
+**Type: Reconstructed / Verbatim**
 
-```text
-AI Suggests
-     |
-     v
-Developer Understands
-     |
-     v
-Developer Approves or Rejects
-     |
-     v
-Implementation
-     |
-     v
-Developer Tests
-     |
-     v
-Developer Decides Whether to Commit
-```
+Refactor the existing Angular course implementation so that course data is owned by CourseService rather than directly by the Courses component.
 
-A recommendation is not automatically implemented simply because AI suggested it.
+#### **Requirements:**
 
-The developer may:
+\- Preserve the current UI and behavior.
 
-- approve the recommendation
-- reject the recommendation
-- request another method
-- request different terminology
-- request a simpler solution
-- request a more secure solution
-- request a more reusable design
-- ask for trade-offs
-- ask for an explanation before implementation
+\- Keep the Course model strongly typed.
 
-The developer is always the final decision-maker.
+\- Move reusable course-data access into CourseService.
 
----
+\- Components should consume the service rather than own the data source.
 
-# 2. Approval-Based Engineering Workflow
+\- Do not duplicate course data across components.
 
-The workflow used during SkillForge development is:
+\- Keep the design ready for replacing the temporary data source with a backend API later.
 
-```text
-Developer Requirement / Idea
-          |
-          v
-ChatGPT Requirement Analysis
-          |
-          v
-Architecture and Design Discussion
-          |
-          v
-Engineering Review
-          |
-          +--> Code Quality
-          +--> Security
-          +--> Reusability
-          +--> Maintainability
-          +--> Testing
-          +--> Edge Cases
-          +--> Performance
-          +--> Git Impact
-          |
-          v
-Recommended Approach
-          |
-          v
-Developer Decision
-       /       \
-      /         \
- APPROVED    NOT APPROVED
-    |              |
-    |              v
-    |        Alternative Method
-    |        / Terminology /
-    |        Architecture
-    |              |
-    |              v
-    |        Developer Reviews Again
-    |              |
-    +--------------+
-          |
-          v
-Implementation Plan
-          |
-          v
-Focused Codex Prompt
-(when Codex is useful)
-          |
-          v
-Codex Implementation
-          |
-          v
-Developer Reviews Result
-          |
-          v
-Manual Testing
-          |
-          v
-ChatGPT Code / Security / Git Review
-          |
-          v
-Developer Final Decision
-       /        \
-      /          \
-  COMMIT        REVISE
-```
+\- Do not modify unrelated application functionality.
+
+Run the relevant Angular tests/build after the change.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Improve readability.
+
+\- Reduce duplicated course logic.
+
+\- Reuse the existing service architecture.
+
+\- Follow Angular best practices.
+
+\- Keep the implementation simple and reusable.
+
+### **Narrative**
+
+The implementation was reviewed before acceptance. The developer focused on separating UI responsibilities from data access rather than keeping course data inside components.
+
+### **Validation**
+
+\- Course listing was checked.
+
+\- "CourseService" usage was verified.
+
+\- Existing Angular functionality remained working.
 
 ---
 
-# 3. Engineering Review Before Significant Code
+## **2. Dynamic Course Details**
 
-Before a meaningful implementation change, ChatGPT is expected to review the requirement first.
+### **Why This Prompt Was Used**
 
-The review may include:
+To support dynamic course pages through "/courses/\:id" and safely handle invalid or nonexistent course IDs.
 
-## Requirements
+### **Codex Prompt**
 
-- What problem are we solving?
-- Who will use the feature?
-- What should happen?
-- What should not happen?
+**Type: Reconstructed / Not Verbatim**
 
-## Architecture
+Implement dynamic Angular course-details routing using the existing route:
 
-- Which component should own the responsibility?
-- Should the logic live in a component, service, backend, or database?
-- Can existing code be reused?
-- Will the design be easy to extend?
+/courses/\:id
 
-## Code Quality
+#### **Requirements:**
 
-- Strong TypeScript typing
-- Clear naming
-- Small responsibilities
-- Avoid unnecessary duplication
-- Readable code
-- Appropriate separation of concerns
+\- Read the course ID from ActivatedRoute.
 
-## Reusability
+\- Validate the route parameter before using it.
 
-- Reuse existing models
-- Reuse existing services
-- Avoid copying the same data or logic into multiple components
-- Create reusable code only where it provides a real benefit
+\- Use CourseService.getCourseById(id).
 
-## Maintainability
+\- Do not duplicate course data.
 
-- Keep features easy to modify
-- Avoid unnecessary complexity
-- Keep components focused
-- Keep data-access responsibilities separated from presentation logic
+\- Display the selected course when it exists.
 
-## Security
+\- Gracefully handle invalid, malformed, or nonexistent IDs.
 
-Where applicable, review:
+\- Preserve existing routing and navigation.
 
-- authentication
-- authorization
-- IDOR
-- exposed secrets
-- XSS
-- injection
-- unsafe storage
-- input validation
-- sensitive logging
-- frontend-only authorization
-- API access control
+\- Keep TypeScript strongly typed.
 
-Frontend route visibility is not considered real security.
+\- Do not change unrelated features.
 
-Authorization for protected operations must ultimately be enforced by the backend.
+#### **Test:**
 
-## Testing
+\- valid course ID
 
-Depending on the feature, validation may include:
+\- nonexistent course ID
 
-- manual browser testing
-- Angular unit tests
-- component tests
-- backend tests
-- API tests
-- integration tests
-- end-to-end tests
-- production build verification
+\- malformed route ID
 
-## Git
+\- navigation from Courses to Course Details
 
-Before committing:
+Run the Angular build.
 
-- review changed files
-- avoid unrelated files in the same commit
-- use meaningful commit messages
-- verify the build
-- verify the working tree
-- let the developer decide whether the change is ready
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Keep route handling readable.
+
+\- Validate IDs before using them.
+
+\- Reuse "CourseService".
+
+\- Avoid duplicated course data.
+
+\- Preserve existing navigation.
+
+### **Narrative**
+
+The developer reviewed the route behavior and required invalid URLs to fail safely instead of assuming every route ID was valid.
+
+### **Validation**
+
+\- Valid course IDs were tested.
+
+\- Invalid course IDs were tested.
+
+\- Course-not-found behavior was verified.
 
 ---
 
-# 4. What Happens if the Developer Rejects an AI Recommendation
+## **3. Initial Landing Page**
 
-The developer does not have to accept the first recommendation.
+### **Why This Prompt Was Used**
 
-Example:
+To redesign the existing Angular landing page using a selected visual reference while preserving all existing project functionality.
 
-```text
-Developer:
-"I don't approve this approach."
-```
+### **Codex Prompt**
 
-The next step should be:
+**Type: Exact / Verbatim**
 
-```text
-ChatGPT
-   |
-   v
-Explain Another Approach
-   |
-   v
-Explain Trade-offs
-   |
-   v
-Developer Reviews
-   |
-   v
-Developer Approves or Rejects Again
-```
+I want you to redesign my existing Angular application's landing page to match the attached reference image as closely as possible.
 
-Possible alternative discussions may include:
+Important: inspect the existing project before making any changes. Do not rebuild the application from scratch.
 
-- another implementation method
-- simpler architecture
-- different terminology
-- different component structure
-- different API design
-- another security approach
-- another UI design
-- another data-flow design
+The existing Angular application already contains routing, authentication-related code, navigation logic, course pages, CourseService, course-details routing, Angular Material configuration, and other working functionality.
 
-When useful, alternatives should be compared using:
+Preserve all existing business logic and working functionality.
 
-```text
-Security
-Complexity
-Performance
-Scalability
-Maintainability
-Reusability
-Testing
-Development Time
-```
+Use only:
 
----
+\- Angular
 
-# 5. Role of ChatGPT
+\- TypeScript
 
-ChatGPT is used as a:
+\- Angular Material
 
-- senior software-engineering mentor
-- solution-architecture assistant
-- code reviewer
-- security reviewer
-- debugging assistant
-- testing advisor
-- Git workflow reviewer
-- documentation assistant
-- interview-preparation assistant
-- prompt-design assistant for Codex
+\- HTML
 
-A typical ChatGPT workflow is:
+\- CSS
 
-```text
-Developer Requirement
-        |
-        v
-ChatGPT Analysis
-        |
-        +--> Understand requirement
-        +--> Review architecture
-        +--> Review security
-        +--> Review reusability
-        +--> Review code quality
-        +--> Identify edge cases
-        +--> Recommend testing
-        +--> Explain trade-offs
-        |
-        v
-Recommended Approach
-        |
-        v
-Developer Decision
-```
+Do not add:
 
-ChatGPT does not make the final project decision.
+\- Bootstrap
 
----
+\- Tailwind
 
-# 6. Role of Codex
+\- jQuery
 
-Codex is primarily used for focused implementation tasks after the requirement has been discussed.
+\- another UI framework
 
-The expected workflow is:
+Preserve the existing:
 
-```text
-Developer Requirement
-        |
-        v
-ChatGPT Engineering Discussion
-        |
-        v
-Developer Approval
-        |
-        v
-Focused Codex Prompt
-        |
-        v
-Developer Sends Prompt to Codex
-        |
-        v
-Codex Implementation
-        |
-        v
-Developer Tests
-```
+\- Angular routes
 
-Codex prompts are intentionally scoped.
+\- router outlet
 
-Typical restrictions include:
+\- Courses page
 
-```text
-Modify only the required files.
+\- Course Details page
 
-Preserve existing functionality.
+\- /courses/\:id
 
-Do not change unrelated business logic.
+\- Course model
 
-Do not install unnecessary packages.
+\- CourseService
 
-Do not commit.
+\- authentication-related code
 
-Do not push.
+\- role/authorization-related code
 
-Explain which files were changed.
-```
+\- lazy-loaded routes
 
-This helps prevent an AI coding agent from making unrelated changes automatically.
+\- mobile navigation logic
+
+Do not use the entire reference screenshot as the webpage background.
+
+Build the page as real Angular HTML/CSS so navigation, buttons, accessibility, and responsiveness remain functional.
+
+Before editing, inspect the current project and explain which files you intend to modify.
+
+After implementation:
+
+## **1. list every file changed**
+
+## **2. explain each change**
+
+## **3. confirm existing functionality was preserved**
+
+## **4. run npm run build**
+
+## **5. report any errors**
+
+Do not commit or push anything.
+
+### **Developer Feedback**
+
+\- Preserve Angular best practices.
+
+\- Keep the page responsive.
+
+\- Review accessibility.
+
+\- Avoid unnecessary dependencies.
+
+\- Preserve existing routes and business logic.
+
+### **Narrative**
+
+The generated design was reviewed in the browser before acceptance. The developer did not allow Codex to rebuild or replace the existing application architecture.
+
+### **Validation**
+
+\- Landing page was checked manually.
+
+\- Existing navigation was tested.
+
+\- Course routes remained functional.
+
+\- Production build was run.
 
 ---
 
-# 7. Review of Codex-Generated Changes
+## **4. Landing Page Reference Reproduction**
 
-Codex output is not considered complete simply because Codex reports success.
+### **Why This Prompt Was Used**
 
-After Codex makes a change, the developer manually checks the result.
+To first reproduce the supplied visual reference accurately before changing the page into a more original SkillForge design.
 
-The review flow is:
+### **Codex Prompt**
 
-```text
-Codex Implementation
-        |
-        v
-Run Application
-        |
-        v
-Developer Tests Feature
-        |
-        v
-Test Existing Features
-        |
-        v
-Run Production Build
-        |
-        v
-Inspect Git Changes
-        |
-        v
-ChatGPT Review
-        |
-        v
-Developer Commit Decision
-```
+**Type: Exact / Verbatim**
 
----
+I need the landing page to reproduce the attached reference image as closely as possible for this first version.
 
-# 8. SkillForge Frontend Architecture Discussion
+Keep the visible text, sections, layout, navigation structure, buttons, feature items, illustration composition, and overall presentation close to the reference.
 
-The frontend originally contained course data directly inside the Courses component.
+Do not redesign the page based on your own preferences yet.
 
-That created a responsibility similar to:
+Build it as real Angular HTML and CSS rather than using the whole screenshot as a background image.
 
-```text
-Courses Component
-     |
-     +--> UI Rendering
-     |
-     +--> Course Data
-```
+Preserve all existing application routes, services, authentication-related logic, course functionality, and responsive behavior.
 
-The architecture was reviewed before continuing.
+We will customize the branding, wording, navigation, and sections after the visual reproduction is working.
 
-The recommended design was:
+Do not commit or push anything.
 
-```text
-Courses Component
-       |
-       v
-CourseService
-       |
-       v
-Temporary Course Data
-```
+### **Developer Feedback**
 
-The developer proceeded with this approach incrementally.
+\- Keep the first version close to the reference.
 
-`CourseService` currently provides:
+\- Do not introduce unrelated design choices.
 
-```typescript
-getCourses();
-```
+\- Preserve responsive behavior.
 
-and:
+\- Preserve existing Angular functionality.
 
-```typescript
-getCourseById(id);
-```
+### **Narrative**
 
-This created a single source for the current temporary course data.
+The first result was treated as a visual reproduction step rather than the final design. The developer reviewed it before moving to customization.
+
+### **Validation**
+
+\- Layout was checked visually.
+
+\- Navigation remained functional.
+
+\- Existing routes were preserved.
 
 ---
 
-# 9. Planned Course Architecture
+## **5. Header Alignment Correction**
 
-The current architecture is:
+### **Why This Prompt Was Used**
 
-```text
+To fix only the header alignment after the developer noticed that the navigation links were positioned too high.
+
+### **Codex Prompt**
+
+**Type: Exact / Verbatim**
+
+Fix only the header alignment.
+
+Currently Home, Courses, About, and Contact are too high.
+
+I want the header on one horizontal line, vertically centered:
+
+Left: SkillForge logo
+
+Center: Home | Courses | About | Contact
+
+Right: Log In | Sign Up
+
+Use proper Flexbox or Grid alignment such as align-items: center.
+
+Keep the center navigation truly centered on desktop.
+
+Do not change the hero, illustration, colors, routes, authentication logic, or mobile behavior.
+
+Make the smallest HTML/CSS change possible.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Keep the correction small.
+
+\- Avoid duplicated CSS.
+
+\- Preserve responsiveness.
+
+\- Do not redesign unrelated parts of the page.
+
+### **Narrative**
+
+The developer identified a specific UI problem and requested a focused correction rather than allowing Codex to redesign the entire header.
+
+### **Validation**
+
+\- Header alignment was checked visually.
+
+\- Navigation still worked.
+
+\- Mobile behavior remained unchanged.
+
+---
+
+## **6. SkillForge Originality Customization**
+
+### **Why This Prompt Was Used**
+
+To make the landing page original to SkillForge after the developer felt the reference reproduction looked too similar to the source.
+
+### **Codex Prompt**
+
+**Type: Exact / Verbatim**
+
+Customize the current landing page so it feels original to SkillForge, not like a copy of the reference.
+
+Keep the existing layout, illustration, routes, authentication logic, responsive behavior, and Angular Material/CSS implementation.
+
+Change only the visible content:
+
+\- TRAINING PLATFORM → SKILL DEVELOPMENT PLATFORM
+
+\- Learn. Grow. Succeed. → Learn Skills. Build Confidence.
+
+\- Replace the hero paragraph with:
+
+  Develop practical skills through structured courses designed to support continuous learning and professional growth.
+
+\- Keep Explore Courses
+
+\- Change Get Started → Start Learning
+
+\- Change navigation to:
+
+  Home | Courses | How It Works | Certification
+
+\- Change feature items to:
+
+  - Practical Learning — Develop skills through structured courses
+
+  - Certification — Recognize completed learning achievements
+
+  - Track Progress — Follow your learning journey
+
+Remove the fake trusted-company logo section.
+
+Do not change business logic, routes, services, course functionality, or authentication behavior.
+
+Use existing real routes only.
+
+Make the smallest safe changes.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Make the presentation original to SkillForge.
+
+\- Preserve accessibility.
+
+\- Avoid unnecessary layout changes.
+
+\- Keep existing Angular functionality.
+
+\- Remove fictitious branding content.
+
+### **Narrative**
+
+The developer did not automatically accept the reference reproduction as the final design and requested changes to make the product identity more original.
+
+### **Validation**
+
+\- Updated content was checked.
+
+\- Navigation was manually tested.
+
+\- Course routes were verified.
+
+\- Angular production build passed.
+
+---
+
+## **7. REST API and PostgreSQL Integration**
+
+### **Why This Prompt Was Used**
+
+To replace temporary frontend course data with real Spring Boot REST API and PostgreSQL data.
+
+### **Codex Prompt**
+
+**Type: Reconstructed / Verbatim**
+
+Inspect the existing SkillForge Angular frontend and Spring Boot backend before making changes.
+
+Replace the temporary frontend course-data source with real Spring Boot REST API and PostgreSQL integration.
+
+Use this architecture:
+
 Angular Component
-      |
-      v
-CourseService
-      |
-      v
-Temporary Frontend Data
-```
 
-The planned architecture is:
+    -> CourseService
 
-```text
-Angular Component
-      |
-      v
-CourseService
-      |
-      v
-Angular HttpClient
-      |
-      v
-Spring Boot REST API
-      |
-      v
-PostgreSQL
-```
+    -> Angular HttpClient
 
-The intention is to replace the temporary data source later without forcing the Angular components to directly manage HTTP communication.
+    -> Spring Boot REST Controller
 
----
+    -> Service Layer
 
-# 10. Dynamic Course Details Discussion
+    -> Repository
 
-The application uses the route:
+    -> PostgreSQL
 
-```text
-/courses/:id
-```
+#### **Frontend requirements:**
 
-The design discussed was:
+\- Keep HTTP communication inside Angular services.
 
-```text
-User selects course
-       |
-       v
-/courses/:id
-       |
-       v
-CourseDetails
-       |
-       v
-Read Route ID
-       |
-       v
-CourseService.getCourseById(id)
-       |
-       +-------------------+
-       |                   |
-       v                   v
-Course Found        Course Not Found
-       |
-       v
-Display Course
-```
+\- Do not make direct HTTP requests from Angular components.
 
-Invalid course IDs are intentionally handled instead of assuming every URL contains a valid course.
+\- Use strongly typed TypeScript models.
 
-For example:
+\- Preserve the existing Courses page.
 
-```text
-/courses/999
-```
+\- Preserve /courses/\:id.
 
-displays the course-not-found state.
+\- Preserve CourseService as the frontend data-access boundary.
 
----
+\- Handle loading, missing-data, and API-error states safely.
 
-# 11. Backend Architecture
+#### **Backend requirements:**
 
-The backend is being developed separately using Spring Boot.
+\- Use REST controllers only for HTTP concerns.
 
-The intended full-stack architecture is:
+\- Keep business logic inside the service layer.
 
-```text
-Browser
-   |
-   v
-Angular
-   |
-   v
-Angular Services
-   |
-   v
-HTTP / REST
-   |
-   v
-Spring Boot Controllers
-   |
-   v
-Service Layer
-   |
-   v
-Data Access Layer
-   |
-   v
-PostgreSQL
-```
+\- Use repositories for PostgreSQL access.
 
-At the current stage, the Angular frontend is not yet connected to the Spring Boot REST API.
+\- Validate IDs and incoming data.
+
+\- Return appropriate HTTP status codes.
+
+\- Use DTOs where appropriate.
+
+\- Do not expose persistence internals or sensitive errors.
+
+#### **Database requirements:**
+
+\- Load course, module, and learning-content data from PostgreSQL.
+
+\- Do not hard-code database credentials.
+
+\- Continue using environment variables for database secrets.
+
+Preserve existing behavior.
+
+Do not introduce unrelated features or packages.
+
+Run relevant frontend and backend tests/builds.
+
+List all changed files and explain the changes.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Keep Angular components separate from HTTP logic.
+
+\- Follow controller/service/repository separation.
+
+\- Improve reusability.
+
+\- Reduce duplicated data-access logic.
+
+\- Review API error handling.
+
+\- Review performance.
+
+\- Avoid unnecessary complexity.
+
+### **Narrative**
+
+The integration was reviewed as an architecture change rather than only a data-source replacement. The developer required clear frontend/backend responsibility boundaries.
+
+### **Validation**
+
+\- Course API data was checked.
+
+\- Course details were verified.
+
+\- PostgreSQL loading was tested.
+
+\- Frontend and backend builds/tests were run.
 
 ---
 
-# 12. Backend Security Configuration
+## **8. PostgreSQL Secret Handling**
 
-The PostgreSQL password is not intentionally stored directly inside committed application configuration.
+### **Why This Prompt Was Used**
 
-The Spring Boot configuration uses an environment variable:
+To ensure database credentials were not stored directly in committed application configuration.
 
-```properties
-spring.datasource.password=${DB_PASSWORD}
-```
+### **Codex Prompt**
 
-The password is supplied through the development environment rather than being committed into Git.
+**Type: Reconstructed / Not Verbatim**
 
-Before the initial backend commit:
+Review the Spring Boot PostgreSQL configuration for safe credential handling.
 
-- `.gitignore` was reviewed
-- generated files were checked
-- IDE files were checked
-- database configuration was reviewed
-- Maven tests were executed
+#### **Requirements:**
 
-The backend build/test completed successfully after the required environment variable was provided.
+\- Do not hard-code the PostgreSQL password.
 
----
+\- Use environment variables for database credentials.
 
-# 13. Git and GitHub Workflow
+\- Keep DB\_PASSWORD and other secrets outside Git.
 
-Git operations are reviewed incrementally.
+\- Do not log database passwords.
 
-Commands used during development include:
+\- Preserve local development configuration.
 
-```bash
-git status
-```
+\- Review application configuration for accidentally exposed secrets.
 
-```bash
-git status --short
-```
+\- Do not commit generated files, IDE files, or sensitive local configuration.
 
-```bash
-git diff
-```
+Run the relevant backend tests.
 
-```bash
-git diff --stat
-```
+Do not commit or push.
 
-```bash
-git diff --cached --stat
-```
+### **Developer Feedback**
 
-Changes are reviewed before commits.
+\- Review security.
 
-The developer decides whether the current work is ready to be committed.
+\- Keep secrets outside source control.
 
-Documentation and feature changes may be separated when doing so produces clearer Git history.
+\- Avoid sensitive logging.
 
----
+\- Review ".gitignore".
 
-# 14. Landing Page Design Decision
+\- Preserve local development usability.
 
-The developer did not like the presentation of the earlier landing page and selected a new visual reference.
+### **Narrative**
 
-The requirement was discussed with ChatGPT before Codex was used.
+The developer treated configuration security as part of the implementation review rather than committing database credentials for convenience.
 
-The developer wanted:
+### **Validation**
 
-- a professional learning-platform appearance
-- Angular Material
-- custom CSS
-- existing application functionality preserved
-- no Bootstrap
-- no Tailwind
-- routes preserved
-- CourseService preserved
-- course-details functionality preserved
-- authentication-related code preserved
+\- "DB\_PASSWORD" environment configuration was verified.
 
-The initial goal was to reproduce the reference visually first and customize it afterward.
+\- Git changes were reviewed for secrets.
+
+\- Backend tests were executed.
 
 ---
 
-# 15. Codex Prompt — Initial Landing Page
+## **9. Session-Based Authentication**
 
-## Purpose
+### **Why This Prompt Was Used**
 
-Create a professional landing page based on the provided visual reference while preserving the existing Angular project.
+To implement secure server-managed authentication with Spring Security and avoid relying on frontend-only authentication.
 
-## Prompt
+### **Codex Prompt**
 
-> I want you to redesign my existing Angular application's landing page to match the attached reference image as closely as possible.
->
-> Important: inspect the existing project before making any changes. Do not rebuild the application from scratch.
->
-> The existing Angular application already contains routing, authentication-related code, navigation logic, course pages, CourseService, course-details routing, Angular Material configuration, and other working functionality.
->
-> Preserve all existing business logic and working functionality.
->
-> Use only:
->
-> - Angular
-> - TypeScript
-> - Angular Material
-> - HTML
-> - CSS
->
-> Do not add:
->
-> - Bootstrap
-> - Tailwind
-> - jQuery
-> - another UI framework
->
-> Preserve the existing:
->
-> - Angular routes
-> - router outlet
-> - Courses page
-> - Course Details page
-> - `/courses/:id`
-> - Course model
-> - CourseService
-> - authentication-related code
-> - role/authorization-related code
-> - lazy-loaded routes
-> - mobile navigation logic
->
-> Do not use the entire reference screenshot as the webpage background.
->
-> Build the page as real Angular HTML/CSS so navigation, buttons, accessibility, and responsiveness remain functional.
->
-> Before editing, inspect the current project and explain which files you intend to modify.
->
-> After implementation:
->
-> 1. list every file changed
-> 2. explain each change
-> 3. confirm existing functionality was preserved
-> 4. run `npm run build`
-> 5. report any errors
->
-> Do not commit or push anything.
+**Type: Reconstructed / Not Verbatim**
 
----
+Implement secure session-based authentication for SkillForge using the existing Spring Boot and Angular architecture.
 
-# 16. Codex Prompt — Reference Reproduction
+Inspect the existing authentication-related code before making changes.
 
-## Purpose
+#### **Backend requirements:**
 
-Create the first visual version close to the supplied reference before SkillForge customization.
+\- Use Spring Security.
 
-## Prompt
+\- Use server-managed HTTP sessions.
 
-> I need the landing page to reproduce the attached reference image as closely as possible for this first version.
->
-> Keep the visible text, sections, layout, navigation structure, buttons, feature items, illustration composition, and overall presentation close to the reference.
->
-> Do not redesign the page based on your own preferences yet.
->
-> Build it as real Angular HTML and CSS rather than using the whole screenshot as a background image.
->
-> Preserve all existing application routes, services, authentication-related logic, course functionality, and responsive behavior.
->
-> We will customize the branding, wording, navigation, and sections after the visual reproduction is working.
->
-> Do not commit or push anything.
+\- Hash passwords using BCrypt.
 
----
+\- Support:
 
-# 17. Landing Page Result Review
+  - USER
 
-Codex created a dedicated Home page:
+  - INSTRUCTOR
 
-```text
-src/app/pages/home/
-├── home.ts
-├── home.html
-└── home.css
-```
+  - ADMIN
 
-A dedicated component was preferred over placing the complete landing-page implementation inside the root application component.
+#### **Implement:**
 
-Codex also generated a training-themed illustration.
+\- signup
 
-The final project asset is:
+\- login
 
-```text
-public/images/skillforge-learning-illustration.png
-```
+\- logout
 
-The application was opened in the browser before further changes were accepted.
+\- /me for authenticated-user restoration
 
----
+\- CSRF bootstrap/protection
 
-# 18. Developer Feedback — Header Alignment
+#### **Security requirements:**
 
-After reviewing the rendered application, the developer identified a problem.
+\- Public signup must not allow the client to choose ADMIN or INSTRUCTOR.
 
-The navigation links were positioned higher than the SkillForge branding and authentication buttons.
+\- The backend must determine authenticated identity from the session.
 
-The developer requested a focused correction rather than redesigning the entire page.
+\- Never return password hashes.
 
-ChatGPT converted the requirement into a short Codex prompt.
+\- Never log passwords or authentication secrets.
 
----
+\- Preserve CSRF protection.
 
-# 19. Codex Prompt — Header Alignment
+\- Enforce authorization on the backend.
 
-> Fix only the header alignment.
->
-> Currently `Home`, `Courses`, `About`, and `Contact` are too high.
->
-> I want the header on one horizontal line, vertically centered:
->
-> Left: SkillForge logo
->
-> Center: Home | Courses | About | Contact
->
-> Right: Log In | Sign Up
->
-> Use proper Flexbox or Grid alignment such as `align-items: center`.
->
-> Keep the center navigation truly centered on desktop.
->
-> Do not change the hero, illustration, colors, routes, authentication logic, or mobile behavior.
->
-> Make the smallest HTML/CSS change possible.
->
-> Do not commit or push.
+\- Do not create frontend-only authorization as the security boundary.
+
+#### **Frontend requirements:**
+
+\- Reuse one central AuthService.
+
+\- Keep authentication state in memory.
+
+\- Do not use localStorage for authentication.
+
+\- Do not use sessionStorage for authentication.
+
+\- Do not introduce JWT authentication.
+
+\- Restore the session through /me.
+
+\- Handle login and logout state changes correctly.
+
+\- Protect against stale /me responses restoring an old authentication state after logout or another auth transition.
+
+#### **Testing should cover:**
+
+\- signup
+
+\- login
+
+\- invalid credentials
+
+\- authenticated /me
+
+\- unauthenticated /me
+
+\- refresh/session restoration
+
+\- logout
+
+\- refresh after logout
+
+\- role/authorization behavior
+
+Preserve existing routes and course functionality.
+
+Do not weaken CSRF protection.
+
+Run focused and relevant full tests.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Review authentication security.
+
+\- Keep authorization backend-enforced.
+
+\- Do not use unsafe browser token storage.
+
+\- Preserve CSRF protection.
+
+\- Prevent privileged role selection during public signup.
+
+\- Reduce duplicated authentication logic.
+
+\- Review stale-response behavior.
+
+### **Narrative**
+
+Authentication was treated as a security-sensitive feature. The developer reviewed identity ownership, role assignment, browser storage, CSRF, and session-restoration behavior.
+
+### **Validation**
+
+\- Signup was tested.
+
+\- Login was tested.
+
+\- "/me" restoration was tested.
+
+\- Logout was tested.
+
+\- Refresh after logout was tested.
+
+\- Security tests were run.
 
 ---
 
-# 20. Developer Feedback — Originality
+## **10. Auth-Protected Quizzes**
 
-After the reference-based landing page was working, the developer questioned whether the design looked too much like a copy of the reference.
+### **Why This Prompt Was Used**
 
-The developer did not blindly accept the first successful visual result.
+To keep course learning content public while restricting quiz retrieval and submission to authenticated users.
 
-The design was reviewed again.
+### **Codex Prompt**
 
-The decision was made to preserve the professional layout while changing the visible content and product identity.
+**Type: Reconstructed / Not Verbatim**
 
-The product name became:
+Protect the learner quiz flow using the existing SkillForge session authentication.
 
-```text
-SkillForge
-```
+#### **Backend requirements:**
 
-The navigation and hero content were also customized.
+\- Require authentication for quiz retrieval.
 
----
+\- Require authentication for quiz submission.
 
-# 21. Codex Prompt — SkillForge Customization
+\- Preserve CSRF protection.
 
-> Customize the current landing page so it feels original to SkillForge, not like a copy of the reference.
->
-> Keep the existing layout, illustration, routes, authentication logic, responsive behavior, and Angular Material/CSS implementation.
->
-> Change only the visible content:
->
-> - `TRAINING PLATFORM` → `SKILL DEVELOPMENT PLATFORM`
-> - `Learn. Grow. Succeed.` → `Learn Skills. Build Confidence.`
-> - Replace the hero paragraph with:
->   `Develop practical skills through structured courses designed to support continuous learning and professional growth.`
-> - Keep `Explore Courses`
-> - Change `Get Started` → `Start Learning`
-> - Change navigation to:
->   `Home | Courses | How It Works | Certification`
-> - Change feature items to:
->   - `Practical Learning` — `Develop skills through structured courses`
->   - `Certification` — `Recognize completed learning achievements`
->   - `Track Progress` — `Follow your learning journey`
->
-> Remove the fake trusted-company logo section.
->
-> Do not change business logic, routes, services, course functionality, or authentication behavior.
->
-> Use existing real routes only.
->
-> Make the smallest safe changes.
->
-> Do not commit or push.
+\- Do not make nested quiz endpoints accidentally public.
 
----
+\- Continue enforcing quiz security on the backend.
 
-# 22. Validation After Landing Page Changes
+#### **Frontend requirements:**
 
-The landing-page implementation was manually tested.
+\- Reuse the existing AuthService.
 
-The developer verified:
+\- Do not create another /me restoration request.
 
-- SkillForge landing page loads correctly
-- Home navigation works
-- Courses navigation works
-- Explore Courses opens the Courses page
-- View Course works
-- `/courses/:id` works
-- selected course details display
-- invalid course IDs show the course-not-found state
-- How It Works navigation works
-- Certification navigation works
-- Log In and Sign Up frontend behavior remains available
+\- Do not use browser storage for authentication.
 
-The Angular production build was also run:
+#### **Authentication pending:**
 
-```bash
-npm run build
-```
+\- do not request protected quiz data
 
-The build completed successfully.
+#### **Logged out:**
 
----
+\- do not call the quiz API
 
-# 23. Landing Page Git Review
+\- keep public course/module content visible
 
-The landing-page changes were inspected before committing.
+\- show an accessible message such as "Log in to take this quiz."
 
-New files included:
+#### **Logged in:**
 
-```text
-public/images/skillforge-learning-illustration.png
+\- load the quiz
 
-src/app/pages/home/home.ts
-src/app/pages/home/home.html
-src/app/pages/home/home.css
-```
+#### **Login while remaining on the same page:**
 
-Existing Angular files modified by the feature were also reviewed.
+\- load the quiz without requiring a page refresh
 
-The README was intentionally removed from the landing-page feature staging area so documentation could remain a separate development concern.
+#### **Logout:**
 
----
+\- clear quiz questions
 
-# 24. Developer Ownership
+\- clear selected answers
 
-The developer remains responsible for SkillForge.
+\- clear quiz result
 
-The developer personally:
+\- clear submission errors
 
-- selected the project direction
-- selected the SkillForge name
-- selected the landing-page reference
-- rejected the previous presentation
-- reviewed the initial Codex landing page
-- identified the header alignment problem
-- questioned the originality of the reference reproduction
-- approved the SkillForge customization direction
-- tested routes manually
-- tested invalid course IDs
-- verified Angular builds
-- reviewed Git status
-- decided when code should be committed
+#### **Re-login:**
 
-The developer may challenge any AI recommendation.
+\- request fresh quiz state
 
-Examples include:
+Protect against stale HTTP responses:
 
-```text
-Why should we use this approach?
-```
+\- a response started under an older authentication state must not restore protected quiz data after logout
 
-```text
-Is there another method?
-```
+Add focused frontend and backend tests.
 
-```text
-I don't approve this.
-```
+Preserve existing course/module functionality.
 
-```text
-Can we use different terminology?
-```
+Do not commit or push.
 
-```text
-Is this reusable?
-```
+### **Developer Feedback**
 
-```text
-Is this secure?
-```
+\- Keep quiz authorization on the backend.
 
-```text
-Should we commit this now?
-```
+\- Preserve CSRF protection.
 
-The expected response is engineering discussion rather than automatic implementation.
+\- Avoid duplicate authentication requests.
+
+\- Clear protected data after logout.
+
+\- Prevent stale protected responses.
+
+\- Keep public learning content accessible.
+
+### **Narrative**
+
+The developer reviewed both frontend behavior and backend authorization to ensure hiding quiz UI was not being treated as the security boundary.
+
+### **Validation**
+
+\- Logged-out behavior was checked.
+
+\- Login on the same page was tested.
+
+\- Logout clearing was verified.
+
+\- Re-login behavior was tested.
 
 ---
 
-# 25. Current Development Status
+## **11. Second Database-Backed Demo Quiz**
 
-```text
-SkillForge Landing Page        Implemented
-Responsive Navigation          Implemented
-Courses Listing                Implemented
-CourseService                  Implemented
-Dynamic Course Details         Implemented
-Invalid Course Handling        Implemented
-Angular Production Build       Passing
-Spring Boot Initial Setup      Completed
+### **Why This Prompt Was Used**
 
-REST API Integration           Not Yet Integrated
-PostgreSQL Course Loading      Not Yet Integrated
-Server Authentication          Not Yet Integrated
-Server Authorization           Not Yet Integrated
-Course Module Workflow         Not Yet Implemented
-Quiz System                    Not Yet Implemented
-Progress Tracking              Not Yet Implemented
-Certificate Generation         Not Yet Implemented
-```
+To add another real PostgreSQL-backed quiz while preserving the existing Module 1 quiz.
+
+### **Codex Prompt**
+
+**Type: Reconstructed / Not Verbatim**
+
+Add the second database-backed demo quiz required for Module 2.
+
+Inspect the existing quiz entities, repositories, services, controllers, and demo seeder first.
+
+#### **Requirements:**
+
+\- Preserve the existing Module 1 quiz.
+
+\- Do not replace the existing Module 1 quiz.
+
+\- Do not duplicate existing quiz data.
+
+\- Store the Module 2 quiz in PostgreSQL using the existing quiz model.
+
+\- Reuse existing quiz entities, repositories, services, and APIs.
+
+\- Preserve the existing passing-score and scoring behavior.
+
+#### **Seeder requirements:**
+
+\- Keep demo-data seeding safe and repeatable.
+
+\- Do not create duplicate rows when the application starts repeatedly.
+
+\- Do not unexpectedly delete unrelated application data.
+
+\- Preserve the existing Module 1 demo data.
+
+Run focused quiz tests and the relevant full backend tests.
+
+Report all changed files.
+
+Do not modify unrelated features.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Reuse existing quiz architecture.
+
+\- Avoid duplicate seeded data.
+
+\- Preserve existing Module 1 behavior.
+
+\- Keep database logic maintainable.
+
+\- Avoid unnecessary new models or services.
+
+### **Narrative**
+
+The developer chose database-backed quizzes so future Admin/Instructor CRUD could manage quiz content instead of depending on hard-coded Angular data.
+
+### **Validation**
+
+\- Database reseeding was checked.
+
+\- Module 1 quiz was preserved.
+
+\- Module 2 quiz was verified.
+
+\- Backend quiz tests were run.
 
 ---
 
-# 26. Next Development Phase
+## **12. Learner Module Progress Backend**
 
-The next major development phase is planned frontend/backend integration.
+### **Why This Prompt Was Used**
 
-The current course data flow is:
+To persist quiz attempts, scores, and completion status for each authenticated learner.
 
-```text
-Angular Component
-      |
-      v
-CourseService
-      |
-      v
-Temporary Frontend Data
-```
+### **Codex Prompt**
 
-The planned flow is:
+**Type: Reconstructed / Verbatim**
 
-```text
-Angular Component
-      |
-      v
-CourseService
-      |
-      v
-Angular HttpClient
-      |
-      v
-Spring Boot REST API
-      |
-      v
-PostgreSQL
-```
+Implement persistent learner module progress in the SkillForge Spring Boot backend.
 
-Before implementing this phase, the requirements and API architecture will be discussed and approved.
+Use the authenticated Spring Security principal as the learner identity.
+
+Do not accept a client userId for progress ownership.
+
+Create a ModuleProgress model containing:
+
+\- user
+
+\- module
+
+\- attemptsCount
+
+\- lastScore
+
+\- bestScore
+
+\- completed
+
+\- completedAt
+
+Enforce one progress row per user/module:
+
+UNIQUE(user\_id, module\_id)
+
+Quiz scoring and progress persistence must be transactional.
+
+Failed attempt:
+
+\- increment attemptsCount
+
+\- update lastScore
+
+\- update bestScore only when the new score is higher
+
+\- completed remains false unless it was already completed
+
+Passing attempt:
+
+\- increment attemptsCount
+
+\- update lastScore
+
+\- update bestScore when appropriate
+
+\- set completed = true
+
+\- set completedAt only on the first passing attempt
+
+Retry after completion:
+
+\- increment attemptsCount
+
+\- update lastScore
+
+\- bestScore must never decrease
+
+\- completed must remain true
+
+\- completedAt must remain unchanged
+
+Invalid quiz submissions:
+
+\- do not persist progress
+
+\- do not modify existing progress
+
+Provide an authenticated learner-progress endpoint.
+
+When loading course progress:
+
+\- include every course module
+
+\- treat a module with no progress row as Pending
+
+\- avoid N+1 database queries
+
+\- use bulk progress loading where appropriate
+
+Preserve the existing Spring Security session and CSRF behavior.
+
+Use controller, service, repository, and DTO separation.
+
+Add tests covering:
+
+\- failed attempt
+
+\- first passing attempt
+
+\- retry after completion
+
+\- attemptsCount
+
+\- lastScore
+
+\- bestScore preservation
+
+\- completed preservation
+
+\- completedAt preservation
+
+\- separate users
+
+\- invalid quiz submission
+
+\- unauthenticated access
+
+Run focused and full relevant backend tests.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Do not trust client-supplied learner identity.
+
+\- Reduce duplicated progress logic.
+
+\- Preserve completion after passing.
+
+\- Preserve best score correctly.
+
+\- Review transaction boundaries.
+
+\- Avoid N+1 queries.
+
+\- Improve readability and maintainability.
+
+### **Narrative**
+
+The developer reviewed progress as both a security and data-integrity feature. Particular attention was given to retry behavior and preventing completed modules from regressing.
+
+### **Validation**
+
+\- Failed attempt was tested.
+
+\- Passing attempt was tested.
+
+\- Retry after completion was tested.
+
+\- Best score was checked.
+
+\- Completion persistence was verified.
 
 ---
 
-# 27. Future AI-Assisted Development
+## **13. Learner Progress Test Strengthening**
 
-Future meaningful development should follow the same workflow:
+### **Why This Prompt Was Used**
 
-```text
-Developer Requirement
-        |
-        v
-ChatGPT Engineering Review
-        |
-        v
-Developer Approval
-        |
-        v
-Codex Implementation
-(when appropriate)
-        |
-        v
-Developer Testing
-        |
-        v
-ChatGPT Review
-        |
-        v
-Developer Commit Decision
-```
+To strengthen tests after reviewing the first progress implementation and prove important retry and invalid-submission behavior directly.
 
-Future prompt-history entries should record:
+### **Codex Prompt**
 
-- the problem or requirement
-- architecture discussion
-- AI tool used
-- important prompt
-- developer approval/rejection
-- implementation result
-- manual validation
-- code/security review
-- Git decision
+**Type: constructed / Verbatim**
 
-The goal is transparent AI-assisted engineering where the developer understands and owns the submitted solution.:
+Strengthen only the learner module-progress backend tests.
+
+Do not redesign the production implementation.
+
+Do not modify unrelated production behavior unless a test exposes a genuine defect.
+
+Add direct test coverage proving:
+
+## **1. A retry for the same user/module reuses the existing ModuleProgress row.**
+
+## **2. A retry does not create a second progress row.**
+
+## **3. attemptsCount increments correctly.**
+
+## **4. lastScore records the latest valid score.**
+
+## **5. bestScore never decreases after a lower-scoring retry.**
+
+## **6. completed remains true after the module has already been passed.**
+
+## **7. completedAt remains unchanged after later attempts.**
+
+## **8. An invalid quiz submission does not create progress.**
+
+## **9. An invalid quiz submission does not modify existing progress.**
+
+Run the focused progress tests and the relevant full backend test suite.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Improve test coverage.
+
+\- Test database-row reuse directly.
+
+\- Verify invalid submissions do not modify progress.
+
+\- Avoid changing production logic unless a real defect is exposed.
+
+### **Narrative**
+
+The developer did not rely only on the original test suite and requested stronger tests around persistence and retry edge cases.
+
+### **Validation**
+
+\- Focused progress tests were run.
+
+\- Retry behavior was verified.
+
+\- Invalid-submission behavior was verified.
+
+---
+
+## **14. Learner Progress Frontend**
+
+### **Why This Prompt Was Used**
+
+To display authenticated learner progress on Angular Course Details while preserving public course content.
+
+### **Codex Prompt**
+
+**Type: constructed / Verbatim**
+
+Integrate learner module progress into the Angular Course Details flow.
+
+Use the existing SkillForge architecture.
+
+#### **Requirements:**
+
+\- Create strongly typed progress models.
+
+\- Add progress API access to the appropriate Angular service.
+
+\- Use relative API URLs.
+
+\- Reuse the existing AuthService.
+
+\- Do not create duplicate /me requests.
+
+\- Do not introduce unnecessary global state.
+
+#### **Authentication pending:**
+
+\- do not call the progress API
+
+#### **Logged out:**
+
+\- keep public course and module content visible
+
+\- do not call the learner progress API
+
+#### **Logged in:**
+
+\- load the authenticated learner's progress
+
+\- display the number of completed modules
+
+\- display each module's completion state
+
+#### **Logout:**
+
+\- immediately clear learner-specific progress state
+
+#### **Re-login:**
+
+\- request fresh progress
+
+#### **Stale-response protection:**
+
+\- a request started before logout must not restore progress after logout
+
+Match progress using moduleId.
+
+Do not depend on array position or visible module text.
+
+#### **Failure behavior:**
+
+\- progress API failure must not hide public course content
+
+\- display a small safe progress error when appropriate
+
+Keep status information accessible.
+
+Add focused Angular tests.
+
+#### **Run:**
+
+\- focused frontend tests
+
+\- full frontend tests
+
+\- TypeScript compilation
+
+\- npm run build
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Follow Angular best practices.
+
+\- Reuse "AuthService".
+
+\- Avoid duplicate "/me" calls.
+
+\- Reduce duplicated component logic.
+
+\- Keep TypeScript strongly typed.
+
+\- Review accessibility.
+
+\- Prevent stale learner data after logout.
+
+\- Preserve public course content on API failure.
+
+### **Narrative**
+
+The developer reviewed the frontend for authentication-state reuse, accessibility, API efficiency, and stale-response behavior.
+
+### **Validation**
+
+\- Login progress loading was tested.
+
+\- Logout clearing was tested.
+
+\- Re-login was tested.
+
+\- Progress API failure behavior was checked.
+
+\- Frontend tests and build were run.
+
+---
+
+## **15. Progress Status Badges**
+
+### **Why This Prompt Was Used**
+
+To make module completion status easier to understand visually while preserving accessible text.
+
+### **Codex Prompt**
+
+**Type: Reconstructed / Not Verbatim**
+
+Make only a focused frontend UI change for module progress status.
+
+Display:
+
+Completed -> green badge
+
+Pending -> orange badge
+
+#### **Requirements:**
+
+\- Keep the visible words "Completed" and "Pending".
+
+\- Do not communicate status using color alone.
+
+\- Do not invent a new In Progress backend state.
+
+\- Do not modify backend APIs.
+
+\- Do not change progress calculations.
+
+\- Do not change authentication.
+
+\- Preserve responsive behavior.
+
+\- Preserve accessibility.
+
+\- Make the smallest safe HTML/CSS change.
+
+Run the relevant frontend tests and npm run build.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Keep visible status text.
+
+\- Review accessibility.
+
+\- Avoid unnecessary backend changes.
+
+\- Do not invent unsupported states.
+
+\- Keep CSS simple and reusable.
+
+### **Narrative**
+
+The developer requested a visual improvement but kept the change aligned with the real backend domain model.
+
+### **Validation**
+
+\- Completed badge was checked.
+
+\- Pending badge was checked.
+
+\- Visible text remained accessible.
+
+\- Frontend build was verified.
+
+---
+
+## **16. Certificate Backend**
+
+### **Why This Prompt Was Used**
+
+To generate and persist certificates after a learner completes every module in a course.
+
+### **Codex Prompt**
+
+**Type: Reconstructed / Not Verbatim**
+
+Implement certificate generation in the SkillForge Spring Boot backend.
+
+A certificate must contain:
+
+\- participant name
+
+\- course name
+
+\- completion date
+
+\- final score
+
+\- certificate number
+
+Persist certificates in PostgreSQL.
+
+Use one certificate per authenticated user/course:
+
+UNIQUE(user\_id, course\_id)
+
+Use the authenticated Spring Security principal as the learner identity.
+
+Do not accept a client userId.
+
+#### **Eligibility requirements:**
+
+\- the course must exist
+
+\- the course must contain at least one module
+
+\- the learner must have completed every course module
+
+\- an incomplete learner must not receive a new certificate
+
+#### **Final score:**
+
+\- calculate using each completed module's bestScore
+
+\- do not allow later lower attempts to reduce the certificate score
+
+\- calculate the final score consistently
+
+#### **Completion date:**
+
+\- use the latest completedAt value among the course modules
+
+#### **Certificate number:**
+
+\- generate an opaque certificate identifier
+
+\- persist it
+
+\- do not expose the internal database ID as the certificate number
+
+#### **Idempotency:**
+
+\- only one certificate should exist per learner/course
+
+\- repeated requests must return the same persisted certificate
+
+#### **Performance:**
+
+\- avoid N+1 progress queries
+
+\- use efficient bulk loading where appropriate
+
+#### **Security:**
+
+\- derive identity only from the authenticated principal
+
+\- do not trust client-supplied user identity
+
+\- preserve authentication
+
+\- preserve authorization
+
+\- preserve CSRF behavior
+
+\- do not expose unnecessary persistence data
+
+Certificate creation must be transactional.
+
+#### **Add focused:**
+
+\- service tests
+
+\- controller tests
+
+\- security tests
+
+\- PostgreSQL-backed integration tests
+
+Run focused and full relevant backend tests.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Review certificate eligibility carefully.
+
+\- Do not trust client-supplied identity.
+
+\- Keep certificate creation idempotent.
+
+\- Use persistent opaque certificate numbers.
+
+\- Avoid N+1 database access.
+
+\- Preserve transaction safety.
+
+\- Improve readability and maintainability.
+
+### **Narrative**
+
+The certificate implementation was reviewed for security, data integrity, performance, eligibility, and repeat-request behavior.
+
+### **Validation**
+
+\- Eligibility was tested.
+
+\- Required certificate fields were checked.
+
+\- Repeated requests were tested.
+
+\- Persisted certificate number was verified.
+
+---
+
+## **17. Certificate Lifecycle Correction**
+
+### **Why This Prompt Was Used**
+
+To correct a lifecycle problem discovered during review after the initial certificate implementation.
+
+### **Codex Prompt**
+
+**Type: Reconstructed / Not Verbatim**
+
+Make a focused correction to the existing certificate implementation.
+
+Do not redesign the entire certificate feature.
+
+#### **Problem 1:**
+
+The current implementation evaluates current course/progress eligibility before checking whether a certificate has already been issued.
+
+A previously issued certificate must remain retrievable even if the course structure later changes.
+
+#### **Required behavior:**
+
+## **1. Identify the authenticated learner.**
+
+## **2. Check whether a certificate already exists for that learner/course.**
+
+## **3. If an existing certificate is found:**
+
+   - return the persisted certificate immediately
+
+   - do not re-evaluate current completion eligibility
+
+## **4. Only when no certificate exists:**
+
+   - evaluate the current course
+
+   - evaluate current learner completion
+
+   - create the certificate if eligible
+
+#### **Problem 2:**
+
+participantName and courseName must be immutable issuance snapshots.
+
+When the certificate is first created:
+
+\- persist participantName
+
+\- persist courseName
+
+When reading an existing certificate:
+
+\- return the persisted participantName
+
+\- return the persisted courseName
+
+\- do not rebuild these values from the learner's current name
+
+\- do not rebuild these values from the course's current title
+
+#### **Preserve:**
+
+\- one certificate per user/course
+
+\- the existing certificate number
+
+\- completion date
+
+\- final score
+
+\- authentication
+
+\- authorization
+
+\- CSRF
+
+\- idempotency
+
+\- the current API contract where possible
+
+#### **Add or update tests proving:**
+
+\- repeated requests return the same certificate number
+
+\- an existing certificate remains retrievable after later course changes
+
+\- participantName remains the original issuance snapshot
+
+\- courseName remains the original issuance snapshot
+
+\- an ineligible learner cannot create a new certificate
+
+Run focused certificate tests and the full relevant PostgreSQL-backed backend test suite.
+
+Do not commit or push.
+
+### **Developer Feedback**
+
+\- Preserve already-issued certificates.
+
+\- Keep certificate data immutable after issuance.
+
+\- Do not redesign unrelated certificate logic.
+
+\- Strengthen lifecycle tests.
+
+\- Preserve security and idempotency.
+
+\- Keep the correction focused and maintainable.
+
+### **Narrative**
+
+The initial implementation passed tests, but further review identified a lifecycle problem. The developer requested a focused correction instead of accepting the first successful implementation.
+
+### **Validation**
+
+\- Existing certificate retrieval was tested.
+
+\- Participant-name snapshot was checked.
+
+\- Course-name snapshot was checked.
+
+\- Repeated certificate requests were tested.
+
+\- Ineligible certificate creation was checked.
