@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { managementRoleGuard } from './guards/management-role.guard';
+import { authenticatedGuard } from './guards/authenticated.guard';
 
 export const routes: Routes = [
   {
@@ -14,6 +15,12 @@ export const routes: Routes = [
       {
         path: 'courses',
         loadComponent: () => import('./pages/courses/courses').then((m) => m.Courses),
+      },
+      {
+        path: 'courses/:courseId/certificate',
+        canActivate: [authenticatedGuard],
+        loadComponent: () =>
+          import('./pages/certificate/certificate').then((m) => m.CertificateComponent),
       },
       {
         path: 'courses/:id',

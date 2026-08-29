@@ -45,3 +45,13 @@ button,
 a {
   font: inherit;
 }
+
+@media print {
+  .site-header {
+    display: none !important;
+  }
+
+  .main-content {
+    overflow: visible !important;
+  }
+}

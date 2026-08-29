@@ -17,7 +17,9 @@ import { CourseService } from '../../services/course';
       } @else if (errorMessage()) {
         <section>
           <h1>{{ errorMessage() }}</h1>
-          @if (notFound()) { <p>The requested course does not exist.</p> }
+          @if (notFound()) {
+            <p>The requested course does not exist.</p>
+          }
         </section>
       } @else if (course(); as selectedCourse) {
         <section>
@@ -34,7 +36,15 @@ import { CourseService } from '../../services/course';
               } @else if (progressError()) {
                 <p role="status">{{ progressError() }}</p>
               } @else if (progress(); as courseProgress) {
-                <p>{{ courseProgress.completedModules }} of {{ courseProgress.totalModules }} modules completed</p>
+                <p>
+                  {{ courseProgress.completedModules }} of {{ courseProgress.totalModules }} modules
+                  completed
+                </p>
+                @if (canViewCertificate()) {
+                  <a class="certificate-link" [routerLink]="['/courses', courseId, 'certificate']"
+                    >View Certificate</a
+                  >
+                }
               }
             </div>
           }
@@ -42,12 +52,18 @@ import { CourseService } from '../../services/course';
           @if (modules().length === 0) {
             <p>No modules are available yet.</p>
           } @else {
-            <a class="start-learning" [routerLink]="['/courses', courseId, 'modules', modules()[0].id]">Start Learning</a>
+            <a
+              class="start-learning"
+              [routerLink]="['/courses', courseId, 'modules', modules()[0].id]"
+              >Start Learning</a
+            >
             <ol class="module-list">
               @for (module of modules(); track module.id) {
                 <li>
                   <h3>{{ module.title }}</h3>
-                  @if (module.description) { <p>{{ module.description }}</p> }
+                  @if (module.description) {
+                    <p>{{ module.description }}</p>
+                  }
                   @if (isLoggedIn() && progress()) {
                     <p class="module-status">
                       <strong>Status:</strong>
@@ -55,7 +71,8 @@ import { CourseService } from '../../services/course';
                         class="status-badge"
                         [class.status-completed]="moduleStatus(module.id) === 'Completed'"
                         [class.status-pending]="moduleStatus(module.id) === 'Pending'"
-                      >{{ moduleStatus(module.id) }}</span>
+                        >{{ moduleStatus(module.id) }}</span
+                      >
                     </p>
                   }
                   <a [routerLink]="['/courses', courseId, 'modules', module.id]">Open Module</a>
@@ -68,27 +85,113 @@ import { CourseService } from '../../services/course';
     </div>
   `,
   styles: `
-    :host { display: block; background: #f6f9ff; }
-    .course-details { max-width: 900px; margin: 0 auto; padding: 36px; }
-    section { padding: 28px; border: 1px solid #dce7f5; border-radius: 14px; background: #fff; box-shadow: 0 12px 32px rgba(19, 61, 112, 0.09); }
-    h1, h2, h3 { color: #06183a; }
-    h1 { margin-top: 0; }
-    h2 { margin-top: 28px; }
-    p { color: #536073; line-height: 1.5; }
-    .module-list { padding-left: 24px; }
-    .module-list li { padding: 10px 0; border-top: 1px solid #e3ebf5; }
-    .module-list h3 { margin: 0; font-size: 16px; }
-    .module-list p { margin-bottom: 0; }
-    .course-progress { margin-top: 28px; padding: 16px 18px; border-radius: 10px; background: #f6f9ff; }
-    .course-progress h2 { margin: 0; font-size: 20px; }
-    .course-progress p { margin-bottom: 0; }
-    .module-status { margin: 6px 0; }
-    .status-badge { display: inline-block; margin-left: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; }
-    .status-completed { color: #1b5e20; background: #e8f5e9; }
-    .status-pending { color: #e65100; background: #fff3e0; }
-    a { color: #0873db; font-weight: 700; }
-    .start-learning { display: inline-block; margin-bottom: 12px; padding: 10px 16px; border-radius: 8px; color: #fff; background: #0873db; text-decoration: none; }
-    @media (max-width: 640px) { .course-details { padding: 22px 18px; } section { padding: 20px; } }
+    :host {
+      display: block;
+      background: #f6f9ff;
+    }
+    .course-details {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 36px;
+    }
+    section {
+      padding: 28px;
+      border: 1px solid #dce7f5;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(19, 61, 112, 0.09);
+    }
+    h1,
+    h2,
+    h3 {
+      color: #06183a;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    h2 {
+      margin-top: 28px;
+    }
+    p {
+      color: #536073;
+      line-height: 1.5;
+    }
+    .module-list {
+      padding-left: 24px;
+    }
+    .module-list li {
+      padding: 10px 0;
+      border-top: 1px solid #e3ebf5;
+    }
+    .module-list h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .module-list p {
+      margin-bottom: 0;
+    }
+    .course-progress {
+      margin-top: 28px;
+      padding: 16px 18px;
+      border-radius: 10px;
+      background: #f6f9ff;
+    }
+    .course-progress h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+    .course-progress p {
+      margin-bottom: 0;
+    }
+    .certificate-link {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #fff;
+      background: #0873db;
+      text-decoration: none;
+    }
+    .module-status {
+      margin: 6px 0;
+    }
+    .status-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .status-completed {
+      color: #1b5e20;
+      background: #e8f5e9;
+    }
+    .status-pending {
+      color: #e65100;
+      background: #fff3e0;
+    }
+    a {
+      color: #0873db;
+      font-weight: 700;
+    }
+    .start-learning {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: #fff;
+      background: #0873db;
+      text-decoration: none;
+    }
+    @media (max-width: 640px) {
+      .course-details {
+        padding: 22px 18px;
+      }
+      section {
+        padding: 20px;
+      }
+    }
   `,
 })
 export class CourseDetails {
@@ -104,8 +207,17 @@ export class CourseDetails {
   readonly progress = signal<CourseProgress | null>(null);
   readonly progressLoading = signal(false);
   readonly progressError = signal<string | null>(null);
-  private readonly progressByModuleId = computed(() =>
-    new Map(this.progress()?.modules.map((module) => [module.moduleId, module]) ?? []),
+  readonly canViewCertificate = computed(() => {
+    const progress = this.progress();
+    return (
+      this.isLoggedIn() &&
+      !!progress &&
+      progress.totalModules > 0 &&
+      progress.completedModules === progress.totalModules
+    );
+  });
+  private readonly progressByModuleId = computed(
+    () => new Map(this.progress()?.modules.map((module) => [module.moduleId, module]) ?? []),
   );
   readonly courseId = Number(this.route.snapshot.paramMap.get('id'));
   private progressStateVersion = 0;

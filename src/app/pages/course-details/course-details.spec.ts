@@ -21,14 +21,25 @@ describe('CourseDetails', () => {
       imports: [CourseDetails],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: '3' }) } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({ id: '3' }) } },
+        },
         {
           provide: CourseService,
-          useValue: { getCourseById: () => courseResponse, getModules: () => moduleResponse, getCourseProgress },
+          useValue: {
+            getCourseById: () => courseResponse,
+            getModules: () => moduleResponse,
+            getCourseProgress,
+          },
         },
         {
           provide: AuthService,
-          useValue: { currentUser, authResolved, isLoggedIn: computed(() => currentUser() !== null) },
+          useValue: {
+            currentUser,
+            authResolved,
+            isLoggedIn: computed(() => currentUser() !== null),
+          },
         },
       ],
     });
@@ -37,14 +48,19 @@ describe('CourseDetails', () => {
     return { fixture, getCourseProgress, currentUser, authResolved };
   }
 
-  function create(courseResponse: Observable<Course>, moduleResponse: Observable<CourseModule[]>): ComponentFixture<CourseDetails> {
+  function create(
+    courseResponse: Observable<Course>,
+    moduleResponse: Observable<CourseModule[]>,
+  ): ComponentFixture<CourseDetails> {
     return setup(courseResponse, moduleResponse).fixture;
   }
 
   afterEach(() => TestBed.resetTestingModule());
 
   it('displays the real course and module summaries', () => {
-    const modules: CourseModule[] = [{ id: 9, title: 'HTTP Basics', description: 'Requests and responses', position: 1 }];
+    const modules: CourseModule[] = [
+      { id: 9, title: 'HTTP Basics', description: 'Requests and responses', position: 1 },
+    ];
     const text = create(of(course), of(modules)).nativeElement.textContent;
     expect(text).toContain('Backend Integration');
     expect(text).toContain('HTTP Basics');
@@ -58,20 +74,34 @@ describe('CourseDetails', () => {
     ];
     const fixture = create(of(course), of(modules));
     const links = [...fixture.nativeElement.querySelectorAll('a')] as HTMLAnchorElement[];
-    expect(links.find((link) => link.textContent?.includes('Start Learning'))?.getAttribute('href'))
-      .toBe('/courses/3/modules/9');
-    expect(links.filter((link) => link.textContent?.includes('Open Module')).map((link) => link.getAttribute('href')))
-      .toEqual(['/courses/3/modules/9', '/courses/3/modules/12']);
+    expect(
+      links.find((link) => link.textContent?.includes('Start Learning'))?.getAttribute('href'),
+    ).toBe('/courses/3/modules/9');
+    expect(
+      links
+        .filter((link) => link.textContent?.includes('Open Module'))
+        .map((link) => link.getAttribute('href')),
+    ).toEqual(['/courses/3/modules/9', '/courses/3/modules/12']);
   });
 
   it('displays not found for a 404', () => {
     const error = new HttpErrorResponse({ status: 404 });
-    expect(create(throwError(() => error), of([])).nativeElement.textContent).toContain('Course not found.');
+    expect(
+      create(
+        throwError(() => error),
+        of([]),
+      ).nativeElement.textContent,
+    ).toContain('Course not found.');
   });
 
   it('displays a safe general API error', () => {
     const error = new HttpErrorResponse({ status: 500 });
-    expect(create(throwError(() => error), of([])).nativeElement.textContent).toContain('Unable to load course.');
+    expect(
+      create(
+        throwError(() => error),
+        of([]),
+      ).nativeElement.textContent,
+    ).toContain('Unable to load course.');
   });
 
   it('keeps course and modules visible and does not load progress while logged out', () => {
@@ -83,7 +113,12 @@ describe('CourseDetails', () => {
   });
 
   it('does not load or flash progress while auth restoration is pending', () => {
-    const { fixture, getCourseProgress } = setup(of(course), of(modules), signal(null), signal(false));
+    const { fixture, getCourseProgress } = setup(
+      of(course),
+      of(modules),
+      signal(null),
+      signal(false),
+    );
     expect(fixture.nativeElement.textContent).not.toContain('Course Progress');
     expect(getCourseProgress).not.toHaveBeenCalled();
   });
@@ -134,7 +169,11 @@ describe('CourseDetails', () => {
   it('shows a non-blocking progress error while preserving course content', () => {
     const currentUser = signal<AppUser | null>(user);
     const { fixture } = setup(
-      of(course), of(modules), currentUser, signal(true), throwError(() => new HttpErrorResponse({ status: 500 })),
+      of(course),
+      of(modules),
+      currentUser,
+      signal(true),
+      throwError(() => new HttpErrorResponse({ status: 500 })),
     );
     fixture.detectChanges();
     const text = fixture.nativeElement.textContent;
@@ -142,11 +181,64 @@ describe('CourseDetails', () => {
     expect(text).toContain('Backend Integration');
     expect(text).toContain('First Module');
   });
+
+  it('shows the certificate link when every non-zero module is completed', () => {
+    const currentUser = signal<AppUser | null>(user);
+    const { fixture } = setup(
+      of(course),
+      of(modules),
+      currentUser,
+      signal(true),
+      of(completedProgress),
+    );
+    fixture.detectChanges();
+    const link = fixture.nativeElement.querySelector('.certificate-link') as HTMLAnchorElement;
+    expect(link?.textContent).toContain('View Certificate');
+    expect(link?.getAttribute('href')).toBe('/courses/3/certificate');
+  });
+
+  it('hides the certificate link while modules remain incomplete', () => {
+    const currentUser = signal<AppUser | null>(user);
+    const { fixture } = setup(of(course), of(modules), currentUser, signal(true), of(progress));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.certificate-link')).toBeNull();
+  });
+
+  it('hides the certificate link for a zero-module course', () => {
+    const currentUser = signal<AppUser | null>(user);
+    const zeroModuleProgress: CourseProgress = {
+      courseId: 3,
+      totalModules: 0,
+      completedModules: 0,
+      pendingModules: 0,
+      modules: [],
+    };
+    const { fixture } = setup(
+      of(course),
+      of([]),
+      currentUser,
+      signal(true),
+      of(zeroModuleProgress),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.certificate-link')).toBeNull();
+  });
+
+  it('hides the certificate link from anonymous users', () => {
+    const { fixture, getCourseProgress } = setup();
+    expect(fixture.nativeElement.querySelector('.certificate-link')).toBeNull();
+    expect(getCourseProgress).not.toHaveBeenCalled();
+  });
 });
 
 const course: Course = {
-  id: 3, title: 'Backend Integration', description: 'Use APIs', instructor: 'Grace', duration: 6,
-  level: 'Intermediate', category: 'Information Technology (IT)',
+  id: 3,
+  title: 'Backend Integration',
+  description: 'Use APIs',
+  instructor: 'Grace',
+  duration: 6,
+  level: 'Intermediate',
+  category: 'Information Technology (IT)',
 };
 
 const user: AppUser = { id: 5, name: 'Learner', email: 'learner@example.com', role: 'USER' };
@@ -162,7 +254,46 @@ const progress: CourseProgress = {
   completedModules: 1,
   pendingModules: 1,
   modules: [
-    { moduleId: 12, completed: true, attemptsCount: 1, lastScore: 90, bestScore: 90, completedAt: '2026-08-29T10:00:00Z' },
-    { moduleId: 9, completed: false, attemptsCount: 0, lastScore: null, bestScore: null, completedAt: null },
+    {
+      moduleId: 12,
+      completed: true,
+      attemptsCount: 1,
+      lastScore: 90,
+      bestScore: 90,
+      completedAt: '2026-08-29T10:00:00Z',
+    },
+    {
+      moduleId: 9,
+      completed: false,
+      attemptsCount: 0,
+      lastScore: null,
+      bestScore: null,
+      completedAt: null,
+    },
+  ],
+};
+
+const completedProgress: CourseProgress = {
+  courseId: 3,
+  totalModules: 2,
+  completedModules: 2,
+  pendingModules: 0,
+  modules: [
+    {
+      moduleId: 9,
+      completed: true,
+      attemptsCount: 1,
+      lastScore: 90,
+      bestScore: 90,
+      completedAt: '2026-08-29T10:00:00Z',
+    },
+    {
+      moduleId: 12,
+      completed: true,
+      attemptsCount: 1,
+      lastScore: 95,
+      bestScore: 95,
+      completedAt: '2026-08-29T10:10:00Z',
+    },
   ],
 };

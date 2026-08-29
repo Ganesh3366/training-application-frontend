@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  Certificate,
   Course,
   CourseModule,
   CourseModuleDetail,
@@ -29,6 +30,10 @@ export class CourseService {
 
   getCourseProgress(courseId: number): Observable<CourseProgress> {
     return this.http.get<CourseProgress>(`/api/courses/${courseId}/progress`);
+  }
+
+  getCertificate(courseId: number): Observable<Certificate> {
+    return this.http.get<Certificate>(`/api/courses/${courseId}/certificate`);
   }
 
   getModule(courseId: number, moduleId: number): Observable<CourseModuleDetail> {

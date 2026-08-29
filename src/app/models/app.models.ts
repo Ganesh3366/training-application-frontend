@@ -109,6 +109,14 @@ export interface CourseProgress {
   modules: ModuleProgress[];
 }
 
+export interface Certificate {
+  certificateNumber: string;
+  participantName: string;
+  courseName: string;
+  completionDate: string;
+  finalScore: number;
+}
+
 export type ModuleContentType = 'TEXT' | 'VIDEO';
 
 export interface ModuleContent {

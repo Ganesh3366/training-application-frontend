@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import {
+  Certificate,
   Course,
   CourseModule,
   CourseModuleDetail,
@@ -17,7 +18,9 @@ describe('CourseService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(CourseService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -49,8 +52,20 @@ describe('CourseService', () => {
 
   it('gets course progress without sending a user id', () => {
     const progress: CourseProgress = {
-      courseId: 7, totalModules: 1, completedModules: 0, pendingModules: 1,
-      modules: [{ moduleId: 2, completed: false, attemptsCount: 0, lastScore: null, bestScore: null, completedAt: null }],
+      courseId: 7,
+      totalModules: 1,
+      completedModules: 0,
+      pendingModules: 1,
+      modules: [
+        {
+          moduleId: 2,
+          completed: false,
+          attemptsCount: 0,
+          lastScore: null,
+          bestScore: null,
+          completedAt: null,
+        },
+      ],
     };
     service.getCourseProgress(7).subscribe((result) => expect(result).toEqual(progress));
     const request = http.expectOne('/api/courses/7/progress');
@@ -59,9 +74,28 @@ describe('CourseService', () => {
     request.flush(progress);
   });
 
+  it('gets the authenticated learner certificate without sending a user id', () => {
+    const certificate: Certificate = {
+      certificateNumber: 'SF-2026-ABCDEF123456',
+      participantName: 'Learner Name',
+      courseName: 'Introduction to Angular',
+      completionDate: '2026-08-29',
+      finalScore: 90,
+    };
+    service.getCertificate(7).subscribe((result) => expect(result).toEqual(certificate));
+    const request = http.expectOne('/api/courses/7/certificate');
+    expect(request.request.method).toBe('GET');
+    expect(request.request.params.keys()).toEqual([]);
+    request.flush(certificate);
+  });
+
   it('gets a module with its contents', () => {
     const module: CourseModuleDetail = {
-      id: 2, title: 'Basics', description: null, position: 1, contents: [],
+      id: 2,
+      title: 'Basics',
+      description: null,
+      position: 1,
+      contents: [],
     };
     service.getModule(7, 2).subscribe((result) => expect(result).toEqual(module));
     const request = http.expectOne('/api/courses/7/modules/2');
@@ -74,12 +108,14 @@ describe('CourseService', () => {
       id: 1,
       title: 'Angular Fundamentals Quiz',
       passingScore: 70,
-      questions: [{
-        id: 10,
-        questionText: 'What is a component?',
-        position: 1,
-        options: [{ id: 100, optionText: 'A UI building block', position: 1 }],
-      }],
+      questions: [
+        {
+          id: 10,
+          questionText: 'What is a component?',
+          position: 1,
+          options: [{ id: 100, optionText: 'A UI building block', position: 1 }],
+        },
+      ],
     };
 
     service.getQuiz(7, 2).subscribe((result) => {

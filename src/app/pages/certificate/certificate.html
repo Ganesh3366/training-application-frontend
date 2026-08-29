@@ -1,0 +1,71 @@
+<div class="certificate-page">
+  <div class="page-actions" aria-label="Certificate actions">
+    <a mat-button [routerLink]="courseLink">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>Back to course
+    </a>
+    @if (certificate()) {
+      <button mat-flat-button type="button" class="print-button" (click)="printCertificate()">
+        <mat-icon aria-hidden="true">print</mat-icon>Print / Save as PDF
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <section class="state-panel" role="status" aria-live="polite">
+      <div class="loading-mark" aria-hidden="true"></div>
+      <h1>Preparing your certificate</h1>
+      <p>Retrieving the verified certificate from SkillForge...</p>
+    </section>
+  } @else if (errorMessage()) {
+    <section class="state-panel error-panel" role="alert">
+      <mat-icon aria-hidden="true">workspace_premium</mat-icon>
+      <h1>Certificate unavailable</h1>
+      <p>{{ errorMessage() }}</p>
+      <div class="state-actions">
+        @if (!invalidCourseId) {
+          <button mat-stroked-button type="button" (click)="loadCertificate()">Try again</button>
+        }
+        <a mat-button routerLink="/courses">Browse courses</a>
+      </div>
+    </section>
+  } @else if (certificate(); as issuedCertificate) {
+    <article class="certificate" aria-labelledby="certificate-title">
+      <div class="certificate-border">
+        <header class="certificate-header">
+          <div class="brand-seal" aria-hidden="true"><mat-icon>school</mat-icon></div>
+          <p class="brand-name">SkillForge</p>
+          <h1 id="certificate-title">Certificate of Completion</h1>
+          <div class="title-rule" aria-hidden="true"></div>
+        </header>
+
+        <div class="certificate-body">
+          <p>This certifies that</p>
+          <h2>{{ issuedCertificate.participantName }}</h2>
+          <p>has successfully completed</p>
+          <h3>{{ issuedCertificate.courseName }}</h3>
+
+          <dl class="certificate-details">
+            <div>
+              <dt>Completion Date</dt>
+              <dd>{{ issuedCertificate.completionDate }}</dd>
+            </div>
+            <div>
+              <dt>Final Score</dt>
+              <dd>{{ issuedCertificate.finalScore }}%</dd>
+            </div>
+            <div>
+              <dt>Certificate No.</dt>
+              <dd>{{ issuedCertificate.certificateNumber }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <footer class="certificate-footer">
+          <span aria-hidden="true"></span>
+          <p>Verified course completion issued by SkillForge</p>
+          <span aria-hidden="true"></span>
+        </footer>
+      </div>
+    </article>
+  }
+</div>
