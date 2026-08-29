@@ -1,0 +1,115 @@
+<div class="management-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1>Course Management</h1>
+      <p>Create, edit and manage SkillForge courses.</p>
+    </div>
+    <button mat-flat-button class="create-button" type="button" (click)="openCreateForm()">
+      <mat-icon aria-hidden="true">add</mat-icon>Create Course
+    </button>
+  </header>
+
+  <section
+    class="course-section"
+    aria-labelledby="course-list-heading"
+    [attr.aria-busy]="loading()"
+  >
+    <div class="section-heading">
+      <div>
+        <h2 id="course-list-heading">Course list</h2>
+        @if (!loading() && !loadError()) {
+          <p>{{ courses().length }} {{ courses().length === 1 ? 'course' : 'courses' }}</p>
+        }
+      </div>
+    </div>
+
+    @if (actionError()) {
+      <div class="alert error-alert" role="alert">
+        <mat-icon aria-hidden="true">error_outline</mat-icon>
+        <span>{{ actionError() }}</span>
+        <button mat-button type="button" (click)="actionError.set(null)">Dismiss</button>
+      </div>
+    }
+
+    @if (loading()) {
+      <div class="state-panel" role="status">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p>Loading courses…</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="state-panel error-state" role="alert">
+        <mat-icon aria-hidden="true">cloud_off</mat-icon>
+        <h3>Courses could not be loaded</h3>
+        <p>{{ loadError() }}</p>
+        <button mat-stroked-button type="button" (click)="loadCourses()">Try again</button>
+      </div>
+    } @else if (courses().length === 0) {
+      <div class="state-panel empty-state">
+        <mat-icon aria-hidden="true">menu_book</mat-icon>
+        <h3>No courses yet</h3>
+        <p>Create the first course to begin building the SkillForge catalogue.</p>
+        <button mat-flat-button class="create-button" type="button" (click)="openCreateForm()">
+          <mat-icon aria-hidden="true">add</mat-icon>Create Course
+        </button>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table role="table">
+          <caption class="visually-hidden">
+            SkillForge courses available for management
+          </caption>
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">Course title</th>
+              <th scope="col" role="columnheader">Instructor</th>
+              <th scope="col" role="columnheader">Category</th>
+              <th scope="col" role="columnheader">Level</th>
+              <th scope="col" role="columnheader">Duration</th>
+              <th scope="col" role="columnheader" class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            @for (course of courses(); track course.id) {
+              <tr role="row">
+                <td role="cell" data-label="Course title">
+                  <strong>{{ course.title }}</strong>
+                  <span class="course-description">{{ course.description }}</span>
+                </td>
+                <td role="cell" data-label="Instructor">{{ course.instructor }}</td>
+                <td role="cell" data-label="Category">{{ categoryLabel(course.category) }}</td>
+                <td role="cell" data-label="Level">
+                  <span class="level-badge">{{ levelLabel(course.level) }}</span>
+                </td>
+                <td role="cell" data-label="Duration">
+                  {{ course.duration }} {{ course.duration === 1 ? 'hour' : 'hours' }}
+                </td>
+                <td role="cell" data-label="Actions" class="row-actions">
+                  <button
+                    mat-button
+                    type="button"
+                    (click)="openEditForm(course)"
+                    [attr.aria-label]="'Edit ' + course.title"
+                  >
+                    <mat-icon aria-hidden="true">edit</mat-icon>Edit
+                  </button>
+                  <button
+                    mat-button
+                    class="delete-button"
+                    type="button"
+                    (click)="confirmDelete(course)"
+                    [disabled]="deletingCourseId() !== null"
+                    [attr.aria-label]="'Delete ' + course.title"
+                  >
+                    <mat-icon aria-hidden="true">delete_outline</mat-icon>
+                    {{ deletingCourseId() === course.id ? 'Deleting…' : 'Delete' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

@@ -13,11 +13,15 @@ describe('MainLayout authentication', () => {
   let currentUser: ReturnType<typeof signal<AppUser | null>>;
   let dialogOpen: ReturnType<typeof vi.fn>;
   let logout: ReturnType<typeof vi.fn>;
+  let authResolved: ReturnType<typeof signal<boolean>>;
+  let loadCurrentUser: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     currentUser = signal<AppUser | null>(null);
     dialogOpen = vi.fn();
     logout = vi.fn(() => of(undefined).pipe(tap(() => currentUser.set(null))));
+    authResolved = signal(true);
+    loadCurrentUser = vi.fn(() => of(null));
     TestBed.configureTestingModule({
       imports: [MainLayout],
       providers: [
@@ -28,24 +32,28 @@ describe('MainLayout authentication', () => {
             currentUser,
             isLoggedIn: computed(() => currentUser() !== null),
             currentRole: computed(() => currentUser()?.role ?? null),
-            loadCurrentUser: vi.fn(() => of(null)),
+            authResolved,
+            loadCurrentUser,
             logout,
           },
         },
       ],
     });
-    dialogOpen = vi.spyOn(TestBed.inject(MatDialog), 'open')
-      .mockReturnValue({} as MatDialogRef<AuthDialog>);
+    dialogOpen.mockReturnValue({} as MatDialogRef<AuthDialog>);
+    TestBed.overrideComponent(MainLayout, {
+      add: { providers: [{ provide: MatDialog, useValue: { open: dialogOpen } }] },
+    });
     fixture = TestBed.createComponent(MainLayout);
     fixture.detectChanges();
   });
 
   it('opens the existing login dialog', () => {
-    const componentDialog = (fixture.componentInstance as unknown as { dialog: MatDialog }).dialog;
-    dialogOpen = vi.spyOn(componentDialog, 'open').mockReturnValue({} as MatDialogRef<AuthDialog>);
     expect(fixture.nativeElement.querySelector('.login-button')).not.toBeNull();
     fixture.componentInstance.openLoginDialog();
-    expect(dialogOpen).toHaveBeenCalledWith(AuthDialog, expect.objectContaining({ data: { mode: 'login' } }));
+    expect(dialogOpen).toHaveBeenCalledWith(
+      AuthDialog,
+      expect.objectContaining({ data: { mode: 'login' } }),
+    );
   });
 
   it('shows the authenticated user and exposes a logout action', () => {
@@ -63,6 +71,51 @@ describe('MainLayout authentication', () => {
     fixture.detectChanges();
     expect(logout).toHaveBeenCalledOnce();
     expect(fixture.nativeElement.querySelector('.login-button')).not.toBeNull();
+  });
+
+  it.each(['ADMIN', 'INSTRUCTOR'] as const)(
+    'shows desktop and mobile management links to %s',
+    (role) => {
+      currentUser.set({ ...user, role });
+      fixture.componentInstance.isMobileMenuOpen.set(true);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.canManageCourses()).toBe(true);
+      expect(
+        fixture.nativeElement.querySelector('.desktop-nav a[href="/management/courses"]'),
+      ).not.toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('.mobile-nav a[href="/management/courses"]'),
+      ).not.toBeNull();
+    },
+  );
+
+  it('does not show course management navigation to USER', () => {
+    currentUser.set(user);
+    fixture.componentInstance.isMobileMenuOpen.set(true);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.canManageCourses()).toBe(false);
+    expect(fixture.nativeElement.querySelector('a[href="/management/courses"]')).toBeNull();
+  });
+
+  it('does not restore authentication again when it is already resolved', () => {
+    expect(loadCurrentUser).not.toHaveBeenCalled();
+  });
+
+  it('restores unresolved authentication exactly once', () => {
+    authResolved.set(false);
+    const unresolvedFixture = TestBed.createComponent(MainLayout);
+    unresolvedFixture.detectChanges();
+    expect(loadCurrentUser).toHaveBeenCalledOnce();
+  });
+
+  it('exposes the mobile menu state and controlled navigation id', () => {
+    const toggle = fixture.nativeElement.querySelector('.menu-toggle') as HTMLButtonElement;
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.getAttribute('aria-controls')).toBe('mobile-navigation');
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(fixture.nativeElement.querySelector('#mobile-navigation')).not.toBeNull();
   });
 });
 

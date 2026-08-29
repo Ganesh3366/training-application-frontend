@@ -1,0 +1,78 @@
+.course-form-dialog {
+  width: min(680px, 100%);
+}
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 24px 10px;
+}
+.eyebrow {
+  margin: 0 0 4px;
+  color: #0871d4;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h2 {
+  margin: 0;
+  color: #06183a;
+  font-size: 25px;
+}
+.dialog-header p:last-child {
+  margin: 6px 0 0;
+  color: #536073;
+}
+mat-dialog-content {
+  padding-top: 10px !important;
+}
+form {
+  display: grid;
+  gap: 4px;
+  padding-top: 6px;
+}
+.full-width {
+  width: 100%;
+}
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.submission-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 12px;
+  border-radius: 8px;
+  color: #8f1d1d;
+  background: #fff0f0;
+}
+.submission-error mat-icon {
+  flex: 0 0 auto;
+}
+mat-dialog-actions {
+  padding: 8px 24px 22px;
+}
+.primary-action {
+  color: #fff !important;
+  background: #0873db !important;
+}
+@media (max-width: 560px) {
+  .dialog-header {
+    padding: 20px 18px 8px;
+  }
+  mat-dialog-content {
+    padding-inline: 18px !important;
+  }
+  .field-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  mat-dialog-actions {
+    padding-inline: 18px;
+  }
+}

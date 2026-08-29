@@ -52,6 +52,39 @@ export interface Course {
   category: CourseCategory;
 }
 
+export type CourseManagementLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+
+export type CourseManagementCategory =
+  | 'INFORMATION_TECHNOLOGY'
+  | 'HEALTH'
+  | 'BUSINESS'
+  | 'SALES_MARKETING'
+  | 'MANAGEMENT'
+  | 'ENGINEERING'
+  | 'ELECTRICAL_ELECTRONICS'
+  | 'ARTIFICIAL_INTELLIGENCE'
+  | 'FINANCE'
+  | 'AGRICULTURE';
+
+export interface CourseManagementResponse {
+  id: number;
+  title: string;
+  description: string;
+  instructor: string;
+  duration: number;
+  level: CourseManagementLevel;
+  category: CourseManagementCategory;
+}
+
+export interface CourseManagementRequest {
+  title: string;
+  description: string;
+  instructor: string;
+  duration: number;
+  level: CourseManagementLevel;
+  category: CourseManagementCategory;
+}
+
 export interface CourseModule {
   id: number;
   title: string;

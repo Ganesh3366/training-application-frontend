@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -29,11 +29,17 @@ export class MainLayout {
   readonly currentUser = this.auth.currentUser;
   readonly isLoggedIn = this.auth.isLoggedIn;
   readonly currentRole = this.auth.currentRole;
+  readonly canManageCourses = computed(() => {
+    const role = this.currentRole();
+    return role === 'ADMIN' || role === 'INSTRUCTOR';
+  });
   readonly isMobileMenuOpen = signal(false);
   readonly logoutPending = signal(false);
 
   constructor() {
-    this.auth.loadCurrentUser().subscribe({ error: () => undefined });
+    if (!this.auth.authResolved()) {
+      this.auth.loadCurrentUser().subscribe({ error: () => undefined });
+    }
   }
 
   toggleMobileMenu(): void {
