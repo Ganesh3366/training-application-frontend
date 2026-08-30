@@ -9,4 +9,11 @@ describe('application routes', () => {
     expect(route).toBeDefined();
     expect(route?.canActivate).toEqual([managementRoleGuard]);
   });
+  it('protects the separate quiz management route with the existing guard', () => {
+    const route = routes[0].children?.find(
+      (item) => item.path === 'management/courses/:courseId/modules/:moduleId/quiz',
+    );
+    expect(route).toBeDefined();
+    expect(route?.canActivate).toEqual([managementRoleGuard]);
+  });
 });

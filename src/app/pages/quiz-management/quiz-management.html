@@ -1,0 +1,178 @@
+<main class="quiz-page">
+  <a class="back" [routerLink]="['/management/courses', courseId, 'modules']">
+    <mat-icon>arrow_back</mat-icon>
+    Back to Modules &amp; Content
+  </a>
+
+  @if (loading()) {
+    <section class="state" role="status">
+      <mat-spinner diameter="36" />
+      <p>Loading quiz...</p>
+    </section>
+  } @else if (error() && !quiz()) {
+    <section class="state" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <h1>Quiz management unavailable</h1>
+      <p>{{ error() }}</p>
+      @if (!invalidRoute) {
+        <button mat-stroked-button type="button" (click)="load()">Try again</button>
+      }
+    </section>
+  } @else {
+    <header>
+      <div>
+        <p class="eyebrow">Module Management</p>
+        <h1>Quiz Management</h1>
+        <p>Create questions and answer options for this module.</p>
+      </div>
+      @if (quiz()) {
+        <div class="header-actions">
+          <button
+            mat-stroked-button
+            type="button"
+            (click)="openQuizForm()"
+            [disabled]="submitting()"
+          >
+            Edit Quiz
+          </button>
+          <button
+            mat-button
+            class="delete"
+            type="button"
+            (click)="confirmDeleteQuiz()"
+            [disabled]="submitting()"
+          >
+            Delete Quiz
+          </button>
+        </div>
+      }
+    </header>
+
+    @if (error()) {
+      <div class="alert" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        {{ error() }}
+        <button mat-button type="button" (click)="error.set(null)">Dismiss</button>
+      </div>
+    }
+
+    @if (!quiz()) {
+      <section class="state empty">
+        <mat-icon>quiz</mat-icon>
+        <h2>No quiz yet</h2>
+        <p>Create a quiz for this module to start adding questions and answer options.</p>
+        <button mat-flat-button type="button" (click)="openQuizForm()" [disabled]="submitting()">
+          Create Quiz
+        </button>
+      </section>
+    } @else if (quiz(); as current) {
+      <mat-card class="summary">
+        <mat-card-header>
+          <mat-card-title>{{ current.title }}</mat-card-title>
+          <mat-card-subtitle>Passing score: {{ current.passingScore }}%</mat-card-subtitle>
+        </mat-card-header>
+      </mat-card>
+
+      <div class="question-heading">
+        <div>
+          <h2>Questions</h2>
+          <p>
+            {{ current.questions.length }}
+            {{ current.questions.length === 1 ? 'question' : 'questions' }}
+          </p>
+        </div>
+        <button
+          mat-flat-button
+          type="button"
+          (click)="openQuestionForm(null)"
+          [disabled]="submitting()"
+        >
+          <mat-icon>add</mat-icon>
+          Add Question
+        </button>
+      </div>
+
+      @if (!current.questions.length) {
+        <section class="state compact">
+          <h3>No questions yet</h3>
+          <p>Add the first question to this quiz.</p>
+        </section>
+      }
+
+      @for (question of current.questions; track question.id) {
+        <mat-card class="question">
+          <mat-card-header>
+            <span class="position">{{ question.position }}</span>
+            <mat-card-title>{{ question.questionText }}</mat-card-title>
+            <span class="spacer"></span>
+            <button
+              mat-icon-button
+              type="button"
+              (click)="openQuestionForm(question)"
+              [disabled]="submitting()"
+              [attr.aria-label]="'Edit question ' + question.questionText"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="delete"
+              type="button"
+              (click)="confirmDeleteQuestion(question)"
+              [disabled]="submitting()"
+              [attr.aria-label]="'Delete question ' + question.questionText"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="option-heading">
+              <h3>Answer options</h3>
+              <button
+                mat-stroked-button
+                type="button"
+                (click)="openOptionForm(question, null)"
+                [disabled]="submitting()"
+              >
+                Add Option
+              </button>
+            </div>
+
+            @if (!question.options.length) {
+              <p class="muted">No answer options yet.</p>
+            } @else {
+              <ol class="options">
+                @for (option of question.options; track option.id) {
+                  <li>
+                    <span>{{ option.optionText }}</span>
+                    @if (option.correct) {
+                      <mat-chip>Correct</mat-chip>
+                    }
+                    <span class="spacer"></span>
+                    <button
+                      mat-button
+                      type="button"
+                      (click)="openOptionForm(question, option)"
+                      [disabled]="submitting()"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      mat-button
+                      class="delete"
+                      type="button"
+                      (click)="confirmDeleteOption(question, option)"
+                      [disabled]="submitting()"
+                    >
+                      Delete
+                    </button>
+                  </li>
+                }
+              </ol>
+            }
+          </mat-card-content>
+        </mat-card>
+      }
+    }
+  }
+</main>

@@ -168,6 +168,36 @@ export interface ModuleQuiz {
   questions: QuizQuestion[];
 }
 
+export interface QuizManagementRequest {
+  title: string;
+  passingScore: number;
+}
+
+export interface AnswerOptionManagementRequest {
+  optionText: string;
+  correct: boolean;
+}
+
+export interface AnswerOptionManagementResponse extends AnswerOptionManagementRequest {
+  id: number;
+  position: number;
+}
+
+export interface QuizQuestionManagementRequest {
+  questionText: string;
+}
+
+export interface QuizQuestionManagementResponse extends QuizQuestionManagementRequest {
+  id: number;
+  position: number;
+  options: AnswerOptionManagementResponse[];
+}
+
+export interface QuizManagementResponse extends QuizManagementRequest {
+  id: number;
+  questions: QuizQuestionManagementResponse[];
+}
+
 export interface QuizAnswer {
   questionId: number;
   optionId: number;

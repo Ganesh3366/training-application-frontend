@@ -49,6 +49,12 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'management/courses/:courseId/modules/:moduleId/quiz',
+        canActivate: [managementRoleGuard],
+        loadComponent: () =>
+          import('./pages/quiz-management/quiz-management').then((m) => m.QuizManagementComponent),
+      },
+      {
         path: 'certification',
         loadComponent: () =>
           import('./pages/certification/certification').then((m) => m.Certification),

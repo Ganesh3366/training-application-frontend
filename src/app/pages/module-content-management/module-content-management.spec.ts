@@ -69,6 +69,14 @@ describe('ModuleContentManagementComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('No modules yet');
   });
 
+  it('links each module to its separate quiz management page', () => {
+    const { fixture } = create();
+    const link = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a')).find(
+      (a) => a.textContent?.includes('Manage Quiz'),
+    );
+    expect(link?.getAttribute('href')).toBe('/management/courses/7/modules/3/quiz');
+  });
+
   it('recovers from a load failure on retry', () => {
     const responses = [throwError(() => new HttpErrorResponse({ status: 500 })), of(course)];
     const { fixture, courseService } = create(defer(() => responses.shift()!));

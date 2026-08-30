@@ -60,6 +60,12 @@
                 }
               </div>
               <div class="module-actions">
+                <a
+                  mat-button
+                  [routerLink]="['/management/courses', courseId, 'modules', module.id, 'quiz']"
+                  [attr.aria-label]="'Manage quiz for ' + module.title"
+                  ><mat-icon aria-hidden="true">quiz</mat-icon>Manage Quiz</a
+                >
                 <button
                   mat-button
                   type="button"
