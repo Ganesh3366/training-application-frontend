@@ -1,11 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { Observable, of, Subject, throwError } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
+import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
 import { AppUser, Course, CourseModule, CourseProgress } from '../../models/app.models';
 import { AuthService } from '../../services/auth';
 import { CourseService } from '../../services/course';
+import { AuthDialog } from '../../shared/auth-dialog/auth-dialog';
 import { CourseDetails } from './course-details';
 
 describe('CourseDetails', () => {
@@ -15,16 +17,24 @@ describe('CourseDetails', () => {
     currentUser = signal<AppUser | null>(null),
     authResolved = signal(true),
     progressResponse: Observable<CourseProgress> = of(progress),
+    queryParams: Record<string, string> = {},
+    dialogClosed: Observable<void> = of(undefined),
   ) {
     const getCourseProgress = vi.fn(() => progressResponse);
+    const queryParamMap = new BehaviorSubject(convertToParamMap(queryParams));
+    const route = {
+      snapshot: {
+        paramMap: convertToParamMap({ id: '3' }),
+      },
+      queryParamMap: queryParamMap.asObservable(),
+    };
+    const open = vi.fn(() => ({ afterClosed: () => dialogClosed }));
     TestBed.configureTestingModule({
       imports: [CourseDetails],
       providers: [
         provideRouter([]),
-        {
-          provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: convertToParamMap({ id: '3' }) } },
-        },
+        { provide: ActivatedRoute, useValue: route },
+        { provide: MatDialog, useValue: { open } },
         {
           provide: CourseService,
           useValue: {
@@ -43,9 +53,22 @@ describe('CourseDetails', () => {
         },
       ],
     });
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     const fixture = TestBed.createComponent(CourseDetails);
     fixture.detectChanges();
-    return { fixture, getCourseProgress, currentUser, authResolved };
+    return {
+      fixture,
+      getCourseProgress,
+      currentUser,
+      authResolved,
+      navigate,
+      navigateByUrl,
+      open,
+      route,
+      queryParamMap,
+    };
   }
 
   function create(
@@ -55,7 +78,10 @@ describe('CourseDetails', () => {
     return setup(courseResponse, moduleResponse).fixture;
   }
 
-  afterEach(() => TestBed.resetTestingModule());
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.restoreAllMocks();
+  });
 
   it('displays the real course and module summaries', () => {
     const modules: CourseModule[] = [
@@ -229,6 +255,123 @@ describe('CourseDetails', () => {
     expect(fixture.nativeElement.querySelector('.certificate-link')).toBeNull();
     expect(getCourseProgress).not.toHaveBeenCalled();
   });
+
+  it('prevents a second dialog while open and allows a new trigger after it closes', () => {
+    const closed = new Subject<void>();
+    const { fixture, navigate, open, route, queryParamMap } = setup(
+      of(course),
+      of(modules),
+      signal(null),
+      signal(true),
+      of(progress),
+      {},
+      closed,
+    );
+
+    expect(open).not.toHaveBeenCalled();
+
+    const loginTrigger = convertToParamMap({
+      login: 'required',
+      returnUrl: '/courses/3/modules/9',
+    });
+    queryParamMap.next(loginTrigger);
+
+    expect(open).toHaveBeenCalledOnce();
+    expect(open).toHaveBeenCalledWith(
+      AuthDialog,
+      expect.objectContaining({
+        data: { mode: 'login' },
+        width: '480px',
+        maxWidth: 'calc(100vw - 32px)',
+        autoFocus: 'first-tabbable',
+        restoreFocus: true,
+      }),
+    );
+    expect(navigate).toHaveBeenCalledWith([], {
+      relativeTo: route,
+      queryParams: { login: null, returnUrl: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+
+    queryParamMap.next(convertToParamMap({}));
+    queryParamMap.next(loginTrigger);
+    expect(open).toHaveBeenCalledOnce();
+
+    queryParamMap.next(convertToParamMap({}));
+    closed.next();
+    closed.complete();
+
+    queryParamMap.next(loginTrigger);
+    fixture.detectChanges();
+    expect(open).toHaveBeenCalledTimes(2);
+  });
+
+  it('stays on the public course page when the dialog closes without login', () => {
+    const closed = new Subject<void>();
+    const { fixture, navigateByUrl, open } = setup(
+      of(course),
+      of(modules),
+      signal(null),
+      signal(true),
+      of(progress),
+      { login: 'required', returnUrl: '/courses/3/modules/9' },
+      closed,
+    );
+
+    closed.next();
+    closed.complete();
+    fixture.detectChanges();
+
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect(open).toHaveBeenCalledOnce();
+    expect(fixture.nativeElement.textContent).toContain('Backend Integration');
+  });
+
+  it('navigates to a valid local return URL after successful login and dialog close', () => {
+    const closed = new Subject<void>();
+    const currentUser = signal<AppUser | null>(null);
+    const { navigateByUrl } = setup(
+      of(course),
+      of(modules),
+      currentUser,
+      signal(true),
+      of(progress),
+      { login: 'required', returnUrl: '/courses/47/modules/812' },
+      closed,
+    );
+
+    currentUser.set(user);
+    closed.next();
+    closed.complete();
+
+    expect(navigateByUrl).toHaveBeenCalledOnce();
+    expect(navigateByUrl).toHaveBeenCalledWith('/courses/47/modules/812');
+  });
+
+  it.each(['https://evil.example', '//evil.example', 'javascript:alert(1)'])(
+    'ignores unsafe return URL %s',
+    (returnUrl) => {
+      const closed = new Subject<void>();
+      const currentUser = signal<AppUser | null>(null);
+      const { navigateByUrl, open } = setup(
+        of(course),
+        of(modules),
+        currentUser,
+        signal(true),
+        of(progress),
+        { login: 'required', returnUrl },
+        closed,
+      );
+
+      currentUser.set(user);
+      closed.next();
+      closed.complete();
+
+      expect(open).toHaveBeenCalledOnce();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    },
+  );
 });
 
 const course: Course = {

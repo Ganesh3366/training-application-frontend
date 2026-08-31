@@ -30,6 +30,7 @@ export const routes: Routes = [
       },
       {
         path: 'courses/:courseId/modules/:moduleId',
+        canActivate: [authenticatedGuard],
         loadComponent: () =>
           import('./pages/module-learning/module-learning').then((m) => m.ModuleLearning),
       },

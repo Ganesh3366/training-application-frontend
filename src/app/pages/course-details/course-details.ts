@@ -1,10 +1,24 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
+import { finalize, forkJoin, take } from 'rxjs';
 import { Course, CourseModule, CourseProgress } from '../../models/app.models';
 import { AuthService } from '../../services/auth';
 import { CourseService } from '../../services/course';
+import { AuthDialog, AuthDialogData } from '../../shared/auth-dialog/auth-dialog';
+
+export function validateLocalReturnUrl(router: Router, value: string | null): string | null {
+  if (!value || value[0] !== '/' || value[1] === '/') return null;
+
+  try {
+    router.parseUrl(value);
+    return value;
+  } catch {
+    return null;
+  }
+}
 
 @Component({
   selector: 'app-course-details',
@@ -196,6 +210,9 @@ import { CourseService } from '../../services/course';
 })
 export class CourseDetails {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly courseService = inject(CourseService);
   private readonly auth = inject(AuthService);
   readonly course = signal<Course | null>(null);
@@ -221,12 +238,18 @@ export class CourseDetails {
   );
   readonly courseId = Number(this.route.snapshot.paramMap.get('id'));
   private progressStateVersion = 0;
+  private loginRequestHandled = false;
+  private loginDialogOpen = false;
 
   constructor() {
     if (!Number.isInteger(this.courseId) || this.courseId <= 0) {
       this.showNotFound();
       return;
     }
+
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((queryParams) => this.handleRequiredLogin(queryParams));
 
     forkJoin({
       course: this.courseService.getCourseById(this.courseId),
@@ -280,6 +303,47 @@ export class CourseDetails {
     this.progress.set(null);
     this.progressLoading.set(false);
     this.progressError.set(null);
+  }
+
+  private handleRequiredLogin(queryParams: ParamMap): void {
+    if (queryParams.get('login') !== 'required') {
+      this.loginRequestHandled = false;
+      return;
+    }
+    if (this.loginRequestHandled) return;
+    this.loginRequestHandled = true;
+
+    const returnUrl = validateLocalReturnUrl(this.router, queryParams.get('returnUrl'));
+    void this.router
+      .navigate([], {
+        relativeTo: this.route,
+        queryParams: { login: null, returnUrl: null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      })
+      .catch(() => false);
+
+    if (this.loginDialogOpen) return;
+    this.loginDialogOpen = true;
+
+    const dialogRef = this.dialog.open<AuthDialog, AuthDialogData>(AuthDialog, {
+      data: { mode: 'login' },
+      width: '480px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: 'first-tabbable',
+      restoreFocus: true,
+    });
+    dialogRef
+      .afterClosed()
+      .pipe(
+        take(1),
+        finalize(() => (this.loginDialogOpen = false)),
+      )
+      .subscribe(() => {
+        if (returnUrl && this.isLoggedIn()) {
+          void this.router.navigateByUrl(returnUrl).catch(() => false);
+        }
+      });
   }
 
   private showNotFound(): void {
