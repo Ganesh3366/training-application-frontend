@@ -68,10 +68,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/certification/certification').then((m) => m.Certification),
       },
-      {
-        path: 'how-it-works',
-        loadComponent: () => import('./pages/how-it-works/How-It-works').then((m) => m.HowItWorks),
-      },
     ],
   },
 ];

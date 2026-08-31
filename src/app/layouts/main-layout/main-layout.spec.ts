@@ -1,7 +1,7 @@
 import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { of, tap } from 'rxjs';
 import { AppUser } from '../../models/app.models';
 import { AuthService } from '../../services/auth';
@@ -15,6 +15,12 @@ describe('MainLayout authentication', () => {
   let logout: ReturnType<typeof vi.fn>;
   let authResolved: ReturnType<typeof signal<boolean>>;
   let loadCurrentUser: ReturnType<typeof vi.fn>;
+
+  afterEach(() => {
+    document.getElementById('how-it-works')?.remove();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   beforeEach(() => {
     currentUser = signal<AppUser | null>(null);
@@ -136,6 +142,126 @@ describe('MainLayout authentication', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(fixture.nativeElement.querySelector('#mobile-navigation')).not.toBeNull();
   });
+
+  it('renders desktop and mobile links targeting the homepage section', () => {
+    fixture.componentInstance.isMobileMenuOpen.set(true);
+    fixture.detectChanges();
+
+    const links = Array.from<HTMLAnchorElement>(
+      fixture.nativeElement.querySelectorAll('a[href="/#how-it-works"]'),
+    );
+
+    expect(links).toHaveLength(2);
+    expect(links[0].closest('.desktop-nav')).not.toBeNull();
+    expect(links[1].closest('.mobile-nav')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/how-it-works"]')).toBeNull();
+  });
+
+  it('navigates home and smoothly scrolls to How It Works after navigation', async () => {
+    let finishNavigation: (result: boolean) => void = () => undefined;
+    const navigation = new Promise<boolean>((resolve) => (finishNavigation = resolve));
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockReturnValue(navigation);
+    const scrollTarget = prepareScrollTarget(false);
+
+    fixture.componentInstance.navigateToHowItWorks();
+    expect(scrollTarget.scrollIntoView).not.toHaveBeenCalled();
+
+    finishNavigation(true);
+    await Promise.resolve();
+    scrollTarget.flushAnimationFrames();
+
+    expect(navigate).toHaveBeenCalledWith(['/'], { fragment: 'how-it-works' });
+    expect(scrollTarget.scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  });
+
+  it('uses automatic scrolling when reduced motion is preferred', async () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const scrollTarget = prepareScrollTarget(true);
+
+    fixture.componentInstance.navigateToHowItWorks();
+    await Promise.resolve();
+    scrollTarget.flushAnimationFrames();
+
+    expect(scrollTarget.scrollIntoView).toHaveBeenCalledWith({
+      behavior: 'auto',
+      block: 'start',
+    });
+  });
+
+  it('scrolls again when same-URL navigation is ignored', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(false);
+    const scrollTarget = prepareScrollTarget(false);
+
+    fixture.componentInstance.navigateToHowItWorks();
+    await Promise.resolve();
+    scrollTarget.flushAnimationFrames();
+    fixture.componentInstance.navigateToHowItWorks();
+    await Promise.resolve();
+    scrollTarget.flushAnimationFrames();
+
+    expect(navigate).toHaveBeenCalledTimes(2);
+    expect(scrollTarget.scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+
+  it('closes the mobile menu and invokes navigation for the mobile action', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const scrollTarget = prepareScrollTarget(false);
+    fixture.componentInstance.isMobileMenuOpen.set(true);
+    fixture.detectChanges();
+
+    fixture.componentInstance.navigateToHowItWorks();
+    fixture.componentInstance.closeMobileMenu();
+    await Promise.resolve();
+    scrollTarget.flushAnimationFrames();
+
+    expect(fixture.componentInstance.isMobileMenuOpen()).toBe(false);
+    expect(navigate).toHaveBeenCalledWith(['/'], { fragment: 'how-it-works' });
+  });
 });
 
 const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
+
+function prepareScrollTarget(reducedMotion: boolean): {
+  scrollIntoView: ReturnType<typeof vi.fn>;
+  flushAnimationFrames: () => void;
+} {
+  const section = document.createElement('section');
+  section.id = 'how-it-works';
+  const scrollIntoView = vi.fn();
+  section.scrollIntoView = scrollIntoView;
+  document.body.appendChild(section);
+
+  const mediaQueryList: MediaQueryList = {
+    matches: reducedMotion,
+    media: '(prefers-reduced-motion: reduce)',
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(() => false),
+  };
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => mediaQueryList),
+  );
+  const animationFrames: FrameRequestCallback[] = [];
+  vi.stubGlobal(
+    'requestAnimationFrame',
+    vi.fn((callback: FrameRequestCallback) => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    }),
+  );
+
+  return {
+    scrollIntoView,
+    flushAnimationFrames: () => {
+      const pendingFrames = animationFrames.splice(0);
+      pendingFrames.forEach((callback) => callback(0));
+    },
+  };
+}

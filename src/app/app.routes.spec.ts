@@ -3,6 +3,11 @@ import { adminRoleGuard } from './guards/admin-role.guard';
 import { routes } from './app.routes';
 
 describe('application routes', () => {
+  it('keeps How It Works on the homepage instead of defining a separate route', () => {
+    const route = routes[0].children?.find((item) => item.path === 'how-it-works');
+    expect(route).toBeUndefined();
+  });
+
   it('protects admin user assignments with the dedicated admin guard', () => {
     const route = routes[0].children?.find((item) => item.path === 'admin/users');
     expect(route).toBeDefined();

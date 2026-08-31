@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,6 +25,7 @@ import { AuthDialog, AuthDialogData, AuthDialogMode } from '../../shared/auth-di
 export class MainLayout {
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
 
   readonly currentUser = this.auth.currentUser;
   readonly isLoggedIn = this.auth.isLoggedIn;
@@ -48,6 +49,13 @@ export class MainLayout {
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
+  }
+
+  navigateToHowItWorks(): void {
+    void this.router.navigate(['/'], { fragment: 'how-it-works' }).then(
+      () => this.scrollToHowItWorks(),
+      () => undefined,
+    );
   }
 
   openLoginDialog(): void {
@@ -76,6 +84,16 @@ export class MainLayout {
     this.auth.logout().subscribe({
       next: () => this.logoutPending.set(false),
       error: () => this.logoutPending.set(false),
+    });
+  }
+
+  private scrollToHowItWorks(): void {
+    requestAnimationFrame(() => {
+      const section = document.getElementById('how-it-works');
+      if (!section) return;
+
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      section.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
     });
   }
 }

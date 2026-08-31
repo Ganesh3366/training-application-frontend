@@ -23,6 +23,7 @@
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .header-inner {
@@ -197,5 +198,11 @@
 @media (max-width: 420px) {
   .brand-copy small {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-content {
+    scroll-behavior: auto;
   }
 }
