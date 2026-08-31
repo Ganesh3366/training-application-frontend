@@ -1,7 +1,15 @@
 import { managementRoleGuard } from './guards/management-role.guard';
+import { adminRoleGuard } from './guards/admin-role.guard';
 import { routes } from './app.routes';
 
 describe('application routes', () => {
+  it('protects admin user assignments with the dedicated admin guard', () => {
+    const route = routes[0].children?.find((item) => item.path === 'admin/users');
+    expect(route).toBeDefined();
+    expect(route?.canActivate).toEqual([adminRoleGuard]);
+    expect(route?.canActivate).not.toContain(managementRoleGuard);
+  });
+
   it('protects module and content management with the existing management role guard', () => {
     const route = routes[0].children?.find(
       (item) => item.path === 'management/courses/:courseId/modules',

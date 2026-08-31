@@ -17,6 +17,9 @@
         @if (canManageCourses()) {
           <a routerLink="/management/courses" routerLinkActive="active">Manage Courses</a>
         }
+        @if (currentRole() === 'ADMIN') {
+          <a routerLink="/admin/users" routerLinkActive="active">Admin Users</a>
+        }
       </nav>
       <div class="auth-actions">
         @if (!isLoggedIn()) {
@@ -57,6 +60,9 @@
         <a routerLink="/certification" (click)="closeMobileMenu()">Certification</a>
         @if (canManageCourses()) {
           <a routerLink="/management/courses" (click)="closeMobileMenu()">Manage Courses</a>
+        }
+        @if (currentRole() === 'ADMIN') {
+          <a routerLink="/admin/users" (click)="closeMobileMenu()">Admin Users</a>
         }
         @if (!isLoggedIn()) {
           <button mat-stroked-button (click)="openLoginDialog()">Log In</button>

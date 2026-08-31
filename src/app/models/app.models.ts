@@ -85,6 +85,16 @@ export interface CourseManagementRequest {
   category: CourseManagementCategory;
 }
 
+export interface CourseAssignment {
+  id: number;
+  course: CourseManagementResponse;
+  assignedAt: string;
+}
+
+export interface CourseAssignmentRequest {
+  courseId: number;
+}
+
 export interface CourseModule {
   id: number;
   title: string;

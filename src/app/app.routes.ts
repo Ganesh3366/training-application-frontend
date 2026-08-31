@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { managementRoleGuard } from './guards/management-role.guard';
 import { authenticatedGuard } from './guards/authenticated.guard';
+import { adminRoleGuard } from './guards/admin-role.guard';
 
 export const routes: Routes = [
   {
@@ -31,6 +32,14 @@ export const routes: Routes = [
         path: 'courses/:courseId/modules/:moduleId',
         loadComponent: () =>
           import('./pages/module-learning/module-learning').then((m) => m.ModuleLearning),
+      },
+      {
+        path: 'admin/users',
+        canActivate: [adminRoleGuard],
+        loadComponent: () =>
+          import('./pages/admin-user-management/admin-user-management').then(
+            (m) => m.AdminUserManagementComponent,
+          ),
       },
       {
         path: 'management/courses',

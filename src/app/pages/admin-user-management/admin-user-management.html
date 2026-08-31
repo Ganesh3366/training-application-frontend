@@ -1,0 +1,215 @@
+<div class="management-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Administration</p>
+      <h1>User Course Assignments</h1>
+      <p>Select a user to review and assign SkillForge courses.</p>
+    </div>
+  </header>
+
+  <div class="management-grid">
+    <section
+      class="panel users-panel"
+      aria-labelledby="user-list-heading"
+      [attr.aria-busy]="usersLoading()"
+    >
+      <div class="section-heading">
+        <div>
+          <h2 id="user-list-heading">Users</h2>
+          @if (!usersLoading() && !usersError()) {
+            <p>{{ users().length }} {{ users().length === 1 ? 'user' : 'users' }}</p>
+          }
+        </div>
+      </div>
+
+      @if (usersLoading()) {
+        <div class="state-panel compact" role="status">
+          <mat-spinner diameter="34"></mat-spinner>
+          <p>Loading users…</p>
+        </div>
+      } @else if (usersError()) {
+        <div class="state-panel compact error-state" role="alert">
+          <mat-icon aria-hidden="true">cloud_off</mat-icon>
+          <h3>Users could not be loaded</h3>
+          <p>{{ usersError() }}</p>
+          <button mat-stroked-button type="button" (click)="loadUsers()">Try again</button>
+        </div>
+      } @else if (users().length === 0) {
+        <div class="state-panel compact empty-state">
+          <mat-icon aria-hidden="true">group_off</mat-icon>
+          <h3>No users found</h3>
+          <p>There are no SkillForge users available to manage.</p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <caption class="visually-hidden">
+              SkillForge users available for course assignment
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+                <th scope="col">Role</th>
+                <th scope="col" class="actions-heading">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr [class.selected-row]="selectedUser()?.id === user.id">
+                  <td data-label="User">
+                    <strong>{{ user.name }}</strong>
+                    <span class="secondary-text">{{ user.email }}</span>
+                  </td>
+                  <td data-label="Role">
+                    <span class="role-pill">{{ user.role }}</span>
+                  </td>
+                  <td data-label="Action" class="row-actions">
+                    <button
+                      mat-button
+                      type="button"
+                      (click)="selectUser(user)"
+                      [disabled]="assignmentPending()"
+                      [attr.aria-label]="'View course assignments for ' + user.name"
+                      [attr.aria-pressed]="selectedUser()?.id === user.id"
+                    >
+                      {{ selectedUser()?.id === user.id ? 'Selected' : 'View assignments' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section
+      class="panel assignments-panel"
+      aria-labelledby="assignment-heading"
+      [attr.aria-busy]="assignmentsLoading()"
+    >
+      <div class="section-heading">
+        <div>
+          <h2 id="assignment-heading">Assigned courses</h2>
+          @if (selectedUser()) {
+            <p>{{ selectedUser()!.name }} · {{ selectedUser()!.email }}</p>
+          } @else {
+            <p>Select a user to view their courses</p>
+          }
+        </div>
+      </div>
+
+      @if (actionError()) {
+        <div class="alert error-alert" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ actionError() }}</span>
+          <button mat-button type="button" (click)="actionError.set(null)">Dismiss</button>
+        </div>
+      }
+
+      @if (!selectedUser()) {
+        <div class="state-panel empty-state">
+          <mat-icon aria-hidden="true">person_search</mat-icon>
+          <h3>No user selected</h3>
+          <p>Choose a user from the list to manage their course assignments.</p>
+        </div>
+      } @else if (assignmentsLoading()) {
+        <div class="state-panel" role="status">
+          <mat-spinner diameter="36"></mat-spinner>
+          <p>Loading assignments…</p>
+        </div>
+      } @else if (assignmentsError()) {
+        <div class="state-panel error-state" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <h3>Assignments could not be loaded</h3>
+          <p>{{ assignmentsError() }}</p>
+          <button mat-stroked-button type="button" (click)="selectUser(selectedUser()!, true)">
+            Try again
+          </button>
+        </div>
+      } @else {
+        <div class="assignment-content">
+          <div class="assignment-form" aria-labelledby="assign-course-heading">
+            <div>
+              <h3 id="assign-course-heading">Assign another course</h3>
+              <p>Only courses not already assigned are shown.</p>
+            </div>
+
+            @if (coursesLoading()) {
+              <div class="inline-state" role="status">
+                <mat-spinner diameter="24"></mat-spinner><span>Loading courses…</span>
+              </div>
+            } @else if (coursesError()) {
+              <div class="inline-error" role="alert">
+                <span>{{ coursesError() }}</span>
+                <button mat-button type="button" (click)="loadCourses()">Try again</button>
+              </div>
+            } @else if (courses().length === 0) {
+              <p class="availability-state">No courses are currently available to assign.</p>
+            } @else if (availableCourses().length === 0) {
+              <p class="availability-state success-state">
+                All available courses are already assigned to this user.
+              </p>
+            } @else {
+              <div class="form-controls">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Course to assign</mat-label>
+                  <mat-select
+                    [ngModel]="selectedCourseId()"
+                    (ngModelChange)="selectedCourseId.set($event)"
+                    [disabled]="assignmentPending()"
+                    aria-label="Course to assign"
+                  >
+                    @for (course of availableCourses(); track course.id) {
+                      <mat-option [value]="course.id">{{ course.title }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <button
+                  mat-flat-button
+                  class="assign-button"
+                  type="button"
+                  (click)="assignCourse()"
+                  [disabled]="!canAssign()"
+                >
+                  <mat-icon aria-hidden="true">add</mat-icon>
+                  {{ assignmentPending() ? 'Assigning…' : 'Assign course' }}
+                </button>
+              </div>
+            }
+          </div>
+
+          @if (assignments().length === 0) {
+            <div class="state-panel assignment-empty empty-state">
+              <mat-icon aria-hidden="true">menu_book</mat-icon>
+              <h3>No courses assigned</h3>
+              <p>This user does not have any course assignments yet.</p>
+            </div>
+          } @else {
+            <div class="assigned-list" aria-live="polite">
+              <h3>Current assignments</h3>
+              <ul>
+                @for (assignment of assignments(); track assignment.id) {
+                  <li>
+                    <span class="course-icon"
+                      ><mat-icon aria-hidden="true">menu_book</mat-icon></span
+                    >
+                    <span class="course-copy">
+                      <strong>{{ assignment.course.title }}</strong>
+                      <span
+                        >{{ assignment.course.instructor }} · {{ assignment.course.level }}</span
+                      >
+                    </span>
+                    <time [attr.datetime]="assignment.assignedAt">
+                      Assigned {{ assignment.assignedAt | date: 'mediumDate' }}
+                    </time>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </div>
+</div>

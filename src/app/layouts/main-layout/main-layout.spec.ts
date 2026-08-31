@@ -97,6 +97,25 @@ describe('MainLayout authentication', () => {
     expect(fixture.nativeElement.querySelector('a[href="/management/courses"]')).toBeNull();
   });
 
+  it('shows desktop and mobile Admin Users links only to ADMIN', () => {
+    currentUser.set({ ...user, role: 'ADMIN' });
+    fixture.componentInstance.isMobileMenuOpen.set(true);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('.desktop-nav a[href="/admin/users"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.mobile-nav a[href="/admin/users"]'),
+    ).not.toBeNull();
+  });
+
+  it.each(['USER', 'INSTRUCTOR'] as const)('hides Admin Users links from %s', (role) => {
+    currentUser.set({ ...user, role });
+    fixture.componentInstance.isMobileMenuOpen.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/users"]')).toBeNull();
+  });
+
   it('does not restore authentication again when it is already resolved', () => {
     expect(loadCurrentUser).not.toHaveBeenCalled();
   });
