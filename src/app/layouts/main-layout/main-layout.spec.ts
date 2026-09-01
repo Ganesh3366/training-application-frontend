@@ -70,12 +70,19 @@ describe('MainLayout authentication', () => {
     expect(fixture.nativeElement.textContent).toContain('Sign out');
   });
 
-  it('updates the header after logout', () => {
+  it('updates the header and navigates home after logout succeeds', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     currentUser.set(user);
+    fixture.componentInstance.isMobileMenuOpen.set(true);
     fixture.detectChanges();
+
     fixture.componentInstance.logout();
     fixture.detectChanges();
+
     expect(logout).toHaveBeenCalledOnce();
+    expect(navigate).toHaveBeenCalledWith(['/']);
+    expect(fixture.componentInstance.logoutPending()).toBe(false);
+    expect(fixture.componentInstance.isMobileMenuOpen()).toBe(false);
     expect(fixture.nativeElement.querySelector('.login-button')).not.toBeNull();
   });
 

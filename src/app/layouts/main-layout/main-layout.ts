@@ -82,7 +82,13 @@ export class MainLayout {
     this.logoutPending.set(true);
     this.closeMobileMenu();
     this.auth.logout().subscribe({
-      next: () => this.logoutPending.set(false),
+      next: () => {
+        this.logoutPending.set(false);
+        void this.router.navigate(['/']).then(
+          () => undefined,
+          () => undefined,
+        );
+      },
       error: () => this.logoutPending.set(false),
     });
   }
