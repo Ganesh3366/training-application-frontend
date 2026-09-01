@@ -39,12 +39,13 @@ h1 {
 
 .management-grid {
   display: grid;
-  grid-template-columns: minmax(440px, 0.9fr) minmax(480px, 1.1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
   gap: 22px;
   align-items: start;
 }
 
 .panel {
+  min-width: 0;
   overflow: hidden;
   border: 1px solid #dce7f5;
   border-radius: 14px;
@@ -77,17 +78,44 @@ h1 {
 }
 
 .table-wrap {
-  overflow-x: auto;
+  max-height: clamp(300px, calc(100dvh - 330px), 620px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 table {
   width: 100%;
-  min-width: 430px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8faff;
+}
+
+th:first-child,
+td:first-child {
+  width: 47%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 20%;
+}
+
+th:last-child,
+td:last-child {
+  width: 33%;
 }
 
 th {
-  padding: 13px 16px;
+  padding: 13px 12px;
   color: #536073;
   background: #f8faff;
   font-size: 12px;
@@ -98,7 +126,8 @@ th {
 }
 
 td {
-  padding: 15px 16px;
+  min-width: 0;
+  padding: 15px 12px;
   border-top: 1px solid #e7edf5;
   color: #26364e;
   vertical-align: middle;
@@ -119,6 +148,11 @@ td strong,
   font-size: 13px;
 }
 
+.users-panel td:first-child strong,
+.users-panel .secondary-text {
+  overflow-wrap: anywhere;
+}
+
 .role-pill {
   display: inline-block;
   padding: 5px 9px;
@@ -135,7 +169,14 @@ td strong,
 }
 
 .row-actions {
-  white-space: nowrap;
+  white-space: normal;
+}
+
+.row-actions button {
+  max-width: 100%;
+  padding-inline: 8px;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 .selected-row {
@@ -331,6 +372,32 @@ time {
 
   .panel {
     border-radius: 12px;
+  }
+
+  th,
+  td {
+    padding-inline: 8px;
+  }
+
+  th:first-child,
+  td:first-child {
+    width: 40%;
+  }
+
+  th:nth-child(2),
+  td:nth-child(2) {
+    width: 25%;
+  }
+
+  th:last-child,
+  td:last-child {
+    width: 35%;
+  }
+
+  .role-pill {
+    max-width: 100%;
+    padding-inline: 6px;
+    overflow-wrap: anywhere;
   }
 
   .form-controls {

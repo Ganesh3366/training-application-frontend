@@ -41,6 +41,14 @@ describe('AdminUserManagementComponent', () => {
     expect(component.users()).toEqual(users);
     expect(fixture.nativeElement.textContent).toContain('Learner One');
     expect(fixture.nativeElement.textContent).toContain('learner@example.com');
+    expect(
+      Array.from<HTMLTableCellElement>(fixture.nativeElement.querySelectorAll('th')).map((cell) =>
+        cell.textContent?.trim(),
+      ),
+    ).toEqual(['User', 'Role', 'Action']);
+    const action = fixture.nativeElement.querySelector('.row-actions button') as HTMLButtonElement;
+    expect(action.textContent).toContain('View assignments');
+    expect(action.getAttribute('aria-label')).toBe('View course assignments for Learner One');
   });
 
   it('loads assignments when a user is selected', () => {
