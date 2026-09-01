@@ -2,7 +2,7 @@
   <header class="page-header">
     <p class="eyebrow">Management</p>
     <h1>Learner Progress</h1>
-    <p>Review assigned-course progress, quiz results, and completion information.</p>
+    <p>Review learner-course progress, quiz results, and completion information.</p>
   </header>
 
   <section class="reports-section" aria-labelledby="reports-heading" [attr.aria-busy]="loading()">
@@ -10,7 +10,10 @@
       <div>
         <h2 id="reports-heading">Learner course reports</h2>
         @if (!loading() && !loadError()) {
-          <p>{{ reports().length }} {{ reports().length === 1 ? 'assignment' : 'assignments' }}</p>
+          <p>
+            {{ reports().length }} {{ reports().length === 1 ? 'report' : 'reports' }} ·
+            {{ assignedCount() }} {{ assignedCount() === 1 ? 'assignment' : 'assignments' }}
+          </p>
         }
       </div>
     </div>
@@ -31,7 +34,7 @@
       <div class="state-panel empty-state">
         <mat-icon aria-hidden="true">assignment_ind</mat-icon>
         <h3>No learner progress yet</h3>
-        <p>Reports will appear here when learners have assigned courses.</p>
+        <p>Reports will appear when learners have course assignments or learning activity.</p>
       </div>
     } @else {
       <div class="report-list">
@@ -45,8 +48,25 @@
                 </div>
               </div>
               <div class="course-copy">
-                <span>Assigned course</span>
+                <span>Course</span>
                 <strong>{{ report.courseTitle }}</strong>
+                <div class="assignment-copy">
+                  <span>Assignment state</span>
+                  <strong
+                    class="assignment-badge"
+                    [class.assigned]="report.assigned"
+                    [class.activity-only]="!report.assigned"
+                  >
+                    {{ report.assigned ? 'Assigned' : 'Learning activity without assignment' }}
+                  </strong>
+                  @if (report.assigned && report.assignedAt) {
+                    <span>
+                      <time [attr.datetime]="report.assignedAt">
+                        Assigned {{ report.assignedAt | date: 'mediumDate' }}
+                      </time>
+                    </span>
+                  }
+                </div>
               </div>
               <span
                 class="status-badge"

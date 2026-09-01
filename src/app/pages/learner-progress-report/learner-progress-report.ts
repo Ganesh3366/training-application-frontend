@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,6 +31,9 @@ export class LearnerProgressReportComponent {
   private requestInProgress = false;
 
   readonly reports = signal<LearnerCourseReport[]>([]);
+  readonly assignedCount = computed(
+    () => this.reports().filter((report) => report.assigned).length,
+  );
   readonly loading = signal(true);
   readonly loadError = signal<string | null>(null);
 

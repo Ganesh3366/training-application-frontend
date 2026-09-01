@@ -56,13 +56,55 @@ describe('LearnerProgressReportComponent', () => {
     expect(fixture.nativeElement.textContent).not.toContain('HttpErrorResponse');
   });
 
-  it('shows an empty state when no assignments are reported', () => {
+  it('shows an empty state when no learner-course reports are returned', () => {
     const { fixture } = create(of([]));
 
     expect(fixture.nativeElement.textContent).toContain('No learner progress yet');
     expect(fixture.nativeElement.textContent).toContain(
-      'Reports will appear here when learners have assigned courses.',
+      'Reports will appear when learners have course assignments or learning activity.',
     );
+  });
+
+  it('renders an assigned row with its assignment timestamp', () => {
+    const { fixture } = create();
+    const assignment = fixture.nativeElement.querySelector('.assignment-copy');
+
+    expect(assignment.textContent).toContain('Assigned');
+    expect(assignment.textContent).not.toContain('Learning activity without assignment');
+    expect(assignment.querySelector('.assignment-badge.assigned')).not.toBeNull();
+    expect(assignment.querySelector('time')?.getAttribute('datetime')).toBe('2025-12-01T10:00:00Z');
+  });
+
+  it('renders activity-only rows as not assigned and hides assignment dates', () => {
+    const activityOnly = {
+      ...report,
+      assigned: false,
+      assignedAt: '2026-02-03T10:00:00Z',
+    };
+    const { fixture } = create(of([activityOnly]));
+    const assignment = fixture.nativeElement.querySelector('.assignment-copy');
+
+    expect(assignment.textContent).toContain('Learning activity without assignment');
+    expect(assignment.querySelector('.assignment-badge.activity-only')).not.toBeNull();
+    expect(assignment.querySelector('time')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Ada Learner');
+    expect(fixture.nativeElement.textContent).toContain('50%');
+  });
+
+  it('counts only rows explicitly marked as assigned', () => {
+    const activityOnly = {
+      ...report,
+      courseId: 4,
+      courseTitle: 'TypeScript Essentials',
+      assigned: false,
+      assignedAt: null,
+    };
+    const { fixture } = create(of([report, activityOnly]));
+    const heading = fixture.nativeElement.querySelector('.section-heading p').textContent;
+
+    expect(heading).toMatch(/2 reports\s*·\s*1 assignment/);
+    expect(heading).not.toContain('2 assignments');
+    expect(fixture.nativeElement.querySelectorAll('.report-card')).toHaveLength(2);
   });
 
   it('renders learner, course, progress counts, and a friendly status', () => {
@@ -203,6 +245,8 @@ const report: LearnerCourseReport = {
   learnerEmail: 'ada@example.com',
   courseId: 3,
   courseTitle: 'Angular Essentials',
+  assigned: true,
+  assignedAt: '2025-12-01T10:00:00Z',
   completedModules: 1,
   totalModules: 2,
   pendingModules: 1,

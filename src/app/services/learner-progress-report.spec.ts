@@ -34,6 +34,8 @@ const report: LearnerCourseReport = {
   learnerEmail: 'ada@example.com',
   courseId: 3,
   courseTitle: 'Angular Essentials',
+  assigned: true,
+  assignedAt: '2025-12-01T10:00:00Z',
   completedModules: 1,
   totalModules: 2,
   pendingModules: 1,

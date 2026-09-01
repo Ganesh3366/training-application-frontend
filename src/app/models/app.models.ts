@@ -145,6 +145,8 @@ export interface LearnerCourseReport {
   learnerEmail: string;
   courseId: number;
   courseTitle: string;
+  assigned: boolean;
+  assignedAt: string | null;
   completedModules: number;
   totalModules: number;
   pendingModules: number;
