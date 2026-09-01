@@ -6,11 +6,20 @@ import { LearnerProgressReportService } from '../../services/learner-progress-re
 import { LearnerProgressReportComponent } from './learner-progress-report';
 
 describe('LearnerProgressReportComponent', () => {
-  function create(reports: Observable<LearnerCourseReport[]> = of([report])): {
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function create(
+    reports: Observable<LearnerCourseReport[]> = of([report]),
+    getReports = vi.fn(() => reports),
+  ): {
     fixture: ComponentFixture<LearnerProgressReportComponent>;
     service: { getReports: ReturnType<typeof vi.fn> };
   } {
-    const service = { getReports: vi.fn(() => reports) };
+    const service = { getReports };
     TestBed.configureTestingModule({
       imports: [LearnerProgressReportComponent],
       providers: [{ provide: LearnerProgressReportService, useValue: service }],
@@ -19,6 +28,12 @@ describe('LearnerProgressReportComponent', () => {
     fixture.detectChanges();
     return { fixture, service };
   }
+
+  it('fetches reports on initial page load', () => {
+    const { service } = create();
+
+    expect(service.getReports).toHaveBeenCalledTimes(1);
+  });
 
   it('shows a loading state while reports are being requested', () => {
     const response = new Subject<LearnerCourseReport[]>();
@@ -106,6 +121,79 @@ describe('LearnerProgressReportComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Completed');
     expect(fixture.nativeElement.textContent).toContain('SF-2026-001');
     expect(fixture.nativeElement.querySelector('time[datetime="2026-01-02"]')).not.toBeNull();
+  });
+
+  it('refreshes reports automatically after 15 seconds', () => {
+    vi.useFakeTimers();
+    const { fixture, service } = create();
+
+    vi.advanceTimersByTime(15_000);
+
+    expect(service.getReports).toHaveBeenCalledTimes(2);
+    fixture.destroy();
+  });
+
+  it('stops automatic and active-window refreshes after cleanup', () => {
+    vi.useFakeTimers();
+    const { fixture, service } = create();
+
+    fixture.destroy();
+    vi.advanceTimersByTime(30_000);
+    window.dispatchEvent(new Event('focus'));
+
+    expect(service.getReports).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps existing reports visible during a background refresh', () => {
+    vi.useFakeTimers();
+    const backgroundResponse = new Subject<LearnerCourseReport[]>();
+    const getReports = vi
+      .fn<() => Observable<LearnerCourseReport[]>>()
+      .mockReturnValueOnce(of([report]))
+      .mockReturnValueOnce(backgroundResponse);
+    const { fixture, service } = create(of([report]), getReports);
+    const details = fixture.nativeElement.querySelector('details') as HTMLDetailsElement;
+    details.open = true;
+
+    vi.advanceTimersByTime(15_000);
+    fixture.detectChanges();
+
+    expect(service.getReports).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.loading()).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Ada Learner');
+    expect(fixture.nativeElement.textContent).not.toContain('Loading learner progress');
+
+    backgroundResponse.next([{ ...report, progressPercentage: 75 }]);
+    backgroundResponse.complete();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('75%');
+    expect(details.open).toBe(true);
+    fixture.destroy();
+  });
+
+  it('refreshes reports when the page becomes active again', () => {
+    const { fixture, service } = create();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(service.getReports).toHaveBeenCalledTimes(2);
+    fixture.destroy();
+  });
+
+  it('does not overlap refresh requests', () => {
+    vi.useFakeTimers();
+    const response = new Subject<LearnerCourseReport[]>();
+    const { fixture, service } = create(response);
+
+    vi.advanceTimersByTime(15_000);
+    window.dispatchEvent(new Event('focus'));
+
+    expect(service.getReports).toHaveBeenCalledTimes(1);
+    response.next([report]);
+    response.complete();
+    fixture.destroy();
   });
 });
 
