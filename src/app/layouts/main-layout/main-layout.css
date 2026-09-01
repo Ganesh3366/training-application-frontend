@@ -83,7 +83,7 @@
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 46px;
+  gap: clamp(20px, 2vw, 46px);
 }
 
 .desktop-nav a {
@@ -170,7 +170,7 @@
   margin-top: 8px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1360px) {
   .header-inner {
     height: 78px;
     padding: 0 22px;

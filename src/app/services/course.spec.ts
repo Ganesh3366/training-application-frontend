@@ -56,6 +56,9 @@ describe('CourseService', () => {
       totalModules: 1,
       completedModules: 0,
       pendingModules: 1,
+      progressPercentage: 0,
+      completed: false,
+      status: 'NOT_STARTED',
       modules: [
         {
           moduleId: 2,

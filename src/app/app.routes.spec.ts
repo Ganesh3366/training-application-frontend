@@ -43,6 +43,13 @@ describe('application routes', () => {
     expect(route).toBeDefined();
     expect(route?.canActivate).toEqual([managementRoleGuard]);
   });
+
+  it('protects learner progress reports with the existing management role guard', () => {
+    const route = routes[0].children?.find((item) => item.path === 'management/reports');
+    expect(route).toBeDefined();
+    expect(route?.canActivate).toEqual([managementRoleGuard]);
+  });
+
   it('protects the separate quiz management route with the existing guard', () => {
     const route = routes[0].children?.find(
       (item) => item.path === 'management/courses/:courseId/modules/:moduleId/quiz',

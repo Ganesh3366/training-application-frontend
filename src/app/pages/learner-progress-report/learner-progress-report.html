@@ -1,0 +1,166 @@
+<div class="report-page">
+  <header class="page-header">
+    <p class="eyebrow">Management</p>
+    <h1>Learner Progress</h1>
+    <p>Review assigned-course progress, quiz results, and completion information.</p>
+  </header>
+
+  <section class="reports-section" aria-labelledby="reports-heading" [attr.aria-busy]="loading()">
+    <div class="section-heading">
+      <div>
+        <h2 id="reports-heading">Learner course reports</h2>
+        @if (!loading() && !loadError()) {
+          <p>{{ reports().length }} {{ reports().length === 1 ? 'assignment' : 'assignments' }}</p>
+        }
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="state-panel" role="status">
+        <mat-spinner diameter="36"></mat-spinner>
+        <p>Loading learner progress...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="state-panel error-state" role="alert">
+        <mat-icon aria-hidden="true">cloud_off</mat-icon>
+        <h3>Reports could not be loaded</h3>
+        <p>{{ loadError() }}</p>
+        <button mat-stroked-button type="button" (click)="loadReports()">Try again</button>
+      </div>
+    } @else if (reports().length === 0) {
+      <div class="state-panel empty-state">
+        <mat-icon aria-hidden="true">assignment_ind</mat-icon>
+        <h3>No learner progress yet</h3>
+        <p>Reports will appear here when learners have assigned courses.</p>
+      </div>
+    } @else {
+      <div class="report-list">
+        @for (report of reports(); track report.learnerId + '-' + report.courseId) {
+          <article class="report-card">
+            <div class="report-header">
+              <div class="learner-copy">
+                <div>
+                  <h3>{{ report.learnerName }}</h3>
+                  <a [href]="'mailto:' + report.learnerEmail">{{ report.learnerEmail }}</a>
+                </div>
+              </div>
+              <div class="course-copy">
+                <span>Assigned course</span>
+                <strong>{{ report.courseTitle }}</strong>
+              </div>
+              <span
+                class="status-badge"
+                [class.not-started]="report.status === 'NOT_STARTED'"
+                [class.in-progress]="report.status === 'IN_PROGRESS'"
+                [class.completed]="report.status === 'COMPLETED'"
+              >
+                {{ statusLabel(report.status) }}
+              </span>
+            </div>
+
+            <div class="report-summary">
+              <div class="progress-block">
+                <div class="progress-copy">
+                  <span>Overall progress</span>
+                  <strong>{{ report.progressPercentage }}%</strong>
+                </div>
+                <mat-progress-bar
+                  mode="determinate"
+                  [value]="report.progressPercentage"
+                  [attr.aria-label]="report.courseTitle + ' progress'"
+                ></mat-progress-bar>
+              </div>
+              <div class="metric">
+                <span>Completed modules</span>
+                <strong>{{ report.completedModules }} / {{ report.totalModules }}</strong>
+              </div>
+              <div class="metric">
+                <span>Pending modules</span>
+                <strong>{{ report.pendingModules }}</strong>
+              </div>
+              <div class="metric">
+                <span>Completion date</span>
+                @if (report.completionDate) {
+                  <time [attr.datetime]="report.completionDate">
+                    {{ report.completionDate | date: 'mediumDate' }}
+                  </time>
+                } @else {
+                  <strong>Not completed</strong>
+                }
+              </div>
+              <div class="metric">
+                <span>Certificate</span>
+                <strong>{{ report.certificateNumber ?? 'Not issued' }}</strong>
+              </div>
+            </div>
+
+            <details class="module-details">
+              <summary>
+                <span><mat-icon aria-hidden="true">view_list</mat-icon>Module details</span>
+                <span class="module-count">
+                  {{ report.modules.length }}
+                  {{ report.modules.length === 1 ? 'module' : 'modules' }}
+                </span>
+              </summary>
+
+              @if (report.modules.length === 0) {
+                <p class="no-modules">This course has no modules.</p>
+              } @else {
+                <div class="module-table-wrap">
+                  <table>
+                    <caption class="visually-hidden">
+                      Module progress and quiz results for
+                      {{
+                        report.learnerName
+                      }}
+                      in
+                      {{
+                        report.courseTitle
+                      }}
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Module</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Last score</th>
+                        <th scope="col">Best score</th>
+                        <th scope="col">Attempts</th>
+                        <th scope="col">Completed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (module of report.modules; track module.moduleId) {
+                        <tr>
+                          <td data-label="Module">
+                            <strong>{{ module.moduleTitle }}</strong>
+                          </td>
+                          <td data-label="State">
+                            <span class="module-state" [class.done]="module.completed">
+                              {{ module.completed ? 'Completed' : 'Pending' }}
+                            </span>
+                          </td>
+                          <td data-label="Last score">{{ scoreLabel(module.lastScore) }}</td>
+                          <td data-label="Best score">{{ scoreLabel(module.bestScore) }}</td>
+                          <td data-label="Attempts">{{ module.attemptCount }}</td>
+                          <td data-label="Completed">
+                            @if (module.completedAt) {
+                              <time [attr.datetime]="module.completedAt">
+                                {{ module.completedAt | date: 'medium' }}
+                              </time>
+                            } @else {
+                              <span>Not completed</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </details>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</div>

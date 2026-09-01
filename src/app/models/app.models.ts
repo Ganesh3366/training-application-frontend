@@ -116,12 +116,43 @@ export interface ModuleProgress {
   completedAt: string | null;
 }
 
+export type CourseProgressStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+
 export interface CourseProgress {
   courseId: number;
   totalModules: number;
   completedModules: number;
   pendingModules: number;
+  progressPercentage: number;
+  completed: boolean;
+  status: CourseProgressStatus;
   modules: ModuleProgress[];
+}
+
+export interface LearnerModuleReport {
+  moduleId: number;
+  moduleTitle: string;
+  completed: boolean;
+  lastScore: number | null;
+  bestScore: number | null;
+  attemptCount: number;
+  completedAt: string | null;
+}
+
+export interface LearnerCourseReport {
+  learnerId: number;
+  learnerName: string;
+  learnerEmail: string;
+  courseId: number;
+  courseTitle: string;
+  completedModules: number;
+  totalModules: number;
+  pendingModules: number;
+  progressPercentage: number;
+  status: CourseProgressStatus;
+  completionDate: string | null;
+  certificateNumber: string | null;
+  modules: LearnerModuleReport[];
 }
 
 export interface Certificate {

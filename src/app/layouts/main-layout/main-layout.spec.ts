@@ -99,6 +99,12 @@ describe('MainLayout authentication', () => {
       expect(
         fixture.nativeElement.querySelector('.mobile-nav a[href="/management/courses"]'),
       ).not.toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('.desktop-nav a[href="/management/reports"]'),
+      ).not.toBeNull();
+      expect(
+        fixture.nativeElement.querySelector('.mobile-nav a[href="/management/reports"]'),
+      ).not.toBeNull();
     },
   );
 
@@ -108,6 +114,7 @@ describe('MainLayout authentication', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.canManageCourses()).toBe(false);
     expect(fixture.nativeElement.querySelector('a[href="/management/courses"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/management/reports"]')).toBeNull();
   });
 
   it('shows desktop and mobile Admin Users links only to ADMIN', () => {

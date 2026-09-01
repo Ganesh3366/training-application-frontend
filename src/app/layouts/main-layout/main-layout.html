@@ -18,6 +18,7 @@
         <a routerLink="/certification" routerLinkActive="active">Certification</a>
         @if (canManageCourses()) {
           <a routerLink="/management/courses" routerLinkActive="active">Manage Courses</a>
+          <a routerLink="/management/reports" routerLinkActive="active">Learner Progress</a>
         }
         @if (currentRole() === 'ADMIN') {
           <a routerLink="/admin/users" routerLinkActive="active">Admin Users</a>
@@ -66,6 +67,7 @@
         <a routerLink="/certification" (click)="closeMobileMenu()">Certification</a>
         @if (canManageCourses()) {
           <a routerLink="/management/courses" (click)="closeMobileMenu()">Manage Courses</a>
+          <a routerLink="/management/reports" (click)="closeMobileMenu()">Learner Progress</a>
         }
         @if (currentRole() === 'ADMIN') {
           <a routerLink="/admin/users" (click)="closeMobileMenu()">Admin Users</a>

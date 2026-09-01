@@ -51,6 +51,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'management/reports',
+        canActivate: [managementRoleGuard],
+        loadComponent: () =>
+          import('./pages/learner-progress-report/learner-progress-report').then(
+            (m) => m.LearnerProgressReportComponent,
+          ),
+      },
+      {
         path: 'management/courses/:courseId/modules',
         canActivate: [managementRoleGuard],
         loadComponent: () =>

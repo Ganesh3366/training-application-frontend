@@ -245,6 +245,9 @@ describe('CourseDetails', () => {
       totalModules: 0,
       completedModules: 0,
       pendingModules: 0,
+      progressPercentage: 0,
+      completed: false,
+      status: 'NOT_STARTED',
       modules: [],
     };
     const { fixture } = setup(
@@ -404,6 +407,9 @@ const progress: CourseProgress = {
   totalModules: 2,
   completedModules: 1,
   pendingModules: 1,
+  progressPercentage: 50,
+  completed: false,
+  status: 'IN_PROGRESS',
   modules: [
     {
       moduleId: 12,
@@ -429,6 +435,9 @@ const completedProgress: CourseProgress = {
   totalModules: 2,
   completedModules: 2,
   pendingModules: 0,
+  progressPercentage: 100,
+  completed: true,
+  status: 'COMPLETED',
   modules: [
     {
       moduleId: 9,
