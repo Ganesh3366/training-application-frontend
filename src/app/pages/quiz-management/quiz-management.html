@@ -1,8 +1,8 @@
 <main class="quiz-page">
-  <a class="back" [routerLink]="['/management/courses', courseId, 'modules']">
-    <mat-icon>arrow_back</mat-icon>
-    Back to Modules &amp; Content
-  </a>
+  <app-back-navigation
+    label="Back to Module"
+    [destination]="['/management/courses', courseId, 'modules']"
+  />
 
   @if (loading()) {
     <section class="state" role="status">

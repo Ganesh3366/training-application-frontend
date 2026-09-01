@@ -1,14 +1,12 @@
 <div class="certificate-page">
-  <div class="page-actions" aria-label="Certificate actions">
-    <a mat-button [routerLink]="courseLink">
-      <mat-icon aria-hidden="true">arrow_back</mat-icon>Back to course
-    </a>
-    @if (certificate()) {
+  <app-back-navigation label="Back to Course" [destination]="courseLink" />
+  @if (certificate()) {
+    <div class="page-actions" aria-label="Certificate actions">
       <button mat-flat-button type="button" class="print-button" (click)="printCertificate()">
         <mat-icon aria-hidden="true">print</mat-icon>Print / Save as PDF
       </button>
-    }
-  </div>
+    </div>
+  }
 
   @if (loading()) {
     <section class="state-panel" role="status" aria-live="polite">

@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  margin-bottom: 22px;
+}
+
+.back-navigation-link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #075da9;
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.back-navigation-link:hover {
+  text-decoration: underline;
+}
+
+.back-navigation-link:focus-visible {
+  outline: 3px solid #0873db;
+  outline-offset: 3px;
+}
+
+.back-navigation-arrow {
+  font-size: 1.2em;
+  line-height: 1;
+}

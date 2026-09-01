@@ -47,6 +47,16 @@ describe('ModuleLearning', () => {
     expect(fixture.nativeElement.textContent).toContain('Plain text lesson');
   });
 
+  it('links back to the current course using the course route id', () => {
+    const fixture = create(of(moduleDetail), '47', '9');
+    const link = fixture.nativeElement.querySelector(
+      'app-back-navigation a',
+    ) as HTMLAnchorElement;
+
+    expect(link.textContent).toContain('Back to Course');
+    expect(link.getAttribute('href')).toBe('/courses/47');
+  });
+
   it('embeds a validated YouTube URL', () => {
     const fixture = create(of(withVideo('https://www.youtube.com/watch?v=dQw4w9WgXcQ')));
     const iframe = fixture.nativeElement.querySelector('iframe') as HTMLIFrameElement;

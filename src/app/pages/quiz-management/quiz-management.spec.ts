@@ -59,6 +59,14 @@ describe('QuizManagementComponent', () => {
     expect(component.quiz()?.questions[0].position).toBe(1);
   });
 
+  it('links back to module management while preserving the course route id', () => {
+    const { fixture } = create({ courseId: '47', moduleId: '3' });
+    const link = fixture.nativeElement.querySelector('app-back-navigation a') as HTMLAnchorElement;
+
+    expect(link.textContent).toContain('Back to Module');
+    expect(link.getAttribute('href')).toBe('/management/courses/47/modules');
+  });
+
   it('treats GET 404 as the no-quiz empty state', () => {
     const { fixture, component } = create(
       { courseId: '7', moduleId: '3' },

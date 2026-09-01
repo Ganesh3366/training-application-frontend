@@ -8,7 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   AnswerOptionManagementRequest,
   AnswerOptionManagementResponse,
@@ -18,6 +18,7 @@ import {
   QuizQuestionManagementResponse,
 } from '../../models/app.models';
 import { QuizManagementService } from '../../services/quiz-management';
+import { BackNavigationComponent } from '../../shared/back-navigation/back-navigation';
 import {
   OptionFormComponent,
   OptionFormData,
@@ -33,7 +34,7 @@ import {
   selector: 'app-quiz-management',
   standalone: true,
   imports: [
-    RouterLink,
+    BackNavigationComponent,
     MatButtonModule,
     MatCardModule,
     MatChipsModule,

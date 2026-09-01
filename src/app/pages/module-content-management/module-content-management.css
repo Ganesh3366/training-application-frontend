@@ -8,15 +8,6 @@
   margin: 0 auto;
   padding: 28px 34px 52px;
 }
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 22px;
-  color: #075da9;
-  font-weight: 700;
-  text-decoration: none;
-}
 .page-header {
   display: flex;
   align-items: flex-end;

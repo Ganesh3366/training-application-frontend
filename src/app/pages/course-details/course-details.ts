@@ -8,6 +8,7 @@ import { Course, CourseModule, CourseProgress } from '../../models/app.models';
 import { AuthService } from '../../services/auth';
 import { CourseService } from '../../services/course';
 import { AuthDialog, AuthDialogData } from '../../shared/auth-dialog/auth-dialog';
+import { BackNavigationComponent } from '../../shared/back-navigation/back-navigation';
 
 export function validateLocalReturnUrl(router: Router, value: string | null): string | null {
   if (!value || value[0] !== '/' || value[1] === '/') return null;
@@ -23,9 +24,10 @@ export function validateLocalReturnUrl(router: Router, value: string | null): st
 @Component({
   selector: 'app-course-details',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, BackNavigationComponent],
   template: `
     <div class="course-details">
+      <app-back-navigation label="Back to Courses" destination="/courses" />
       @if (loading()) {
         <section><p role="status">Loading course...</p></section>
       } @else if (errorMessage()) {

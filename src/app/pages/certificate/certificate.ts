@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Certificate } from '../../models/app.models';
 import { CourseService } from '../../services/course';
+import { BackNavigationComponent } from '../../shared/back-navigation/back-navigation';
 
 @Component({
   selector: 'app-certificate',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, RouterLink],
+  imports: [MatButtonModule, MatIconModule, RouterLink, BackNavigationComponent],
   templateUrl: './certificate.html',
   styleUrl: './certificate.css',
 })

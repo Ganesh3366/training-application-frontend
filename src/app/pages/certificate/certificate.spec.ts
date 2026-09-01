@@ -37,6 +37,14 @@ describe('CertificateComponent', () => {
     expect(text).toContain(certificate.certificateNumber);
   });
 
+  it('links back to the current course using the course route id', () => {
+    const { fixture } = create(of(certificate), '47');
+    const link = fixture.nativeElement.querySelector('app-back-navigation a') as HTMLAnchorElement;
+
+    expect(link.textContent).toContain('Back to Course');
+    expect(link.getAttribute('href')).toBe('/courses/47');
+  });
+
   it('shows a loading status while the API request is pending', () => {
     const { fixture } = create(new Subject<Certificate>());
     expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
@@ -48,7 +56,7 @@ describe('CertificateComponent', () => {
     const { fixture, getCertificate } = create(of(certificate), '1.5');
     expect(fixture.nativeElement.textContent).toContain('invalid course ID');
     expect(getCertificate).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.querySelector('.page-actions a')?.getAttribute('href')).toBe(
+    expect(fixture.nativeElement.querySelector('app-back-navigation a')?.getAttribute('href')).toBe(
       '/courses',
     );
   });

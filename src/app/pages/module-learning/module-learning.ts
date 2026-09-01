@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   CourseModuleDetail,
   ModuleContent,
@@ -11,14 +11,15 @@ import {
 } from '../../models/app.models';
 import { CourseService } from '../../services/course';
 import { AuthService } from '../../services/auth';
+import { BackNavigationComponent } from '../../shared/back-navigation/back-navigation';
 
 @Component({
   selector: 'app-module-learning',
   standalone: true,
-  imports: [RouterLink],
+  imports: [BackNavigationComponent],
   template: `
     <div class="learning-page">
-      <a class="back-link" [routerLink]="['/courses', courseId]">Back to Course</a>
+      <app-back-navigation label="Back to Course" [destination]="['/courses', courseId]" />
       @if (loading()) {
         <section><p role="status">Loading module...</p></section>
       } @else if (errorMessage()) {
@@ -143,7 +144,6 @@ import { AuthService } from '../../services/auth';
     h1, h2 { margin-top: 0; }
     h2 { font-size: 19px; }
     p { color: #536073; line-height: 1.6; }
-    .back-link { color: #0873db; font-weight: 700; }
     .content-list { display: grid; gap: 16px; margin-top: 24px; }
     .text-content { white-space: pre-wrap; }
     .video-frame { position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 10px; background: #06183a; }

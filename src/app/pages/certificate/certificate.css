@@ -11,12 +11,9 @@
 .page-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 16px;
   margin-bottom: 20px;
-}
-.page-actions a {
-  color: #075da9;
 }
 .print-button {
   color: #fff !important;
@@ -192,11 +189,10 @@ h3 {
     padding: 20px 14px 34px;
   }
   .page-actions {
-    align-items: stretch;
-    flex-direction: column;
+    display: block;
   }
   .print-button {
-    align-self: stretch;
+    width: 100%;
   }
   .certificate {
     padding: 7px;

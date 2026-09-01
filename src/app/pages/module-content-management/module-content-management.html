@@ -1,7 +1,5 @@
 <div class="management-page">
-  <a class="back-link" routerLink="/management/courses"
-    ><mat-icon aria-hidden="true">arrow_back</mat-icon>Back to Course Management</a
-  >
+  <app-back-navigation label="Back to Courses" destination="/management/courses" />
   @if (loading()) {
     <section class="state" role="status">
       <mat-spinner diameter="36"></mat-spinner>

@@ -10,6 +10,7 @@ import { forkJoin, map, of, switchMap } from 'rxjs';
 import { CourseManagementResponse, CourseModule, ModuleContent } from '../../models/app.models';
 import { CourseManagementService } from '../../services/course-management';
 import { CourseModuleManagementService } from '../../services/course-module-management';
+import { BackNavigationComponent } from '../../shared/back-navigation/back-navigation';
 import {
   ConfirmDeleteDialogData,
   ConfirmManagementDeleteDialog,
@@ -27,6 +28,7 @@ interface ModulesLoadResult {
   standalone: true,
   imports: [
     RouterLink,
+    BackNavigationComponent,
     MatButtonModule,
     MatDialogModule,
     MatIconModule,

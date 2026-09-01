@@ -93,6 +93,14 @@ describe('CourseDetails', () => {
     expect(text).toContain('Requests and responses');
   });
 
+  it('links back to the Courses page', () => {
+    const fixture = create(of(course), of(modules));
+    const link = fixture.nativeElement.querySelector('app-back-navigation a') as HTMLAnchorElement;
+
+    expect(link.textContent).toContain('Back to Courses');
+    expect(link.getAttribute('href')).toBe('/courses');
+  });
+
   it('links Start Learning and each module using the course and module ids', () => {
     const modules: CourseModule[] = [
       { id: 9, title: 'HTTP Basics', description: null, position: 1 },

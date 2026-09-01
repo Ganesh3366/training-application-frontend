@@ -69,6 +69,14 @@ describe('ModuleContentManagementComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('No modules yet');
   });
 
+  it('links back to the Manage Courses page', () => {
+    const { fixture } = create();
+    const link = fixture.nativeElement.querySelector('app-back-navigation a') as HTMLAnchorElement;
+
+    expect(link.textContent).toContain('Back to Courses');
+    expect(link.getAttribute('href')).toBe('/management/courses');
+  });
+
   it('links each module to its separate quiz management page', () => {
     const { fixture } = create();
     const link = Array.from<HTMLAnchorElement>(fixture.nativeElement.querySelectorAll('a')).find(
