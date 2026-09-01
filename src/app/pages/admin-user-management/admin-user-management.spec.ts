@@ -1,38 +1,96 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Observable, of, Subject, throwError } from 'rxjs';
-import { AppUser, CourseAssignment, CourseManagementResponse } from '../../models/app.models';
+import { defer, Observable, of, Subject, throwError } from 'rxjs';
+import { AppUser, CourseAssignment, CourseManagementResponse, Role } from '../../models/app.models';
 import { AdminUserService } from '../../services/admin-user';
+import { AuthService } from '../../services/auth';
 import { CourseManagementService } from '../../services/course-management';
 import { AdminUserManagementComponent } from './admin-user-management';
+import { AdminUserFormComponent } from './user-form/user-form';
 
 describe('AdminUserManagementComponent', () => {
   function create(
     usersResponse: Observable<AppUser[]> = of(users),
     coursesResponse: Observable<CourseManagementResponse[]> = of(courses),
     assignmentsResponse: Observable<CourseAssignment[]> = of([]),
+    role: Role | null = 'ADMIN',
   ) {
     const adminService = {
       getUsers: vi.fn(() => usersResponse),
       getAssignments: vi.fn(() => assignmentsResponse),
       assignCourse: vi.fn(() => of(assignment)),
+      createUser: vi.fn(() => of(createdUser)),
     };
     const courseService = { getCourses: vi.fn(() => coursesResponse) };
     const snackBar: Pick<MatSnackBar, 'open'> = { open: vi.fn() };
+    const dialog = {
+      open: vi.fn(() => ({ afterClosed: (): Observable<AppUser | undefined> => of(undefined) })),
+    };
     TestBed.configureTestingModule({
       imports: [AdminUserManagementComponent],
       providers: [
         { provide: AdminUserService, useValue: adminService },
+        { provide: AuthService, useValue: { currentRole: signal(role) } },
         { provide: CourseManagementService, useValue: courseService },
       ],
     });
+    TestBed.overrideProvider(MatDialog, { useValue: dialog });
     TestBed.overrideProvider(MatSnackBar, { useValue: snackBar });
     const fixture = TestBed.createComponent(AdminUserManagementComponent);
     const component = fixture.componentInstance;
     fixture.detectChanges();
-    return { fixture, component, adminService, courseService, snackBar };
+    return { fixture, component, adminService, courseService, snackBar, dialog };
   }
+
+  it('shows Add User for ADMIN and opens the user form dialog', () => {
+    const { fixture, component, dialog } = create();
+    const button = fixture.nativeElement.querySelector('.add-user-button') as HTMLButtonElement;
+    expect(button.textContent).toContain('Add User');
+
+    button.click();
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      AdminUserFormComponent,
+      expect.objectContaining({
+        width: '620px',
+        autoFocus: 'first-tabbable',
+        restoreFocus: true,
+      }),
+    );
+    expect(component.canCreateUser()).toBe(true);
+  });
+
+  it.each(['USER', 'INSTRUCTOR'] as const)('hides user creation from %s', (role) => {
+    const { fixture, component, dialog } = create(of(users), of(courses), of([]), role);
+    expect(fixture.nativeElement.querySelector('.add-user-button')).toBeNull();
+    component.openCreateUserForm();
+    expect(dialog.open).not.toHaveBeenCalled();
+  });
+
+  it('refreshes users after creation without clearing the selected user or assignments', () => {
+    const userResponses = [users, [...users, createdUser]];
+    const usersResponse = defer(() => of(userResponses.shift()!));
+    const { component, adminService, dialog, snackBar } = create(
+      usersResponse,
+      of(courses),
+      of([assignment]),
+    );
+    component.selectUser(users[0]);
+    dialog.open.mockReturnValue({ afterClosed: () => of(createdUser) });
+
+    component.openCreateUserForm();
+
+    expect(adminService.getUsers).toHaveBeenCalledTimes(2);
+    expect(component.users()).toEqual([...users, createdUser]);
+    expect(component.selectedUser()).toEqual(users[0]);
+    expect(component.assignments()).toEqual([assignment]);
+    expect(snackBar.open).toHaveBeenCalledWith('User created successfully.', 'Dismiss', {
+      duration: 3500,
+    });
+  });
 
   it('loads and renders users', () => {
     const { fixture, component, adminService, courseService } = create();
@@ -159,6 +217,12 @@ describe('AdminUserManagementComponent', () => {
 const users: AppUser[] = [
   { id: 4, name: 'Learner One', email: 'learner@example.com', role: 'USER' },
 ];
+const createdUser: AppUser = {
+  id: 5,
+  name: 'New Instructor',
+  email: 'instructor@example.com',
+  role: 'INSTRUCTOR',
+};
 const courses: CourseManagementResponse[] = [
   {
     id: 7,

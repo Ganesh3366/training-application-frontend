@@ -5,6 +5,12 @@
       <h1>User Course Assignments</h1>
       <p>Select a user to review and assign SkillForge courses.</p>
     </div>
+    @if (canCreateUser()) {
+      <button mat-flat-button class="add-user-button" type="button" (click)="openCreateUserForm()">
+        <mat-icon aria-hidden="true">person_add</mat-icon>
+        Add User
+      </button>
+    }
   </header>
 
   <div class="management-grid">

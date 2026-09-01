@@ -7,6 +7,14 @@ export interface AppUser {
   role: Role;
 }
 
+export interface AdminUserCreateRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: Role;
+}
+
 export interface SignupRequest {
   name: string;
   email: string;

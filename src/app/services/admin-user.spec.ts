@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { AppUser, CourseAssignment } from '../models/app.models';
+import { AdminUserCreateRequest, AppUser, CourseAssignment } from '../models/app.models';
 import { AdminUserService } from './admin-user';
 
 describe('AdminUserService', () => {
@@ -25,6 +25,21 @@ describe('AdminUserService', () => {
     request.flush([user]);
   });
 
+  it('posts the exact user creation payload to the admin users endpoint', () => {
+    service.createUser(createRequest).subscribe((result) => expect(result).toEqual(user));
+    const request = http.expectOne('/api/admin/users');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(createRequest);
+    expect(Object.keys(request.request.body)).toEqual([
+      'firstName',
+      'lastName',
+      'email',
+      'password',
+      'role',
+    ]);
+    request.flush(user);
+  });
+
   it('gets assignments for the requested user', () => {
     service.getAssignments(4).subscribe((result) => expect(result).toEqual([assignment]));
     const request = http.expectOne('/api/admin/users/4/assignments');
@@ -43,6 +58,13 @@ describe('AdminUserService', () => {
 });
 
 const user: AppUser = { id: 4, name: 'Learner', email: 'learner@example.com', role: 'USER' };
+const createRequest: AdminUserCreateRequest = {
+  firstName: 'Learner',
+  lastName: 'One',
+  email: 'learner@example.com',
+  password: 'strong-password',
+  role: 'USER',
+};
 const assignment: CourseAssignment = {
   id: 10,
   assignedAt: '2026-08-31T10:00:00Z',

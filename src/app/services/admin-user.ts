@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AppUser, CourseAssignment, CourseAssignmentRequest } from '../models/app.models';
+import {
+  AdminUserCreateRequest,
+  AppUser,
+  CourseAssignment,
+  CourseAssignmentRequest,
+} from '../models/app.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminUserService {
@@ -10,6 +15,10 @@ export class AdminUserService {
 
   getUsers(): Observable<AppUser[]> {
     return this.http.get<AppUser[]>(this.apiUrl);
+  }
+
+  createUser(request: AdminUserCreateRequest): Observable<AppUser> {
+    return this.http.post<AppUser>(this.apiUrl, request);
   }
 
   getAssignments(userId: number): Observable<CourseAssignment[]> {

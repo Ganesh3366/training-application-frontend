@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -10,7 +11,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AppUser, CourseAssignment, CourseManagementResponse } from '../../models/app.models';
 import { AdminUserService } from '../../services/admin-user';
+import { AuthService } from '../../services/auth';
 import { CourseManagementService } from '../../services/course-management';
+import { AdminUserFormComponent } from './user-form/user-form';
 
 @Component({
   selector: 'app-admin-user-management',
@@ -19,6 +22,7 @@ import { CourseManagementService } from '../../services/course-management';
     DatePipe,
     FormsModule,
     MatButtonModule,
+    MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -30,7 +34,9 @@ import { CourseManagementService } from '../../services/course-management';
 })
 export class AdminUserManagementComponent {
   private readonly adminUsers = inject(AdminUserService);
+  private readonly auth = inject(AuthService);
   private readonly courseManagement = inject(CourseManagementService);
+  private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private assignmentRequestVersion = 0;
 
@@ -39,6 +45,7 @@ export class AdminUserManagementComponent {
   readonly assignments = signal<CourseAssignment[]>([]);
   readonly selectedUser = signal<AppUser | null>(null);
   readonly selectedCourseId = signal<number | null>(null);
+  readonly canCreateUser = computed(() => this.auth.currentRole() === 'ADMIN');
 
   readonly usersLoading = signal(true);
   readonly usersError = signal<string | null>(null);
@@ -68,6 +75,27 @@ export class AdminUserManagementComponent {
   constructor() {
     this.loadUsers();
     this.loadCourses();
+  }
+
+  openCreateUserForm(): void {
+    if (!this.canCreateUser()) return;
+
+    const dialogRef = this.dialog.open<AdminUserFormComponent, undefined, AppUser>(
+      AdminUserFormComponent,
+      {
+        width: '620px',
+        maxWidth: 'calc(100vw - 24px)',
+        maxHeight: 'calc(100dvh - 24px)',
+        autoFocus: 'first-tabbable',
+        restoreFocus: true,
+      },
+    );
+
+    dialogRef.afterClosed().subscribe((createdUser) => {
+      if (!createdUser) return;
+      this.loadUsers();
+      this.snackBar.open('User created successfully.', 'Dismiss', { duration: 3500 });
+    });
   }
 
   loadUsers(): void {
