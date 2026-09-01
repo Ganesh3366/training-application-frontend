@@ -79,4 +79,4 @@ describe('AuthDialog', () => {
   });
 });
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
+const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };

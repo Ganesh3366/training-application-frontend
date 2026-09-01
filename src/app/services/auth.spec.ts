@@ -163,7 +163,7 @@ describe('AuthService', () => {
   });
 });
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
+const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };
 const csrf: CsrfTokenResponse = {
   token: 'test-token', headerName: 'X-XSRF-TOKEN', parameterName: '_csrf',
 };

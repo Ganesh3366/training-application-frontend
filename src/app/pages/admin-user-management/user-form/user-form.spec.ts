@@ -199,4 +199,5 @@ const createdUser: AppUser = {
   name: 'Ada Lovelace',
   email: 'ada@example.com',
   role: 'INSTRUCTOR',
+  enabled: true,
 };

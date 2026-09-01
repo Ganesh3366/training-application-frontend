@@ -3,6 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
   AdminUserCreateRequest,
+  AdminUserEnabledRequest,
+  AdminUserUpdateRequest,
   AppUser,
   CourseAssignment,
   CourseAssignmentRequest,
@@ -19,6 +21,15 @@ export class AdminUserService {
 
   createUser(request: AdminUserCreateRequest): Observable<AppUser> {
     return this.http.post<AppUser>(this.apiUrl, request);
+  }
+
+  updateUser(userId: number, request: AdminUserUpdateRequest): Observable<AppUser> {
+    return this.http.put<AppUser>(`${this.apiUrl}/${userId}`, request);
+  }
+
+  setUserEnabled(userId: number, enabled: boolean): Observable<AppUser> {
+    const request: AdminUserEnabledRequest = { enabled };
+    return this.http.patch<AppUser>(`${this.apiUrl}/${userId}/enabled`, request);
   }
 
   getAssignments(userId: number): Observable<CourseAssignment[]> {

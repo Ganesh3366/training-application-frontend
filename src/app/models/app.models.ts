@@ -5,6 +5,7 @@ export interface AppUser {
   name: string;
   email: string;
   role: Role;
+  enabled: boolean;
 }
 
 export interface AdminUserCreateRequest {
@@ -13,6 +14,16 @@ export interface AdminUserCreateRequest {
   email: string;
   password: string;
   role: Role;
+}
+
+export interface AdminUserUpdateRequest {
+  name: string;
+  email: string;
+  role: Role;
+}
+
+export interface AdminUserEnabledRequest {
+  enabled: boolean;
 }
 
 export interface SignupRequest {

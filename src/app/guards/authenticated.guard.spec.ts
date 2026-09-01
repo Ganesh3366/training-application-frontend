@@ -84,4 +84,10 @@ describe('authenticatedGuard', () => {
   });
 });
 
-const user: AppUser = { id: 5, name: 'Learner', email: 'learner@example.com', role: 'USER' };
+const user: AppUser = {
+  id: 5,
+  name: 'Learner',
+  email: 'learner@example.com',
+  role: 'USER',
+  enabled: true,
+};

@@ -3,17 +3,22 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { AdminUserCreateRequest, Role } from '../../../models/app.models';
+import { AdminUserUpdateRequest, AppUser, Role } from '../../../models/app.models';
 import { AdminUserService } from '../../../services/admin-user';
-import { ADMIN_USER_ROLES, nonWhitespace, validRole } from './user-form-validation';
+import { ADMIN_USER_ROLES, nonWhitespace, validRole } from '../user-form/user-form-validation';
+
+export interface EditUserFormData {
+  user: AppUser;
+  editingCurrentAdmin: boolean;
+}
 
 @Component({
-  selector: 'app-admin-user-form',
+  selector: 'app-edit-user-form',
   standalone: true,
   imports: [
     A11yModule,
@@ -25,40 +30,35 @@ import { ADMIN_USER_ROLES, nonWhitespace, validRole } from './user-form-validati
     MatInputModule,
     MatSelectModule,
   ],
-  templateUrl: './user-form.html',
-  styleUrl: './user-form.css',
+  templateUrl: './edit-user-form.html',
+  styleUrl: '../user-form/user-form.css',
 })
-export class AdminUserFormComponent {
+export class EditUserFormComponent {
   private readonly adminUsers = inject(AdminUserService);
-  private readonly dialogRef = inject(MatDialogRef<AdminUserFormComponent>);
+  private readonly dialogRef = inject(MatDialogRef<EditUserFormComponent>);
+  readonly data = inject<EditUserFormData>(MAT_DIALOG_DATA);
 
   readonly roleOptions = ADMIN_USER_ROLES;
   readonly submitting = signal(false);
   readonly submissionError = signal<string | null>(null);
   readonly form = new FormGroup({
-    firstName: new FormControl('', {
+    name: new FormControl(this.data.user.name, {
       nonNullable: true,
       validators: [Validators.required, nonWhitespace, Validators.maxLength(100)],
     }),
-    lastName: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, nonWhitespace, Validators.maxLength(100)],
-    }),
-    email: new FormControl('', {
+    email: new FormControl(this.data.user.email, {
       nonNullable: true,
       validators: [Validators.required, Validators.email, Validators.maxLength(254)],
     }),
-    password: new FormControl('', {
+    role: new FormControl<Role>(this.data.user.role, {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        nonWhitespace,
-        Validators.minLength(8),
-        Validators.maxLength(72),
-      ],
+      validators: [Validators.required, validRole],
     }),
-    role: new FormControl<Role | null>(null, [Validators.required, validRole]),
   });
+
+  constructor() {
+    if (this.data.editingCurrentAdmin) this.form.controls.role.disable();
+  }
 
   submit(): void {
     if (this.submitting()) return;
@@ -66,20 +66,21 @@ export class AdminUserFormComponent {
     if (this.form.invalid) return;
 
     const value = this.form.getRawValue();
-    if (value.role === null) return;
+    if (this.data.editingCurrentAdmin && value.role !== 'ADMIN') {
+      this.submissionError.set('You cannot change your own ADMIN role.');
+      return;
+    }
 
-    const request: AdminUserCreateRequest = {
-      firstName: value.firstName.trim(),
-      lastName: value.lastName.trim(),
+    const request: AdminUserUpdateRequest = {
+      name: value.name.trim(),
       email: value.email.trim(),
-      password: value.password,
       role: value.role,
     };
 
     this.submitting.set(true);
     this.submissionError.set(null);
     this.dialogRef.disableClose = true;
-    this.adminUsers.createUser(request).subscribe({
+    this.adminUsers.updateUser(this.data.user.id, request).subscribe({
       next: (user) => this.dialogRef.close(user),
       error: (error: HttpErrorResponse) => {
         this.submissionError.set(this.errorMessage(error));
@@ -94,13 +95,27 @@ export class AdminUserFormComponent {
   }
 
   private errorMessage(error: HttpErrorResponse): string {
-    if (error.status === 409) return 'An account with this email already exists.';
+    if (error.status === 409) return 'A user with this email already exists.';
+    if (
+      error.status === 400 &&
+      this.errorDetail(error) === 'You cannot change your own ADMIN role'
+    ) {
+      return 'You cannot change your own ADMIN role.';
+    }
     if (error.status === 400)
       return 'Some user details are invalid. Review the form and try again.';
     if (error.status === 401 || error.status === 403)
-      return 'You do not have permission to create users.';
+      return 'You do not have permission to edit users.';
+    if (error.status === 404)
+      return 'This user no longer exists. Close the form and refresh the list.';
     if (error.status === 0)
       return 'Unable to reach SkillForge. Check your connection and try again.';
-    return 'Unable to create the user. Please try again.';
+    return 'Unable to update the user. Please try again.';
+  }
+
+  private errorDetail(error: HttpErrorResponse): string | null {
+    const body = error.error;
+    if (!body || typeof body !== 'object' || !('detail' in body)) return null;
+    return typeof body.detail === 'string' ? body.detail : null;
   }
 }

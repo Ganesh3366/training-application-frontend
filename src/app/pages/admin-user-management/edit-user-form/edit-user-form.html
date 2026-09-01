@@ -1,0 +1,90 @@
+<section class="user-form-dialog" aria-labelledby="edit-user-form-title">
+  <header class="dialog-header">
+    <div>
+      <p class="eyebrow">User Management</p>
+      <h2 id="edit-user-form-title">Edit User</h2>
+      <p>Update account details without changing the user's password.</p>
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      (click)="close()"
+      [disabled]="submitting()"
+      aria-label="Close edit user form"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <mat-dialog-content>
+    <form id="edit-user-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Name</mat-label>
+        <input
+          matInput
+          formControlName="name"
+          autocomplete="name"
+          maxlength="100"
+          cdkFocusInitial
+        />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <mat-error>
+            {{
+              form.controls.name.hasError('maxlength')
+                ? 'Name must be 100 characters or fewer.'
+                : 'Enter a name.'
+            }}
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" maxlength="254" />
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <mat-error>
+            {{
+              form.controls.email.hasError('maxlength')
+                ? 'Email must be 254 characters or fewer.'
+                : 'Enter a valid email address.'
+            }}
+          </mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role" aria-label="Role">
+          @for (role of roleOptions; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+        @if (data.editingCurrentAdmin) {
+          <mat-hint>Your own ADMIN role cannot be changed.</mat-hint>
+        }
+        @if (form.controls.role.touched && form.controls.role.invalid) {
+          <mat-error>Select a valid role.</mat-error>
+        }
+      </mat-form-field>
+
+      @if (submissionError()) {
+        <p class="submission-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>{{ submissionError() }}
+        </p>
+      }
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="close()" [disabled]="submitting()">Cancel</button>
+    <button
+      mat-flat-button
+      class="primary-action"
+      type="submit"
+      form="edit-user-form"
+      [disabled]="submitting()"
+    >
+      {{ submitting() ? 'Saving...' : 'Save changes' }}
+    </button>
+  </mat-dialog-actions>
+</section>

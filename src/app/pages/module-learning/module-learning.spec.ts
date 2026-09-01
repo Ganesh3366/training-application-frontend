@@ -326,7 +326,7 @@ const passedResult: QuizResult = {
   passed: true,
 };
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
+const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };
 
 function selectAllAnswers(fixture: ComponentFixture<ModuleLearning>): void {
   const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;

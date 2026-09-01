@@ -64,4 +64,10 @@ describe('managementRoleGuard', () => {
   });
 });
 
-const user: AppUser = { id: 1, name: 'Learner', email: 'learner@example.com', role: 'USER' };
+const user: AppUser = {
+  id: 1,
+  name: 'Learner',
+  email: 'learner@example.com',
+  role: 'USER',
+  enabled: true,
+};

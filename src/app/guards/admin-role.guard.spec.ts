@@ -8,7 +8,13 @@ import { adminRoleGuard } from './admin-role.guard';
 
 describe('adminRoleGuard', () => {
   function configure(role: Role) {
-    const user: AppUser = { id: 1, name: 'Test User', email: 'user@example.com', role };
+    const user: AppUser = {
+      id: 1,
+      name: 'Test User',
+      email: 'user@example.com',
+      role,
+      enabled: true,
+    };
     const currentUser = signal<AppUser | null>(user);
     const authResolved = signal(true);
     const loadCurrentUser = vi.fn(() => of(user));
@@ -44,6 +50,7 @@ describe('adminRoleGuard', () => {
       name: 'Admin',
       email: 'admin@example.com',
       role: 'ADMIN',
+      enabled: true,
     };
     const authResolved = signal(false);
     const loadCurrentUser = vi.fn(() => of(admin));

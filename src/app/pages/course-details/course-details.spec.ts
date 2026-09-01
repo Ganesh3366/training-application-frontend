@@ -395,7 +395,13 @@ const course: Course = {
   category: 'Information Technology (IT)',
 };
 
-const user: AppUser = { id: 5, name: 'Learner', email: 'learner@example.com', role: 'USER' };
+const user: AppUser = {
+  id: 5,
+  name: 'Learner',
+  email: 'learner@example.com',
+  role: 'USER',
+  enabled: true,
+};
 
 const modules: CourseModule[] = [
   { id: 9, title: 'First Module', description: null, position: 1 },

@@ -2,14 +2,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { By } from '@angular/platform-browser';
 import { defer, Observable, of, Subject, throwError } from 'rxjs';
 import { AppUser, CourseAssignment, CourseManagementResponse, Role } from '../../models/app.models';
 import { AdminUserService } from '../../services/admin-user';
 import { AuthService } from '../../services/auth';
 import { CourseManagementService } from '../../services/course-management';
 import { AdminUserManagementComponent } from './admin-user-management';
+import { EditUserFormComponent } from './edit-user-form/edit-user-form';
 import { AdminUserFormComponent } from './user-form/user-form';
+import { UserStatusDialog } from './user-status-dialog/user-status-dialog';
 
 describe('AdminUserManagementComponent', () => {
   function create(
@@ -23,17 +27,30 @@ describe('AdminUserManagementComponent', () => {
       getAssignments: vi.fn(() => assignmentsResponse),
       assignCourse: vi.fn(() => of(assignment)),
       createUser: vi.fn(() => of(createdUser)),
+      updateUser: vi.fn(),
+      setUserEnabled: vi.fn((_userId: number, enabled: boolean) => of({ ...users[0], enabled })),
     };
     const courseService = { getCourses: vi.fn(() => coursesResponse) };
     const snackBar: Pick<MatSnackBar, 'open'> = { open: vi.fn() };
     const dialog = {
-      open: vi.fn(() => ({ afterClosed: (): Observable<AppUser | undefined> => of(undefined) })),
+      open: vi.fn(() => ({ afterClosed: (): Observable<unknown> => of(undefined) })),
     };
+    const currentUser = signal<AppUser | null>(
+      role
+        ? {
+            id: 1,
+            name: 'Current User',
+            email: 'current@example.com',
+            role,
+            enabled: true,
+          }
+        : null,
+    );
     TestBed.configureTestingModule({
       imports: [AdminUserManagementComponent],
       providers: [
         { provide: AdminUserService, useValue: adminService },
-        { provide: AuthService, useValue: { currentRole: signal(role) } },
+        { provide: AuthService, useValue: { currentRole: signal(role), currentUser } },
         { provide: CourseManagementService, useValue: courseService },
       ],
     });
@@ -42,7 +59,7 @@ describe('AdminUserManagementComponent', () => {
     const fixture = TestBed.createComponent(AdminUserManagementComponent);
     const component = fixture.componentInstance;
     fixture.detectChanges();
-    return { fixture, component, adminService, courseService, snackBar, dialog };
+    return { fixture, component, adminService, courseService, snackBar, dialog, currentUser };
   }
 
   it('shows Add User for ADMIN and opens the user form dialog', () => {
@@ -64,10 +81,176 @@ describe('AdminUserManagementComponent', () => {
   });
 
   it.each(['USER', 'INSTRUCTOR'] as const)('hides user creation from %s', (role) => {
-    const { fixture, component, dialog } = create(of(users), of(courses), of([]), role);
+    const { fixture, component, dialog, adminService } = create(
+      of([users[0], inactiveUser]),
+      of(courses),
+      of([]),
+      role,
+    );
     expect(fixture.nativeElement.querySelector('.add-user-button')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.edit-user-action')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.more-actions-trigger')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.user-enabled-action')).toBeNull();
     component.openCreateUserForm();
+    component.openEditUserForm(users[0]);
+    component.confirmDeactivateUser(users[0]);
+    component.reactivateUser(inactiveUser);
     expect(dialog.open).not.toHaveBeenCalled();
+    expect(adminService.setUserEnabled).not.toHaveBeenCalled();
+  });
+
+  it('keeps View assignments and Edit visible with accessible More actions triggers', () => {
+    const { fixture } = create(of([users[0], inactiveUser]));
+    const rows = fixture.nativeElement.querySelectorAll(
+      'tbody tr',
+    ) as NodeListOf<HTMLTableRowElement>;
+    expect(rows[0].textContent).toContain('Active');
+    expect(rows[0].querySelector('.view-assignments-action')?.textContent).toContain(
+      'View assignments',
+    );
+    expect(rows[0].querySelector('.edit-user-action')).not.toBeNull();
+    expect(rows[0].querySelector('.more-actions-trigger')?.getAttribute('aria-label')).toBe(
+      'More actions for Learner One',
+    );
+    expect(rows[1].textContent).toContain('Inactive');
+    expect(rows[1].querySelector('.more-actions-trigger')?.getAttribute('aria-label')).toBe(
+      'More actions for Inactive Learner',
+    );
+  });
+
+  it('shows only the correct status action in each Material menu', async () => {
+    const { fixture } = create(of([users[0], inactiveUser]));
+    const triggers = fixture.debugElement.queryAll(By.directive(MatMenuTrigger));
+
+    triggers[0].injector.get(MatMenuTrigger).openMenu();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    let menu = document.querySelector('[role="menu"]') as HTMLElement;
+    expect(menu.textContent).toContain('Deactivate');
+    expect(menu.textContent).not.toContain('Reactivate');
+    const deactivate = menu.querySelector('.deactivate-action') as HTMLButtonElement;
+    expect(deactivate).not.toBeNull();
+    expect(deactivate.textContent).toContain('person_off');
+    expect(deactivate.textContent).toContain('Deactivate');
+
+    triggers[0].injector.get(MatMenuTrigger).closeMenu();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    triggers[1].injector.get(MatMenuTrigger).openMenu();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const reactivate = document.querySelector('.reactivate-action') as HTMLButtonElement;
+    expect(reactivate).not.toBeNull();
+    menu = reactivate.closest('[role="menu"]') as HTMLElement;
+    expect(menu.textContent).toContain('Reactivate');
+    expect(menu.textContent).not.toContain('Deactivate');
+    expect(menu.querySelector('.reactivate-action')).toBe(reactivate);
+  });
+
+  it('opens Edit User and applies the safe response without clearing assignment state', () => {
+    const { component, adminService, dialog, snackBar } = create(
+      of(users),
+      of(courses),
+      of([assignment]),
+    );
+    component.selectUser(users[0]);
+    dialog.open.mockReturnValue({ afterClosed: () => of(updatedUser) });
+
+    component.openEditUserForm(users[0]);
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      EditUserFormComponent,
+      expect.objectContaining({
+        data: { user: users[0], editingCurrentAdmin: false },
+      }),
+    );
+    expect(component.users()).toEqual([updatedUser]);
+    expect(component.selectedUser()).toEqual(updatedUser);
+    expect(component.assignments()).toEqual([assignment]);
+    expect(adminService.getAssignments).toHaveBeenCalledOnce();
+    expect(snackBar.open).toHaveBeenCalledWith('User updated successfully.', 'Dismiss', {
+      duration: 3500,
+    });
+  });
+
+  it('requires deactivation confirmation and cancellation sends no request', () => {
+    const { component, dialog, adminService } = create();
+    dialog.open.mockReturnValue({ afterClosed: () => of(false) });
+
+    component.confirmDeactivateUser(users[0]);
+
+    expect(dialog.open).toHaveBeenCalledWith(
+      UserStatusDialog,
+      expect.objectContaining({ data: { user: users[0] } }),
+    );
+    expect(adminService.setUserEnabled).not.toHaveBeenCalled();
+  });
+
+  it('deactivates after confirmation and preserves selected assignments', () => {
+    const disabledUser = { ...users[0], enabled: false };
+    const { component, dialog, adminService } = create(of(users), of(courses), of([assignment]));
+    component.selectUser(users[0]);
+    dialog.open.mockReturnValue({ afterClosed: () => of(true) });
+    adminService.setUserEnabled.mockReturnValue(of(disabledUser));
+
+    component.confirmDeactivateUser(users[0]);
+
+    expect(adminService.setUserEnabled).toHaveBeenCalledWith(users[0].id, false);
+    expect(component.users()).toEqual([disabledUser]);
+    expect(component.selectedUser()).toEqual(disabledUser);
+    expect(component.assignments()).toEqual([assignment]);
+  });
+
+  it('reactivates directly and reflects enabled=true', () => {
+    const reactivatedUser = { ...inactiveUser, enabled: true };
+    const { component, adminService } = create(of([inactiveUser]));
+    adminService.setUserEnabled.mockReturnValue(of(reactivatedUser));
+
+    component.reactivateUser(inactiveUser);
+
+    expect(adminService.setUserEnabled).toHaveBeenCalledWith(inactiveUser.id, true);
+    expect(component.users()).toEqual([reactivatedUser]);
+  });
+
+  it('hides self-deactivation by authenticated user ID and still blocks direct execution', () => {
+    const currentAdmin: AppUser = {
+      id: 1,
+      name: 'Current Admin',
+      email: 'admin@example.com',
+      role: 'ADMIN',
+      enabled: true,
+    };
+    const { fixture, component, dialog, adminService } = create(of([currentAdmin]));
+    expect(fixture.nativeElement.querySelector('.more-actions-trigger')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Deactivate');
+
+    component.confirmDeactivateUser(currentAdmin);
+    expect(dialog.open).not.toHaveBeenCalled();
+    expect(adminService.setUserEnabled).not.toHaveBeenCalled();
+  });
+
+  it('maps a backend self-deactivation rejection without exposing raw error details', () => {
+    const { component, dialog, adminService } = create();
+    dialog.open.mockReturnValue({ afterClosed: () => of(true) });
+    adminService.setUserEnabled.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              detail: 'You cannot disable your own account',
+              trace: 'sensitive stack trace',
+            },
+          }),
+      ),
+    );
+
+    component.confirmDeactivateUser(users[0]);
+
+    expect(component.userActionError()).toBe('You cannot deactivate your own account.');
+    expect(component.userActionError()).not.toContain('stack');
   });
 
   it('refreshes users after creation without clearing the selected user or assignments', () => {
@@ -103,10 +286,11 @@ describe('AdminUserManagementComponent', () => {
       Array.from<HTMLTableCellElement>(fixture.nativeElement.querySelectorAll('th')).map((cell) =>
         cell.textContent?.trim(),
       ),
-    ).toEqual(['User', 'Role', 'Action']);
+    ).toEqual(['User', 'Role', 'Status', 'Action']);
     const action = fixture.nativeElement.querySelector('.row-actions button') as HTMLButtonElement;
     expect(action.textContent).toContain('View assignments');
     expect(action.getAttribute('aria-label')).toBe('View course assignments for Learner One');
+    expect(fixture.nativeElement.querySelector('.table-wrap thead')).not.toBeNull();
   });
 
   it('loads assignments when a user is selected', () => {
@@ -215,12 +399,26 @@ describe('AdminUserManagementComponent', () => {
 });
 
 const users: AppUser[] = [
-  { id: 4, name: 'Learner One', email: 'learner@example.com', role: 'USER' },
+  { id: 4, name: 'Learner One', email: 'learner@example.com', role: 'USER', enabled: true },
 ];
+const inactiveUser: AppUser = {
+  id: 6,
+  name: 'Inactive Learner',
+  email: 'inactive@example.com',
+  role: 'USER',
+  enabled: false,
+};
 const createdUser: AppUser = {
   id: 5,
   name: 'New Instructor',
   email: 'instructor@example.com',
+  role: 'INSTRUCTOR',
+  enabled: true,
+};
+const updatedUser: AppUser = {
+  ...users[0],
+  name: 'Updated Learner',
+  email: 'updated@example.com',
   role: 'INSTRUCTOR',
 };
 const courses: CourseManagementResponse[] = [

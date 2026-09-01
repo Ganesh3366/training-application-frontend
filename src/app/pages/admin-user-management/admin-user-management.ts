@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -13,7 +14,9 @@ import { AppUser, CourseAssignment, CourseManagementResponse } from '../../model
 import { AdminUserService } from '../../services/admin-user';
 import { AuthService } from '../../services/auth';
 import { CourseManagementService } from '../../services/course-management';
+import { EditUserFormComponent, EditUserFormData } from './edit-user-form/edit-user-form';
 import { AdminUserFormComponent } from './user-form/user-form';
+import { UserStatusDialog, UserStatusDialogData } from './user-status-dialog/user-status-dialog';
 
 @Component({
   selector: 'app-admin-user-management',
@@ -25,6 +28,7 @@ import { AdminUserFormComponent } from './user-form/user-form';
     MatDialogModule,
     MatFormFieldModule,
     MatIconModule,
+    MatMenuModule,
     MatProgressSpinnerModule,
     MatSelectModule,
     MatSnackBarModule,
@@ -55,6 +59,8 @@ export class AdminUserManagementComponent {
   readonly assignmentsError = signal<string | null>(null);
   readonly assignmentPending = signal(false);
   readonly actionError = signal<string | null>(null);
+  readonly userActionError = signal<string | null>(null);
+  readonly enabledRequestUserId = signal<number | null>(null);
 
   readonly availableCourses = computed(() => {
     const assignedCourseIds = new Set(this.assignments().map((assignment) => assignment.course.id));
@@ -98,12 +104,74 @@ export class AdminUserManagementComponent {
     });
   }
 
+  openEditUserForm(user: AppUser): void {
+    if (!this.canCreateUser()) return;
+
+    this.userActionError.set(null);
+    const dialogRef = this.dialog.open<EditUserFormComponent, EditUserFormData, AppUser>(
+      EditUserFormComponent,
+      {
+        data: { user, editingCurrentAdmin: this.isCurrentUser(user) },
+        width: '620px',
+        maxWidth: 'calc(100vw - 24px)',
+        maxHeight: 'calc(100dvh - 24px)',
+        autoFocus: 'first-tabbable',
+        restoreFocus: true,
+      },
+    );
+
+    dialogRef.afterClosed().subscribe((updatedUser) => {
+      if (!updatedUser) return;
+      this.applyUpdatedUser(updatedUser);
+      this.snackBar.open('User updated successfully.', 'Dismiss', { duration: 3500 });
+    });
+  }
+
+  confirmDeactivateUser(user: AppUser): void {
+    if (
+      !this.canCreateUser() ||
+      !user.enabled ||
+      this.isCurrentUser(user) ||
+      this.enabledRequestUserId() !== null
+    )
+      return;
+
+    this.userActionError.set(null);
+    const dialogRef = this.dialog.open<UserStatusDialog, UserStatusDialogData, boolean>(
+      UserStatusDialog,
+      {
+        data: { user },
+        width: '500px',
+        maxWidth: 'calc(100vw - 32px)',
+        autoFocus: 'first-tabbable',
+        restoreFocus: true,
+      },
+    );
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed && this.canCreateUser()) this.setUserEnabled(user, false);
+    });
+  }
+
+  reactivateUser(user: AppUser): void {
+    if (!this.canCreateUser() || user.enabled || this.enabledRequestUserId() !== null) return;
+    this.userActionError.set(null);
+    this.setUserEnabled(user, true);
+  }
+
+  isCurrentUser(user: AppUser): boolean {
+    return this.auth.currentUser()?.id === user.id;
+  }
+
   loadUsers(): void {
     this.usersLoading.set(true);
     this.usersError.set(null);
     this.adminUsers.getUsers().subscribe({
       next: (users) => {
         this.users.set(users);
+        const selectedUser = this.selectedUser();
+        const refreshedSelection = users.find((user) => user.id === selectedUser?.id);
+        if (refreshedSelection) this.selectedUser.set(refreshedSelection);
         this.usersLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
@@ -181,6 +249,31 @@ export class AdminUserManagementComponent {
     });
   }
 
+  private setUserEnabled(user: AppUser, enabled: boolean): void {
+    if (!this.canCreateUser() || (!enabled && this.isCurrentUser(user))) return;
+    this.enabledRequestUserId.set(user.id);
+    this.adminUsers.setUserEnabled(user.id, enabled).subscribe({
+      next: (updatedUser) => {
+        this.applyUpdatedUser(updatedUser);
+        this.enabledRequestUserId.set(null);
+        this.snackBar.open(enabled ? 'User reactivated.' : 'User deactivated.', 'Dismiss', {
+          duration: 3500,
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.userActionError.set(this.enabledErrorMessage(error, enabled));
+        this.enabledRequestUserId.set(null);
+      },
+    });
+  }
+
+  private applyUpdatedUser(updatedUser: AppUser): void {
+    this.users.update((users) =>
+      users.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+    );
+    if (this.selectedUser()?.id === updatedUser.id) this.selectedUser.set(updatedUser);
+  }
+
   private loadErrorMessage(error: HttpErrorResponse, resource: 'users' | 'courses'): string {
     if (error.status === 403) return 'You do not have permission to manage user assignments.';
     if (error.status === 0)
@@ -204,5 +297,25 @@ export class AdminUserManagementComponent {
     if (error.status === 0)
       return 'Unable to reach SkillForge. Check your connection and try again.';
     return 'Unable to assign the course. Please try again.';
+  }
+
+  private enabledErrorMessage(error: HttpErrorResponse, enabled: boolean): string {
+    if (error.status === 400 && this.errorDetail(error) === 'You cannot disable your own account') {
+      return 'You cannot deactivate your own account.';
+    }
+    if (error.status === 400)
+      return `Unable to ${enabled ? 'reactivate' : 'deactivate'} this user. Review the request and try again.`;
+    if (error.status === 401 || error.status === 403)
+      return 'You do not have permission to change user access.';
+    if (error.status === 404) return 'This user no longer exists. Refresh the list and try again.';
+    if (error.status === 0)
+      return 'Unable to reach SkillForge. Check your connection and try again.';
+    return `Unable to ${enabled ? 'reactivate' : 'deactivate'} the user. Please try again.`;
+  }
+
+  private errorDetail(error: HttpErrorResponse): string | null {
+    const body = error.error;
+    if (!body || typeof body !== 'object' || !('detail' in body)) return null;
+    return typeof body.detail === 'string' ? body.detail : null;
   }
 }

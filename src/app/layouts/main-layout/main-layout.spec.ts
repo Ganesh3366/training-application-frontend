@@ -236,7 +236,13 @@ describe('MainLayout authentication', () => {
   });
 });
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER' };
+const user: AppUser = {
+  id: 1,
+  name: 'Ganesh',
+  email: 'ganesh@example.com',
+  role: 'USER',
+  enabled: true,
+};
 
 function prepareScrollTarget(reducedMotion: boolean): {
   scrollIntoView: ReturnType<typeof vi.fn>;

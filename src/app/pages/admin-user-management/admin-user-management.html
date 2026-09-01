@@ -17,7 +17,7 @@
     <section
       class="panel users-panel"
       aria-labelledby="user-list-heading"
-      [attr.aria-busy]="usersLoading()"
+      [attr.aria-busy]="usersLoading() || enabledRequestUserId() !== null"
     >
       <div class="section-heading">
         <div>
@@ -27,6 +27,14 @@
           }
         </div>
       </div>
+
+      @if (userActionError()) {
+        <div class="alert error-alert user-action-error" role="alert">
+          <mat-icon aria-hidden="true">error_outline</mat-icon>
+          <span>{{ userActionError() }}</span>
+          <button mat-button type="button" (click)="userActionError.set(null)">Dismiss</button>
+        </div>
+      }
 
       @if (usersLoading()) {
         <div class="state-panel compact" role="status">
@@ -56,6 +64,7 @@
               <tr>
                 <th scope="col">User</th>
                 <th scope="col">Role</th>
+                <th scope="col">Status</th>
                 <th scope="col" class="actions-heading">Action</th>
               </tr>
             </thead>
@@ -69,17 +78,72 @@
                   <td data-label="Role">
                     <span class="role-pill">{{ user.role }}</span>
                   </td>
+                  <td data-label="Status">
+                    <span class="status-pill" [class.inactive]="!user.enabled">
+                      {{ user.enabled ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
                   <td data-label="Action" class="row-actions">
-                    <button
-                      mat-button
-                      type="button"
-                      (click)="selectUser(user)"
-                      [disabled]="assignmentPending()"
-                      [attr.aria-label]="'View course assignments for ' + user.name"
-                      [attr.aria-pressed]="selectedUser()?.id === user.id"
-                    >
-                      {{ selectedUser()?.id === user.id ? 'Selected' : 'View assignments' }}
-                    </button>
+                    <div class="row-action-group">
+                      <button
+                        mat-button
+                        class="compact-user-action view-assignments-action"
+                        type="button"
+                        (click)="selectUser(user)"
+                        [disabled]="assignmentPending()"
+                        [attr.aria-label]="'View course assignments for ' + user.name"
+                        [attr.aria-pressed]="selectedUser()?.id === user.id"
+                      >
+                        {{ selectedUser()?.id === user.id ? 'Selected' : 'View assignments' }}
+                      </button>
+                      @if (canCreateUser()) {
+                        <button
+                          mat-button
+                          class="compact-user-action edit-user-action"
+                          type="button"
+                          (click)="openEditUserForm(user)"
+                          [attr.aria-label]="'Edit ' + user.name"
+                        >
+                          Edit
+                        </button>
+                        @if (!user.enabled || !isCurrentUser(user)) {
+                          <button
+                            mat-icon-button
+                            class="more-actions-trigger"
+                            type="button"
+                            [matMenuTriggerFor]="userActionsMenu"
+                            [disabled]="enabledRequestUserId() !== null"
+                            [attr.aria-label]="'More actions for ' + user.name"
+                          >
+                            <mat-icon aria-hidden="true">more_vert</mat-icon>
+                          </button>
+
+                          <mat-menu #userActionsMenu="matMenu" xPosition="before">
+                            @if (user.enabled) {
+                              <button
+                                mat-menu-item
+                                class="user-enabled-action deactivate-action"
+                                type="button"
+                                (click)="confirmDeactivateUser(user)"
+                              >
+                                <mat-icon aria-hidden="true">person_off</mat-icon>
+                                <span>Deactivate</span>
+                              </button>
+                            } @else {
+                              <button
+                                mat-menu-item
+                                class="user-enabled-action reactivate-action"
+                                type="button"
+                                (click)="reactivateUser(user)"
+                              >
+                                <mat-icon aria-hidden="true">person_check</mat-icon>
+                                <span>Reactivate</span>
+                              </button>
+                            }
+                          </mat-menu>
+                        }
+                      }
+                    </div>
                   </td>
                 </tr>
               }
