@@ -88,10 +88,11 @@ export class MainLayout {
         confirmText: 'Sign out',
         cancelText: 'Cancel',
       },
-      width: '420px',
+      width: '460px',
       maxWidth: 'calc(100vw - 32px)',
       autoFocus: 'first-tabbable',
       restoreFocus: true,
+      backdropClass: 'confirm-dialog-backdrop',
     });
 
     dialogRef.afterClosed().subscribe((result: boolean | undefined) => {
