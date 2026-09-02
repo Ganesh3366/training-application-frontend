@@ -37,7 +37,7 @@
           <button mat-stroked-button [matMenuTriggerFor]="accountMenu" class="account-button">
             <mat-icon>account_circle</mat-icon>{{ currentUser()?.name }}
           </button>
-          <mat-menu #accountMenu="matMenu">
+          <mat-menu #accountMenu="matMenu" class="account-menu-panel">
             <button mat-menu-item (click)="confirmLogout()" [disabled]="logoutPending()">
               <mat-icon>logout</mat-icon>{{ logoutPending() ? 'Signing out...' : 'Sign out' }}
             </button>
