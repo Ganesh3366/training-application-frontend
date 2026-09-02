@@ -97,7 +97,11 @@
                           <mat-icon aria-hidden="true">more_vert</mat-icon>
                         </button>
 
-                        <mat-menu #userActionsMenu="matMenu" xPosition="before">
+                        <mat-menu
+                          #userActionsMenu="matMenu"
+                          xPosition="before"
+                          class="admin-user-actions-menu-panel"
+                        >
                           <button
                             mat-menu-item
                             class="user-enabled-action view-assignments-action"
