@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { DatePipe } from '@angular/common';
+import { DatePipe, TitleCasePipe } from '@angular/common';
 import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -12,15 +13,24 @@ import { LearnerProgressReportService } from '../../services/learner-progress-re
 
 const REPORT_REFRESH_INTERVAL_MS = 15_000;
 
+interface LearnerReportGroup {
+  learnerId: number;
+  learnerName: string;
+  learnerEmail: string;
+  reports: LearnerCourseReport[];
+}
+
 @Component({
   selector: 'app-learner-progress-report',
   standalone: true,
   imports: [
     DatePipe,
     MatButtonModule,
+    MatExpansionModule,
     MatIconModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
+    TitleCasePipe,
   ],
   templateUrl: './learner-progress-report.html',
   styleUrl: './learner-progress-report.css',
@@ -31,6 +41,29 @@ export class LearnerProgressReportComponent {
   private requestInProgress = false;
 
   readonly reports = signal<LearnerCourseReport[]>([]);
+  readonly learnerGroups = computed<LearnerReportGroup[]>(() => {
+    const groups = new Map<number, LearnerReportGroup>();
+
+    for (const report of this.reports()) {
+      const existingGroup = groups.get(report.learnerId);
+      if (existingGroup) {
+        existingGroup.reports.push(report);
+        continue;
+      }
+
+      groups.set(report.learnerId, {
+        learnerId: report.learnerId,
+        learnerName: report.learnerName,
+        learnerEmail: report.learnerEmail,
+        reports: [report],
+      });
+    }
+
+    return Array.from(groups.values()).sort(
+      (left, right) =>
+        left.learnerName.localeCompare(right.learnerName) || left.learnerId - right.learnerId,
+    );
+  });
   readonly assignedCount = computed(
     () => this.reports().filter((report) => report.assigned).length,
   );

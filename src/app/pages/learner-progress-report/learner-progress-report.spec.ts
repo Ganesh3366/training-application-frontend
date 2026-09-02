@@ -35,6 +35,35 @@ describe('LearnerProgressReportComponent', () => {
     expect(service.getReports).toHaveBeenCalledTimes(1);
   });
 
+  it('groups multiple course reports under one learner expansion panel', () => {
+    const secondCourse = { ...report, courseId: 4, courseTitle: 'TypeScript Essentials' };
+    const { fixture } = create(of([report, secondCourse]));
+
+    const panels = fixture.nativeElement.querySelectorAll('.learner-panel');
+    expect(panels).toHaveLength(1);
+    expect(panels[0].textContent).toContain('Ada Learner');
+    expect(panels[0].textContent).toContain('2 courses');
+    expect(panels[0].textContent).toContain('Angular Essentials');
+    expect(panels[0].textContent).toContain('TypeScript Essentials');
+  });
+
+  it('renders separate learner expansion panels for different learner IDs', () => {
+    const differentLearner = {
+      ...report,
+      learnerId: 99,
+      learnerName: 'Grace Learner',
+      learnerEmail: 'grace@example.com',
+      courseId: 11,
+      courseTitle: 'DevOps Fundamentals',
+    };
+    const { fixture } = create(of([report, differentLearner]));
+
+    const panels = fixture.nativeElement.querySelectorAll('.learner-panel');
+    expect(panels).toHaveLength(2);
+    expect(panels[0].textContent).toContain('Ada Learner');
+    expect(panels[1].textContent).toContain('Grace Learner');
+  });
+
   it('shows a loading state while reports are being requested', () => {
     const response = new Subject<LearnerCourseReport[]>();
     const { fixture } = create(response);
@@ -65,28 +94,33 @@ describe('LearnerProgressReportComponent', () => {
     );
   });
 
-  it('renders an assigned row with its assignment timestamp', () => {
+  it('renders an assigned row with its assignment timestamp in two separate items', () => {
     const { fixture } = create();
-    const assignment = fixture.nativeElement.querySelector('.assignment-copy');
+    const items = fixture.nativeElement.querySelectorAll('.assignment-item');
 
-    expect(assignment.textContent).toContain('Assigned');
-    expect(assignment.textContent).not.toContain('Learning activity without assignment');
-    expect(assignment.querySelector('.assignment-badge.assigned')).not.toBeNull();
-    expect(assignment.querySelector('time')?.getAttribute('datetime')).toBe('2025-12-01T10:00:00Z');
+    expect(items).toHaveLength(2);
+    expect(items[0].querySelector('.assignment-badge.assigned')).not.toBeNull();
+    expect(items[0].textContent).toContain('Assignment Status');
+    expect(items[0].textContent).toContain('Assigned');
+    expect(items[1].textContent).toContain('Assigned On');
+    expect(items[1].querySelector('time')?.getAttribute('datetime')).toBe('2025-12-01T10:00:00Z');
+    expect(items[1].textContent).toContain('Dec 1, 2025');
   });
 
-  it('renders activity-only rows as not assigned and hides assignment dates', () => {
+  it('renders activity-only rows as not assigned and does not render a separate Assigned On item', () => {
     const activityOnly = {
       ...report,
       assigned: false,
       assignedAt: '2026-02-03T10:00:00Z',
     };
     const { fixture } = create(of([activityOnly]));
-    const assignment = fixture.nativeElement.querySelector('.assignment-copy');
+    const items = fixture.nativeElement.querySelectorAll('.assignment-item');
 
-    expect(assignment.textContent).toContain('Learning activity without assignment');
-    expect(assignment.querySelector('.assignment-badge.activity-only')).not.toBeNull();
-    expect(assignment.querySelector('time')).toBeNull();
+    expect(items).toHaveLength(1);
+    expect(items[0].textContent).toContain('Assignment Status');
+    expect(items[0].textContent).toContain('Learning activity without assignment');
+    expect(items[0].querySelector('.assignment-badge.activity-only')).not.toBeNull();
+    expect(items[0].querySelector('time')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Ada Learner');
     expect(fixture.nativeElement.textContent).toContain('50%');
   });
@@ -115,12 +149,61 @@ describe('LearnerProgressReportComponent', () => {
     expect(text).toContain('ada@example.com');
     expect(text).toContain('Angular Essentials');
     expect(text).toContain('50%');
-    expect(text).toContain('1 / 2');
+    expect(text).toContain('1 of 2');
     expect(text).toContain('Pending modules');
     expect(text).toContain('In Progress');
     expect(
       fixture.nativeElement.querySelector('mat-progress-bar')?.getAttribute('aria-valuenow'),
     ).toBe('50');
+  });
+
+  it('renders learner name in Title Case from lowercase original data', () => {
+    const lowerCaseReport = {
+      ...report,
+      learnerName: 'ada learner',
+    };
+    const { fixture } = create(of([lowerCaseReport]));
+
+    const panelTitle = fixture.nativeElement.querySelector('.learner-name');
+    expect(panelTitle.textContent).toContain('Ada Learner');
+    expect(fixture.componentInstance.reports()[0].learnerName).toBe('ada learner');
+  });
+
+  it('displays "Assignment Status" label and not "Assignment state"', () => {
+    const { fixture } = create();
+    const assignmentItem = fixture.nativeElement.querySelector('.assignment-item');
+
+    expect(assignmentItem.textContent).toContain('Assignment Status');
+    expect(assignmentItem.textContent).not.toContain('Assignment state');
+  });
+
+  it('displays assigned date with "Assigned On" label in a separate item when present', () => {
+    const { fixture } = create();
+    const items = fixture.nativeElement.querySelectorAll('.assignment-item');
+
+    expect(items).toHaveLength(2);
+    expect(items[1].textContent).toContain('Assigned On');
+    const time = items[1].querySelector('time[datetime="2025-12-01T10:00:00Z"]');
+    expect(time).not.toBeNull();
+    expect(items[1].textContent).toContain('Dec 1, 2025');
+  });
+
+  it('displays Completed Modules in "X of Y" format', () => {
+    const { fixture } = create();
+    const text = fixture.nativeElement.textContent;
+
+    expect(text).toContain('Completed modules');
+    expect(text).toContain('1 of 2');
+    expect(text).not.toContain('1 / 2');
+  });
+
+  it('renders expansion affordance chevron on learner panel', () => {
+    const { fixture } = create();
+    const panel = fixture.nativeElement.querySelector('.learner-panel');
+    const header = panel.querySelector('.mat-expansion-panel-header');
+
+    expect(header).not.toBeNull();
+    expect(panel.getAttribute('hideToggle')).toBeNull();
   });
 
   it('renders expandable module quiz aggregates and completion state', () => {

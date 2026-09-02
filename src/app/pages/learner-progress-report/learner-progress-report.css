@@ -7,7 +7,11 @@
 .report-page {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 38px 36px 52px;
+  padding: 28px 32px 48px;
+}
+
+.page-header {
+  margin-bottom: 18px;
 }
 
 .eyebrow {
@@ -15,6 +19,7 @@
   color: #0871d4;
   font-size: 12px;
   font-weight: 800;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -22,97 +27,237 @@ h1 {
   margin: 0;
   color: #06183a;
   font-size: clamp(28px, 4vw, 38px);
+  line-height: 1.15;
+  letter-spacing: -0.6px;
 }
 
 .page-header > p:last-child {
   margin: 8px 0 0;
   color: #536073;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-.reports-section,
-.report-card {
+.reports-section {
   overflow: hidden;
   border: 1px solid #dce7f5;
   border-radius: 14px;
   background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
 .section-heading {
-  padding: 18px 22px;
+  padding: 18px 22px 16px;
   border-bottom: 1px solid #e4ebf4;
 }
 
-.section-heading h2,
-.learner-copy h3 {
+.section-heading h2 {
   margin: 0;
   color: #10213e;
+  font-size: 1.1rem;
 }
 
-.section-heading p,
-.learner-copy a {
+.section-heading p {
+  margin: 6px 0 0;
   color: #536073;
   font-size: 13px;
 }
 
-.section-heading p {
-  margin: 4px 0 0;
+.section-helper {
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .report-list {
   display: grid;
-  gap: 18px;
-  padding: 20px;
+  gap: 16px;
+  padding: 18px 20px 20px;
+}
+
+.learner-panel {
+  border: 1px solid #dce7f5;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(10, 39, 80, 0.04);
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.learner-panel:hover {
+  border-color: #d9e6f7;
+  box-shadow: 0 6px 16px rgba(10, 39, 80, 0.05);
+}
+
+.learner-panel.mat-expansion-panel {
+  overflow: hidden;
+}
+
+.learner-panel .mat-expansion-panel-header {
+  min-height: 64px;
+  padding: 14px 18px;
+}
+
+.learner-panel .mat-expansion-panel-header-title,
+.learner-panel .mat-expansion-panel-header-description {
+  align-items: center;
+}
+
+.learner-panel .mat-expansion-panel-header-description {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.learner-name {
+  color: #10213e;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.learner-course-count {
+  color: #536073;
+  font-weight: 600;
+  font-size: 0.78rem;
+}
+
+.learner-details-link {
+  color: #0d5ab6;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.learner-details {
+  display: grid;
+  grid-auto-flow: row;
+  gap: 14px;
+  padding: 14px 18px 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+}
+
+.learner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #e4ebf4;
+  border-radius: 10px;
+  background: rgba(8, 113, 212, 0.02);
+  grid-column: 1 / -1;
+}
+
+.learner-meta-label {
+  color: #536073;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.learner-meta a {
+  color: #0d5ab6;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.learner-panel .mat-expansion-panel-body {
+  padding: 0;
 }
 
 .report-card {
+  overflow: hidden;
+  border: 1px solid #dce7f5;
   border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(10, 39, 80, 0.03);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
-.report-header {
-  display: grid;
-  grid-template-columns: minmax(220px, 1.25fr) minmax(190px, 1fr) auto;
-  gap: 22px;
-  align-items: center;
-  padding: 20px;
+.report-card:hover {
+  border-color: #d0dce8;
+  box-shadow: 0 4px 12px rgba(10, 39, 80, 0.06);
 }
 
-.module-details summary,
-.module-details summary > span:first-child {
+.course-header-row {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid #f0f5fa;
 }
 
-.learner-copy h3,
-.course-copy strong,
-.metric strong,
-.metric time {
-  overflow-wrap: anywhere;
-}
-
-.learner-copy a {
-  margin-top: 4px;
+.course-copy {
+  min-width: 0;
 }
 
 .course-copy span,
+.assignment-item span,
 .metric span,
 .progress-copy span {
   display: block;
   color: #647289;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .course-copy strong,
+.assignment-item strong,
+.assignment-item time,
 .metric strong,
 .metric time {
   display: block;
   margin-top: 6px;
   color: #10213e;
   font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.assignment-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 0;
+}
+
+.assignment-item {
+  padding: 10px 12px;
+  border: 1px solid #e6edf7;
+  border-radius: 9px;
+  background: #f9fbff;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.assignment-item:hover {
+  background: #f3f8ff;
+  border-color: #d9e6f7;
+}
+
+.assignment-badge {
+  color: #10213e;
+}
+
+.assignment-badge.assigned {
+  color: #17643a;
+}
+
+.assignment-badge.activity-only {
+  color: #7a5613;
 }
 
 .status-badge,
 .module-state {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
@@ -120,7 +265,15 @@ h1 {
 }
 
 .status-badge {
-  padding: 7px 11px;
+  align-self: center;
+  padding: 7px 10px;
+}
+
+.status-badge mat-icon {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .status-badge.not-started {
@@ -141,31 +294,70 @@ h1 {
 
 .report-summary {
   display: grid;
-  grid-template-columns: minmax(230px, 1.5fr) repeat(4, minmax(105px, 1fr));
-  gap: 14px;
-  padding: 18px 20px;
-  border-top: 1px solid #e7edf5;
-  background: #f8faff;
+  grid-template-columns: minmax(200px, 1.4fr) repeat(4, minmax(100px, 1fr));
+  gap: 11px;
+  padding: 14px 18px 16px;
 }
 
 .progress-block,
 .metric {
   min-width: 0;
-  padding: 13px;
+  padding: 11px 12px;
   border: 1px solid #e0e9f5;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #fff;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.progress-block:hover,
+.metric:hover {
+  background: #fafcff;
+  border-color: #d9e6f7;
 }
 
 .progress-copy {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 10px;
 }
 
 .progress-copy strong {
+  display: inline-block;
+  padding: 4px 8px;
   color: #075da9;
-  font-size: 20px;
+  background: rgba(8, 113, 212, 0.08);
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.metric strong,
+.metric time {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 6px;
+  color: #10213e;
+  background: #f0f5fa;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.metric time {
+  font-weight: 500;
+}
+
+.certificate-metric strong {
+  font-size: 12px;
+  font-family: monospace;
+  letter-spacing: 0.02em;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .module-details {
@@ -173,16 +365,26 @@ h1 {
 }
 
 .module-details summary {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 15px 20px;
+  padding: 14px 18px;
   color: #075da9;
   cursor: pointer;
   font-weight: 800;
 }
 
 .module-details summary > span:first-child {
-  gap: 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.module-details summary mat-icon {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
 }
 
 .module-table-wrap {
@@ -205,6 +407,9 @@ th {
   color: #536073;
   background: #f8faff;
   font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 td {
@@ -271,11 +476,24 @@ td:first-child {
 
 @media (max-width: 900px) {
   .report-page {
-    padding: 30px 28px 44px;
+    padding: 26px 20px 40px;
   }
 
-  .report-header {
-    grid-template-columns: 1fr 1fr;
+  .course-header-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 14px 18px 11px;
+  }
+
+  .assignment-panel {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr;
+    padding: 12px 18px 14px;
   }
 
   .status-badge {
@@ -285,7 +503,7 @@ td:first-child {
 
 @media (max-width: 680px) {
   .report-page {
-    padding: 24px 16px 36px;
+    padding: 20px 14px 32px;
   }
 
   .reports-section {
@@ -300,9 +518,74 @@ td:first-child {
     padding-inline: 0;
   }
 
-  .report-header,
+  .learner-panel .mat-expansion-panel-header {
+    min-height: 58px;
+    padding: 12px 14px;
+  }
+
+  .learner-details {
+    gap: 12px;
+    padding: 12px 14px 14px;
+  }
+
+  .learner-meta {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .learner-name {
+    font-size: 0.95rem;
+  }
+
+  .learner-course-count,
+  .learner-details-link {
+    font-size: 0.74rem;
+  }
+
+  .course-header-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px 14px 10px;
+  }
+
+  .course-header-row span {
+    font-size: 10px;
+  }
+
+  .course-copy strong {
+    font-size: 13px;
+  }
+
+  .assignment-panel {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+
   .report-summary {
     grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 14px 12px;
+  }
+
+  .progress-copy strong {
+    font-size: 16px;
+    padding: 3px 6px;
+  }
+
+  .metric strong,
+  .metric time {
+    margin-top: 5px;
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+
+  .metric strong {
+    font-size: 11px;
+  }
+
+  .certificate-metric strong {
+    font-size: 11px;
   }
 
   .progress-block {
