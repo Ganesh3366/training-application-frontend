@@ -1,146 +1,235 @@
-# SkillForge Frontend
+# SkillForge Training Application
 
-SkillForge is a web-based training application designed to help users browse training courses, view course details, and access learning-related features.
+SkillForge is a full-stack training management and learning platform designed to support structured course delivery, learner progression, assessments, reporting, and certificate generation.
 
-The frontend is being developed with Angular and TypeScript using a component-based architecture. Angular Material is used for UI components, and Angular Router provides navigation between application pages.
+The application combines an Angular frontend with a Spring Boot backend and PostgreSQL persistence. It provides role-based experiences for learners, instructors, and administrators while maintaining clear separation between presentation, business logic, security, and data access layers.
 
-## Current Features
+## Key Features
 
-- SkillForge landing page
-- Responsive hero section and navigation
-- Lazy-loaded Home page
-- Courses listing page
-- Reusable Course data model
-- Centralized CourseService for course data
-- Dynamic course detail pages using route parameters
-- Course-not-found handling for invalid course IDs
-- Lazy-loaded application routes
-- Angular Material UI components
+### Learner Experience
 
-## Tech Stack
+- Browse available courses and review course details
+- Access assigned or available learning content
+- Progress through structured course modules
+- Learn from text and video content
+- Complete module-end multiple-choice quizzes
+- Receive immediate quiz scores and pass/fail results
+- Retry quizzes when the required passing score is not achieved
+- Track completed and pending modules
+- Monitor overall course progress
+- Generate a certificate after completing all required modules
+
+### Instructor and Management Features
+
+- Create, update, and delete courses
+- Manage course modules and learning content
+- Configure quizzes, questions, answer options, and passing scores
+- Review learner progress and course completion information
+- Access management functionality based on assigned roles
+
+### Administrator Features
+
+- Create and manage users
+- Update user details and roles
+- Activate and deactivate user accounts
+- Assign courses to learners
+- Review learner assignments and progress reports
+- Access administrative functionality protected by role-based authorization
+
+## Technology Stack
 
 ### Frontend
 
-- Angular
-- TypeScript
-- HTML
-- CSS
+- Angular 22
+- TypeScript 6
 - Angular Material
 - Angular Router
-- Angular CLI
+- RxJS
+- HTML
+- CSS
+- Vitest
 
-### Development Tools
+### Backend
 
-- Visual Studio Code
-- Git
-- GitHub
-- npm
+- Java 17
+- Spring Boot 4.1.1
+- Spring Web MVC
+- Spring Security
+- Spring Data JPA
+- Bean Validation
+- PostgreSQL
+- Maven
+
+## Application Architecture
+
+SkillForge follows a layered full-stack architecture that separates user interface concerns from backend business logic and persistence.
+
+```text
+Angular Frontend
+       |
+       | HTTP / REST
+       v
+Spring Boot REST API
+       |
+       v
+Service Layer
+       |
+       v
+Spring Data JPA
+       |
+       v
+PostgreSQL
+```
+
+Authentication is session-based and managed by Spring Security. Authorization is enforced using role-based access control for learner, instructor, and administrator functionality.
 
 ## Project Structure
 
+The project is maintained as separate frontend and backend applications:
+
 ```text
-frontend/
-├── public/
-│   └── images/
-│       └── skillforge-learning-illustration.png
-│
-└── src/
-    ├── app/
-    │   ├── models/
-    │   │   └── app.models.ts
-    │   │
-    │   ├── pages/
-    │   │   ├── home/
-    │   │   │   ├── home.ts
-    │   │   │   ├── home.html
-    │   │   │   └── home.css
-    │   │   │
-    │   │   ├── certification/
-    │   │   ├── course-details/
-    │   │   │   └── course-details.ts
-    │   │   │
-    │   │   ├── courses/
-    │   │   │   └── courses.ts
-    │   │   │
-    │   │   └── how-it-works/
-    │   │
-    │   ├── services/
-    │   │   └── course.ts
-    │   │
-    │   ├── app.config.ts
-    │   ├── app.routes.ts
-    │   ├── app.html
-    │   ├── app.css
-    │   └── app.ts
-    │
-    └── styles.scss
+training-application/
+├── frontend/
+└── backend/
 ```
 
-## Course Data Flow
+The Angular frontend communicates with the Spring Boot backend through REST endpoints under the `/api` path.
 
-The application currently uses a centralized `CourseService` as the source of course data.
+During local development, Angular API requests are proxied to:
 
-1. `CourseService` stores the current course data.
-2. The Courses page retrieves the course list from `CourseService`.
-3. Each course is displayed with a View Course button.
-4. Selecting a course navigates to `/courses/:id`.
-5. The Course Details page reads the course ID from the route.
-6. `CourseService.getCourseById()` finds the matching course.
-7. The selected course details are displayed.
-8. If the course ID does not exist, a course-not-found message is displayed.
+```text
+http://localhost:8080
+```
 
-## Running the Frontend
+## Running the Application
 
-### Install Dependencies
+### Backend
+
+Ensure PostgreSQL is running and the application database is available.
+
+Provide the database password through the `DB_PASSWORD` environment variable.
+
+From the backend directory:
+
+```bash
+./mvnw spring-boot:run
+```
+
+On Windows PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+The backend API is available at:
+
+```text
+http://localhost:8080
+```
+
+### Frontend
+
+From the frontend directory:
 
 ```bash
 npm install
-```
-
-### Start Development Server
-
-```bash
 npm start
 ```
 
-Then open:
+The Angular development application is available at:
 
 ```text
 http://localhost:4200
 ```
 
-### Production Build
+## Build and Verification
+
+Create a production frontend build with:
 
 ```bash
 npm run build
 ```
 
-The production build output is generated inside the `dist/` directory.
+Run the backend automated test suite with:
 
-## Current Validation
+```powershell
+.\mvnw.cmd test
+```
 
-The following checks have been completed successfully:
+## Documentation
 
-- SkillForge landing page loads correctly
-- Landing page navigation works correctly
-- Explore Courses navigates to the Courses page
-- Courses page loads correctly
-- Course navigation works with `/courses/:id`
-- Course details display the selected course
-- Invalid course IDs show a course-not-found message
-- Production build completes successfully
+Detailed technical and setup documentation is available in the `docs` directory:
 
-## Current Limitations
+- [Project Documentation](docs/01-README.md)
+- [Setup Guide](docs/02-SETUP.md)
+- [Architecture](docs/03-ARCHITECTURE.md)
+- [Components](docs/04-COMPONENTS.md)
+- [Database](docs/05-DATABASE.md)
+- [API Reference](docs/06-API.md)
 
-The frontend is currently under active development.
+## Security
 
-- Course data is temporarily stored in `CourseService`.
-- The frontend is not yet connected to the Spring Boot REST API.
-- Course data is not yet loaded from PostgreSQL.
-- Frontend authentication-related UI and logic exist, but server-side authentication and authorization are not yet integrated.
-- Course modules, quizzes, progress tracking, and certificate generation are not yet implemented.
-- Additional automated tests will be added as development progresses.
+SkillForge includes the following security controls:
 
-## Next Development Phase
+- Session-based authentication
+- Spring Security authorization
+- Role-based access control
+- BCrypt password hashing
+- CSRF protection
+- Protected administration and management APIs
+- Server-side request validation
+- Session ID rotation after authentication
 
-The next phase will focus on integrating the Angular frontend with the Spring Boot backend and gradually replacing the temporary frontend course data with data provided through REST APIs.
+## Roles and Access
+
+SkillForge supports three primary roles:
+
+```text
+LEARNER
+INSTRUCTOR
+ADMIN
+```
+
+**Learners** access course content, complete quizzes, track progress, and generate certificates after successful course completion.
+
+**Instructors** manage courses, modules, learning content, quizzes, and learner progress reporting.
+
+**Administrators** have instructor-level management capabilities in addition to user administration and course assignment functionality.
+
+## Certificate Generation
+
+A learner becomes eligible for a certificate after successfully completing all required modules in a course.
+
+Generated certificates include:
+
+- Participant name
+- Course name
+- Completion date
+- Final score
+- Unique certificate number
+
+## Development Tools
+
+- Visual Studio Code
+- IntelliJ IDEA
+- Git
+- GitHub
+- npm
+- Maven
+- PostgreSQL
+
+## Project Status
+
+The core SkillForge training application requirements have been implemented, including:
+
+- Course and module management
+- Learning content delivery
+- Quiz and passing-score management
+- User administration
+- Course assignment
+- Learner progress tracking
+- Management reporting
+- Authentication and authorization
+- Certificate generation
+
+For detailed implementation, setup, architecture, database, and API information, refer to the documentation available in the [`docs`](docs/) directory.
