@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from '../../services/auth';
 import { AuthDialog, AuthDialogData, AuthDialogMode } from '../../shared/auth-dialog/auth-dialog';
+import { ConfirmDialog, ConfirmDialogData } from '../../shared/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-main-layout',
@@ -74,6 +75,29 @@ export class MainLayout {
       maxWidth: 'calc(100vw - 32px)',
       autoFocus: 'first-tabbable',
       restoreFocus: true,
+    });
+  }
+
+  confirmLogout(): void {
+    if (this.logoutPending()) return;
+
+    const dialogRef = this.dialog.open<ConfirmDialog, ConfirmDialogData>(ConfirmDialog, {
+      data: {
+        title: 'Sign out?',
+        message: 'Are you sure you want to sign out of SkillForge?',
+        confirmText: 'Sign out',
+        cancelText: 'Cancel',
+      },
+      width: '420px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: 'first-tabbable',
+      restoreFocus: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean | undefined) => {
+      if (result === true) {
+        this.logout();
+      }
     });
   }
 

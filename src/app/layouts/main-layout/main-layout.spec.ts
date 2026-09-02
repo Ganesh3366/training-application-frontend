@@ -1,11 +1,14 @@
 import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatMenuTrigger } from '@angular/material/menu';
+import { By } from '@angular/platform-browser';
 import { provideRouter, Router } from '@angular/router';
 import { of, tap } from 'rxjs';
 import { AppUser } from '../../models/app.models';
 import { AuthService } from '../../services/auth';
 import { AuthDialog } from '../../shared/auth-dialog/auth-dialog';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { MainLayout } from './main-layout';
 
 describe('MainLayout authentication', () => {
@@ -68,6 +71,107 @@ describe('MainLayout authentication', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Ganesh');
     expect(fixture.nativeElement.textContent).toContain('Sign out');
+  });
+
+  it('confirms sign-out through the reusable dialog and calls logout exactly once on confirm', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const afterClosed = vi.fn(() => of(true));
+    dialogOpen.mockImplementation(
+      () =>
+        ({
+          afterClosed,
+          close: vi.fn(),
+        }) as unknown as MatDialogRef<unknown>,
+    );
+    currentUser.set(user);
+    fixture.detectChanges();
+
+    fixture.componentInstance.confirmLogout();
+    fixture.detectChanges();
+
+    expect(dialogOpen).toHaveBeenCalledWith(
+      ConfirmDialog,
+      expect.objectContaining({
+        data: {
+          title: 'Sign out?',
+          message: 'Are you sure you want to sign out of SkillForge?',
+          confirmText: 'Sign out',
+          cancelText: 'Cancel',
+        },
+      }),
+    );
+    expect(afterClosed).toHaveBeenCalledOnce();
+    expect(logout).toHaveBeenCalledOnce();
+    expect(navigate).toHaveBeenCalledWith(['/']);
+    expect(fixture.componentInstance.logoutPending()).toBe(false);
+  });
+
+  it('keeps the user signed in when sign-out is cancelled or dismissed', () => {
+    const afterClosed = vi.fn(() => of(false));
+    dialogOpen.mockReturnValue({ afterClosed } as unknown as MatDialogRef<AuthDialog>);
+    currentUser.set(user);
+    fixture.detectChanges();
+
+    fixture.componentInstance.confirmLogout();
+    fixture.detectChanges();
+
+    expect(logout).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.isLoggedIn()).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Ganesh');
+  });
+
+  it('keeps logoutPending protection intact when confirmation is confirmed', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const afterClosed = vi.fn(() => of(true));
+    dialogOpen.mockReturnValue({ afterClosed } as unknown as MatDialogRef<AuthDialog>);
+    currentUser.set(user);
+    fixture.detectChanges();
+
+    fixture.componentInstance.logoutPending.set(true);
+    fixture.componentInstance.confirmLogout();
+
+    expect(logout).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.logoutPending()).toBe(true);
+  });
+
+  it('uses the same confirm flow for desktop and mobile sign-out actions', async () => {
+    const cancelled = vi.fn(() => of(false));
+    dialogOpen.mockReturnValue({ afterClosed: cancelled } as unknown as MatDialogRef<AuthDialog>);
+    const confirmLogout = vi.spyOn(fixture.componentInstance, 'confirmLogout');
+    currentUser.set(user);
+    fixture.detectChanges();
+
+    const desktopTrigger = fixture.debugElement
+      .queryAll(By.directive(MatMenuTrigger))
+      .find((element) => element.nativeElement.classList.contains('account-button'));
+    expect(desktopTrigger).toBeDefined();
+    desktopTrigger?.injector.get(MatMenuTrigger).openMenu();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const desktopSignOut = document.querySelector(
+      '[role="menu"] button[mat-menu-item], [role="menu"] .mat-mdc-menu-item',
+    ) as HTMLButtonElement | null;
+    expect(desktopSignOut).not.toBeNull();
+    desktopSignOut?.click();
+    fixture.detectChanges();
+    expect(confirmLogout).toHaveBeenCalledTimes(1);
+
+    confirmLogout.mockClear();
+    const menuToggle = fixture.nativeElement.querySelector('.menu-toggle') as HTMLButtonElement;
+    expect(menuToggle).not.toBeNull();
+    menuToggle.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const mobileSignOut = fixture.nativeElement.querySelector(
+      '.mobile-nav button',
+    ) as HTMLButtonElement | null;
+    expect(mobileSignOut).not.toBeNull();
+    mobileSignOut?.click();
+    fixture.detectChanges();
+    expect(confirmLogout).toHaveBeenCalledTimes(1);
   });
 
   it('updates the header and navigates home after logout succeeds', () => {

@@ -38,7 +38,7 @@
             <mat-icon>account_circle</mat-icon>{{ currentUser()?.name }}
           </button>
           <mat-menu #accountMenu="matMenu">
-            <button mat-menu-item (click)="logout()" [disabled]="logoutPending()">
+            <button mat-menu-item (click)="confirmLogout()" [disabled]="logoutPending()">
               <mat-icon>logout</mat-icon>{{ logoutPending() ? 'Signing out...' : 'Sign out' }}
             </button>
           </mat-menu>
@@ -79,7 +79,7 @@
           </button>
         } @else {
           <span>{{ currentUser()?.name }}</span>
-          <button mat-stroked-button (click)="logout()" [disabled]="logoutPending()">
+          <button mat-stroked-button (click)="confirmLogout()" [disabled]="logoutPending()">
             {{ logoutPending() ? 'Signing out...' : 'Sign out' }}
           </button>
         }

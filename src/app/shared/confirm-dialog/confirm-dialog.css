@@ -1,0 +1,24 @@
+section {
+  min-width: min(420px, calc(100vw - 32px));
+  max-width: 420px;
+}
+
+h2 {
+  margin: 0;
+  color: #101828;
+}
+
+p {
+  margin: 0;
+  color: #475467;
+  line-height: 1.6;
+}
+
+mat-dialog-content {
+  padding-top: 12px !important;
+}
+
+mat-dialog-actions {
+  padding: 12px 0 0;
+  gap: 8px;
+}
