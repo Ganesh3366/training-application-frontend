@@ -111,7 +111,12 @@
                   <div class="report-summary">
                     <div class="progress-block">
                       <div class="progress-copy">
-                        <span>Overall Progress</span>
+                        <span class="metric-label">
+                          <mat-icon class="metric-section-icon" aria-hidden="true"
+                            >track_changes</mat-icon
+                          >
+                          Overall Progress
+                        </span>
                         <strong>{{ report.progressPercentage }}%</strong>
                       </div>
                       <mat-progress-bar
@@ -121,15 +126,28 @@
                       ></mat-progress-bar>
                     </div>
                     <div class="metric">
-                      <span>Completed modules</span>
+                      <span class="metric-label">
+                        <mat-icon class="metric-section-icon" aria-hidden="true">
+                          check_circle
+                        </mat-icon>
+                        Completed Modules
+                      </span>
                       <strong>{{ report.completedModules }} of {{ report.totalModules }}</strong>
                     </div>
                     <div class="metric">
-                      <span>Pending modules</span>
+                      <span class="metric-label pending-metric-label">
+                        <mat-icon class="metric-section-icon" aria-hidden="true">
+                          schedule
+                        </mat-icon>
+                        Pending Modules
+                      </span>
                       <strong>{{ report.pendingModules }}</strong>
                     </div>
                     <div class="metric">
-                      <span>Completion Date</span>
+                      <span class="metric-label">
+                        <mat-icon class="metric-section-icon" aria-hidden="true"> event </mat-icon>
+                        Completion Date
+                      </span>
                       @if (report.completionDate) {
                         <time [attr.datetime]="report.completionDate">
                           {{ report.completionDate | date: 'mediumDate' }}
@@ -139,7 +157,12 @@
                       }
                     </div>
                     <div class="metric certificate-metric">
-                      <span>Certificate</span>
+                      <span class="metric-label">
+                        <mat-icon class="metric-section-icon" aria-hidden="true">
+                          workspace_premium
+                        </mat-icon>
+                        Certificate
+                      </span>
                       <strong>{{ report.certificateNumber ?? 'Not issued' }}</strong>
                     </div>
                   </div>

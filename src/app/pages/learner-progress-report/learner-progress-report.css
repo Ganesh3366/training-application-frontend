@@ -323,6 +323,32 @@ h1 {
   gap: 12px;
   margin-bottom: 10px;
 }
+.metric-label {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 5px;
+}
+
+.metric-info-icon {
+  width: 15px;
+  height: 15px;
+  color: #7b8798;
+  font-size: 15px;
+  line-height: 15px;
+  cursor: help;
+  outline: none;
+}
+
+.pending-metric-label {
+  display: flex !important;
+  width: 100%;
+}
+
+.metric-info-icon:focus-visible {
+  border-radius: 50%;
+  outline: 2px solid rgba(8, 113, 212, 0.35);
+  outline-offset: 2px;
+}
 
 .progress-copy strong {
   display: inline-block;
