@@ -197,7 +197,7 @@ td strong,
 
 .actions-heading,
 .row-actions {
-  text-align: right;
+  text-align: center;
 }
 
 .row-actions {
@@ -206,22 +206,23 @@ td strong,
 
 .row-action-group {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-}
-
-.compact-user-action {
-  min-width: 0;
-  max-width: 100%;
-  padding-inline: 8px;
-  line-height: 1.25;
-  white-space: normal;
+  justify-content: center;
+  min-height: 48px;
 }
 
 .more-actions-trigger {
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
+  border-radius: 50%;
+  color: #10213e;
+}
+
+.more-actions-trigger mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .deactivate-action {

@@ -99,26 +99,26 @@ describe('AdminUserManagementComponent', () => {
     expect(adminService.setUserEnabled).not.toHaveBeenCalled();
   });
 
-  it('keeps View assignments and Edit visible with accessible More actions triggers', () => {
+  it('keeps the row action menu as the only visible action entry and exposes the menu trigger', () => {
     const { fixture } = create(of([users[0], inactiveUser]));
     const rows = fixture.nativeElement.querySelectorAll(
       'tbody tr',
     ) as NodeListOf<HTMLTableRowElement>;
+
     expect(rows[0].textContent).toContain('Active');
-    expect(rows[0].querySelector('.view-assignments-action')?.textContent).toContain(
-      'View assignments',
-    );
-    expect(rows[0].querySelector('.edit-user-action')).not.toBeNull();
+    expect(rows[0].querySelector('.view-assignments-action')).toBeNull();
+    expect(rows[0].querySelector('.edit-user-action')).toBeNull();
     expect(rows[0].querySelector('.more-actions-trigger')?.getAttribute('aria-label')).toBe(
       'More actions for Learner One',
     );
+
     expect(rows[1].textContent).toContain('Inactive');
     expect(rows[1].querySelector('.more-actions-trigger')?.getAttribute('aria-label')).toBe(
       'More actions for Inactive Learner',
     );
   });
 
-  it('shows only the correct status action in each Material menu', async () => {
+  it('shows the correct actions in each Material menu', async () => {
     const { fixture } = create(of([users[0], inactiveUser]));
     const triggers = fixture.debugElement.queryAll(By.directive(MatMenuTrigger));
 
@@ -126,13 +126,11 @@ describe('AdminUserManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    let menu = document.querySelector('[role="menu"]') as HTMLElement;
+    let menu = Array.from(document.querySelectorAll('[role="menu"]')).at(-1) as HTMLElement;
+    expect(menu.textContent).toContain('View assignments');
+    expect(menu.textContent).toContain('Edit');
     expect(menu.textContent).toContain('Deactivate');
     expect(menu.textContent).not.toContain('Reactivate');
-    const deactivate = menu.querySelector('.deactivate-action') as HTMLButtonElement;
-    expect(deactivate).not.toBeNull();
-    expect(deactivate.textContent).toContain('person_off');
-    expect(deactivate.textContent).toContain('Deactivate');
 
     triggers[0].injector.get(MatMenuTrigger).closeMenu();
     fixture.detectChanges();
@@ -141,12 +139,11 @@ describe('AdminUserManagementComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const reactivate = document.querySelector('.reactivate-action') as HTMLButtonElement;
-    expect(reactivate).not.toBeNull();
-    menu = reactivate.closest('[role="menu"]') as HTMLElement;
+    menu = Array.from(document.querySelectorAll('[role="menu"]')).at(-1) as HTMLElement;
+    expect(menu.textContent).toContain('View assignments');
+    expect(menu.textContent).toContain('Edit');
     expect(menu.textContent).toContain('Reactivate');
     expect(menu.textContent).not.toContain('Deactivate');
-    expect(menu.querySelector('.reactivate-action')).toBe(reactivate);
   });
 
   it('opens Edit User and applies the safe response without clearing assignment state', () => {
@@ -214,7 +211,7 @@ describe('AdminUserManagementComponent', () => {
     expect(component.users()).toEqual([reactivatedUser]);
   });
 
-  it('hides self-deactivation by authenticated user ID and still blocks direct execution', () => {
+  it('hides the deactivate action for the current admin without removing the menu trigger', () => {
     const currentAdmin: AppUser = {
       id: 1,
       name: 'Current Admin',
@@ -223,7 +220,8 @@ describe('AdminUserManagementComponent', () => {
       enabled: true,
     };
     const { fixture, component, dialog, adminService } = create(of([currentAdmin]));
-    expect(fixture.nativeElement.querySelector('.more-actions-trigger')).toBeNull();
+
+    expect(fixture.nativeElement.querySelector('.more-actions-trigger')).not.toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Deactivate');
 
     component.confirmDeactivateUser(currentAdmin);
@@ -275,7 +273,7 @@ describe('AdminUserManagementComponent', () => {
     });
   });
 
-  it('loads and renders users', () => {
+  it('loads and renders users with the action trigger in the table action column', () => {
     const { fixture, component, adminService, courseService } = create();
     expect(adminService.getUsers).toHaveBeenCalledOnce();
     expect(courseService.getCourses).toHaveBeenCalledOnce();
@@ -287,10 +285,14 @@ describe('AdminUserManagementComponent', () => {
         cell.textContent?.trim(),
       ),
     ).toEqual(['User', 'Role', 'Status', 'Action']);
-    const action = fixture.nativeElement.querySelector('.row-actions button') as HTMLButtonElement;
-    expect(action.textContent).toContain('View assignments');
-    expect(action.getAttribute('aria-label')).toBe('View course assignments for Learner One');
+    const actionTrigger = fixture.nativeElement.querySelector(
+      '.row-actions .more-actions-trigger',
+    ) as HTMLButtonElement;
+    expect(actionTrigger).not.toBeNull();
+    expect(actionTrigger.getAttribute('aria-label')).toBe('More actions for Learner One');
     expect(fixture.nativeElement.querySelector('.table-wrap thead')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.view-assignments-action')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.edit-user-action')).toBeNull();
   });
 
   it('loads assignments when a user is selected', () => {

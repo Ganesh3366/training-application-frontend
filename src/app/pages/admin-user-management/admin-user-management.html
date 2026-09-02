@@ -85,40 +85,41 @@
                   </td>
                   <td data-label="Action" class="row-actions">
                     <div class="row-action-group">
-                      <button
-                        mat-button
-                        class="compact-user-action view-assignments-action"
-                        type="button"
-                        (click)="selectUser(user)"
-                        [disabled]="assignmentPending()"
-                        [attr.aria-label]="'View course assignments for ' + user.name"
-                        [attr.aria-pressed]="selectedUser()?.id === user.id"
-                      >
-                        {{ selectedUser()?.id === user.id ? 'Selected' : 'View assignments' }}
-                      </button>
                       @if (canCreateUser()) {
                         <button
-                          mat-button
-                          class="compact-user-action edit-user-action"
+                          mat-icon-button
+                          class="more-actions-trigger"
                           type="button"
-                          (click)="openEditUserForm(user)"
-                          [attr.aria-label]="'Edit ' + user.name"
+                          [matMenuTriggerFor]="userActionsMenu"
+                          [disabled]="enabledRequestUserId() !== null"
+                          [attr.aria-label]="'More actions for ' + user.name"
                         >
-                          Edit
+                          <mat-icon aria-hidden="true">more_vert</mat-icon>
                         </button>
-                        @if (!user.enabled || !isCurrentUser(user)) {
-                          <button
-                            mat-icon-button
-                            class="more-actions-trigger"
-                            type="button"
-                            [matMenuTriggerFor]="userActionsMenu"
-                            [disabled]="enabledRequestUserId() !== null"
-                            [attr.aria-label]="'More actions for ' + user.name"
-                          >
-                            <mat-icon aria-hidden="true">more_vert</mat-icon>
-                          </button>
 
-                          <mat-menu #userActionsMenu="matMenu" xPosition="before">
+                        <mat-menu #userActionsMenu="matMenu" xPosition="before">
+                          <button
+                            mat-menu-item
+                            class="user-enabled-action view-assignments-action"
+                            type="button"
+                            (click)="selectUser(user)"
+                            [disabled]="assignmentPending()"
+                          >
+                            <mat-icon aria-hidden="true">assignment</mat-icon>
+                            <span>{{
+                              selectedUser()?.id === user.id ? 'Selected' : 'View assignments'
+                            }}</span>
+                          </button>
+                          <button
+                            mat-menu-item
+                            class="edit-user-action"
+                            type="button"
+                            (click)="openEditUserForm(user)"
+                          >
+                            <mat-icon aria-hidden="true">edit</mat-icon>
+                            <span>Edit</span>
+                          </button>
+                          @if (!user.enabled || !isCurrentUser(user)) {
                             @if (user.enabled) {
                               <button
                                 mat-menu-item
@@ -140,8 +141,8 @@
                                 <span>Reactivate</span>
                               </button>
                             }
-                          </mat-menu>
-                        }
+                          }
+                        </mat-menu>
                       }
                     </div>
                   </td>
