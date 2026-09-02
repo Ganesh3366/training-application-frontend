@@ -33,6 +33,7 @@
   padding: 0 52px;
   display: flex;
   align-items: center;
+  gap: 24px;
 }
 
 .brand {
@@ -41,6 +42,7 @@
   gap: 11px;
   color: #071a3d;
   text-decoration: none;
+  flex: 0 0 auto;
 }
 
 .brand-mark {
@@ -77,13 +79,15 @@
 }
 
 .desktop-nav {
-  position: absolute;
-  inset-block: 0;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: clamp(20px, 2vw, 46px);
+  justify-content: center;
+  position: static;
+  transform: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-wrap: nowrap;
+  gap: clamp(18px, 1.5vw, 32px);
 }
 
 .desktop-nav a {
@@ -94,6 +98,8 @@
   text-decoration: none;
   font-size: 17px;
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .desktop-nav a.active {
@@ -115,6 +121,8 @@
   display: flex;
   align-items: center;
   gap: 18px;
+  flex: 0 0 auto;
+  padding-left: 12px;
 }
 
 .auth-actions button {
@@ -164,13 +172,14 @@
   text-decoration: none;
   font-size: 16px;
   padding: 12px 4px;
+  white-space: nowrap;
 }
 
 .mobile-nav button {
   margin-top: 8px;
 }
 
-@media (max-width: 1360px) {
+@media (max-width: 1450px) {
   .header-inner {
     height: 78px;
     padding: 0 22px;
