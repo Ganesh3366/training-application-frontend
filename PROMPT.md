@@ -1,1599 +1,1810 @@
-# **SkillForge AI-Assisted Development and Prompt History**
+# **SkillForge Training Application — AI Prompt History**
 
-This document records the significant AI-assisted development prompts used during the development of SkillForge.
+## **How AI Was Used in This Project**
 
-## **AI Tools Used**
+This project used two AI tools with clearly separated responsibilities:
 
-\- ChatGPT — requirement analysis, architecture discussion, security review, code review, testing guidance, debugging, optimization, and preparation of focused implementation prompts.
+> **ChatGPT — Planning, Architecture, Review, and Project Guidance**
+>
+> ChatGPT was used as a development guide throughout the project. Its purpose was to help with:
+>
+> - Project planning and requirement analysis
+> - Software architecture and feature design
+> - Breaking large tasks into focused implementation phases
+> - Reviewing security, authorization, maintainability, and code quality
+> - Optimizing implementation approaches
+> - Analyzing bugs and identifying likely root causes
+> - Designing test coverage and regression checks
+> - Improving UI/UX direction
+> - Preparing focused implementation prompts for Codex
+>
+> ChatGPT was **not used as the final decision-maker**. Suggestions were reviewed, challenged, refined, approved, or rejected by the developer before implementation.
 
-\- OpenAI Codex — focused frontend and backend implementation.
+> **Codex — Implementation and Code Correction**
+>
+> Codex was used inside the development workflow, mainly through VS Code, to:
+>
+> - Implement approved frontend/backend features
+> - Generate focused code changes
+> - Fix reviewed defects
+> - Add or strengthen automated tests
+> - Apply small corrections without redesigning approved architecture
+>
+> Codex was expected to follow the approved scope strictly and avoid unrelated changes, commits, pushes, dependency additions, or architecture changes unless explicitly approved.
 
-## **1. Angular CourseService Architecture**
+### **Decision Ownership**
 
-### **Why This Prompt Was Used**
+The workflow used throughout the project was:
 
-To separate course data from the Angular "Courses" component and create a reusable service layer that could later be connected to a backend API.
+```text
+Developer requirement / issue
+        ↓
+ChatGPT analysis and architecture
+        ↓
+Developer review / approval
+        ↓
+Focused Codex implementation prompt
+        ↓
+Codex implementation
+        ↓
+ChatGPT review / testing guidance
+        ↓
+Developer final approval
+```
 
-### **Codex Prompt**
-
-**Type: Reconstructed / Verbatim**
-
-Refactor the existing Angular course implementation so that course data is owned by CourseService rather than directly by the Courses component.
-
-#### **Requirements:**
-
-\- Preserve the current UI and behavior.
-
-\- Keep the Course model strongly typed.
-
-\- Move reusable course-data access into CourseService.
-
-\- Components should consume the service rather than own the data source.
-
-\- Do not duplicate course data across components.
-
-\- Keep the design ready for replacing the temporary data source with a backend API later.
-
-\- Do not modify unrelated application functionality.
-
-Run the relevant Angular tests/build after the change.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Improve readability.
-
-\- Reduce duplicated course logic.
-
-\- Reuse the existing service architecture.
-
-\- Follow Angular best practices.
-
-\- Keep the implementation simple and reusable.
-
-### **Narrative**
-
-The implementation was reviewed before acceptance. The developer focused on separating UI responsibilities from data access rather than keeping course data inside components.
-
-### **Validation**
-
-\- Course listing was checked.
-
-\- "CourseService" usage was verified.
-
-\- Existing Angular functionality remained working.
+The developer remained responsible for the final technical decisions and approval.
 
 ---
 
-## **2. Dynamic Course Details**
+# **Phase 1 — Requirements, Domain, and Initial UI Direction**
 
-### **Why This Prompt Was Used**
+## **01. Project Requirements & Architecture Analysis**
 
-To support dynamic course pages through "/courses/\:id" and safely handle invalid or nonexistent course IDs.
+> **Developer:**
+>
+> Act as a senior software architect and analyze the Training Application requirements for a technical interview.
+>
+> Identify:
+>
+> - Core features
+> - Mandatory and optional features
+> - Angular architecture
+> - Reusable components
+> - Potential challenges
+> - Development roadmap
+>
+> Use tables and bullet points.
+>
+> **CodePrompt:**
+>
+> The requirements were organized around three roles:
+>
+> | Capability | Admin | Instructor | Learner |
+> |---|---|---|---|
+> | Manage users | Yes | No | No |
+> | Create/edit courses | Yes | Yes | No |
+> | Manage modules/content | Yes | Yes | No |
+> | Manage quizzes/passing scores | Yes | Yes | No |
+> | Assign courses | Yes | No | No |
+> | View dashboard | Yes | Limited scope | No |
+> | Start/complete training | No | No | Yes |
+> | Submit quizzes | No | No | Yes |
+> | View/download own certificates | No | No | Yes |
+>
+> Route access was also outlined:
+>
+> | Route | Access |
+> |---|---|
+> | `/login` | Public |
+> | `/learn/courses` | Learner |
+> | `/learn/courses/:courseId` | Assigned learner |
+> | `/learn/modules/:moduleId` | Assigned learner |
+> | `/learn/modules/:moduleId/quiz` | Assigned learner |
+> | `/learn/certificates/:certificateId` | Certificate owner |
+> | `/manage/dashboard` | Admin / Instructor |
+> | `/manage/courses` | Admin / Instructor |
+> | `/manage/users` | Admin only |
+> | `/manage/assignments` | Admin only |
+>
+> Main feature areas included authentication, course/module management, quiz management, assignments, learner flow, progress, dashboard reporting, certificates, persistence, and automated testing.
 
-### **Codex Prompt**
+### **Filtered Summary:**
 
-**Type: Reconstructed / Not Verbatim**
-
-Implement dynamic Angular course-details routing using the existing route:
-
-/courses/\:id
-
-#### **Requirements:**
-
-\- Read the course ID from ActivatedRoute.
-
-\- Validate the route parameter before using it.
-
-\- Use CourseService.getCourseById(id).
-
-\- Do not duplicate course data.
-
-\- Display the selected course when it exists.
-
-\- Gracefully handle invalid, malformed, or nonexistent IDs.
-
-\- Preserve existing routing and navigation.
-
-\- Keep TypeScript strongly typed.
-
-\- Do not change unrelated features.
-
-#### **Test:**
-
-\- valid course ID
-
-\- nonexistent course ID
-
-\- malformed route ID
-
-\- navigation from Courses to Course Details
-
-Run the Angular build.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Keep route handling readable.
-
-\- Validate IDs before using them.
-
-\- Reuse "CourseService".
-
-\- Avoid duplicated course data.
-
-\- Preserve existing navigation.
-
-### **Narrative**
-
-The developer reviewed the route behavior and required invalid URLs to fail safely instead of assuming every route ID was valid.
-
-### **Validation**
-
-\- Valid course IDs were tested.
-
-\- Invalid course IDs were tested.
-
-\- Course-not-found behavior was verified.
+The project was first reduced into clear roles, permissions, feature groups, route boundaries, and mandatory deliverables. A key rule was that instructor ownership and authorization must be enforced by the backend, not only by the frontend.
 
 ---
 
-## **3. Initial Landing Page**
+## **02. LMS Domain Specification & Business Rules**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> I am a beginner building a Training Application.
+>
+> I have not started the database or frontend yet.
+>
+> Please help me define a simple LMS domain with:
+>
+> - Admin
+> - Instructor
+> - Student
+> - Courses
+> - Modules
+> - Lessons
+> - Assignments
+> - Quizzes
+> - Enrollments
+> - Student progress
+>
+> Help decide business rules for:
+>
+> - Draft / Published / Archived course states
+> - Instructor ownership
+> - Enrollment
+> - Assignment grading
+> - Module/lesson ordering
+> - Quiz attempts and scoring
+> - Progress tracking
+> - Editing published courses
+>
+> Then identify database entities and relationships.
+>
+> Do not generate frontend code or SQL yet.
+>
+> **CodePrompt:**
+>
+> The learning structure was defined as:
+>
+> ```text
+> Course
+> └── Module
+>     ├── Lesson
+>     ├── Assignment
+>     └── Quiz
+> ```
+>
+> Course states:
+>
+> | State | Meaning | Editing |
+> |---|---|---|
+> | `DRAFT` | Course is being prepared | Fully editable |
+> | `PUBLISHED` | Available to enrolled students | Restricted |
+> | `ARCHIVED` | No longer offered to new students | Read-only |
+>
+> Version 1 decisions:
+>
+> - One primary instructor per course
+> - Admin can manage all courses
+> - Instructor manages only owned courses
+> - Enrollment required for learner access
+> - Ordered module and lesson positions
+> - Submitted assignment attempts become read-only
+> - Quiz scores are calculated by backend
+> - Failed quiz attempts remain stored
+> - Progress exists at lesson, module, and course levels
+> - Major structural edits to published courses should use a new version
+>
+> Main conceptual entities:
+>
+> | Area | Entities |
+> |---|---|
+> | Identity | `User`, `Role` |
+> | Course Structure | `Course`, `Module`, `Lesson` |
+> | Enrollment & Progress | `Enrollment`, `LessonProgress`, `ModuleProgress` |
+> | Assignments | `Assignment`, `AssignmentSubmission`, `AssignmentGrade` |
+> | Quizzes | `Quiz`, `QuizQuestion`, `QuizOption`, `QuizAttempt`, `QuizResponse` |
+> | Completion | `Certificate` |
 
-To redesign the existing Angular landing page using a selected visual reference while preserving all existing project functionality.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Exact / Verbatim**
-
-I want you to redesign my existing Angular application's landing page to match the attached reference image as closely as possible.
-
-Important: inspect the existing project before making any changes. Do not rebuild the application from scratch.
-
-The existing Angular application already contains routing, authentication-related code, navigation logic, course pages, CourseService, course-details routing, Angular Material configuration, and other working functionality.
-
-Preserve all existing business logic and working functionality.
-
-Use only:
-
-\- Angular
-
-\- TypeScript
-
-\- Angular Material
-
-\- HTML
-
-\- CSS
-
-Do not add:
-
-\- Bootstrap
-
-\- Tailwind
-
-\- jQuery
-
-\- another UI framework
-
-Preserve the existing:
-
-\- Angular routes
-
-\- router outlet
-
-\- Courses page
-
-\- Course Details page
-
-\- /courses/\:id
-
-\- Course model
-
-\- CourseService
-
-\- authentication-related code
-
-\- role/authorization-related code
-
-\- lazy-loaded routes
-
-\- mobile navigation logic
-
-Do not use the entire reference screenshot as the webpage background.
-
-Build the page as real Angular HTML/CSS so navigation, buttons, accessibility, and responsiveness remain functional.
-
-Before editing, inspect the current project and explain which files you intend to modify.
-
-After implementation:
-
-## **1. list every file changed**
-
-## **2. explain each change**
-
-## **3. confirm existing functionality was preserved**
-
-## **4. run npm run build**
-
-## **5. report any errors**
-
-Do not commit or push anything.
-
-### **Developer Feedback**
-
-\- Preserve Angular best practices.
-
-\- Keep the page responsive.
-
-\- Review accessibility.
-
-\- Avoid unnecessary dependencies.
-
-\- Preserve existing routes and business logic.
-
-### **Narrative**
-
-The generated design was reviewed in the browser before acceptance. The developer did not allow Codex to rebuild or replace the existing application architecture.
-
-### **Validation**
-
-\- Landing page was checked manually.
-
-\- Existing navigation was tested.
-
-\- Course routes remained functional.
-
-\- Production build was run.
+The domain was defined before SQL or frontend implementation. This created stable rules for ownership, enrollment, ordering, scoring, progress, publication, and certificates.
 
 ---
 
-## **4. Landing Page Reference Reproduction**
+## **03. Landing Page UI Design**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Create a modern, responsive Employee Training Application landing page using the supplied image only as a visual/layout reference.
+>
+> Requirements:
+>
+> - Navigation: Home, Courses, About, Contact, Login, Sign Up
+> - Hero text on the left
+> - Employee/laptop illustration on the right
+> - Heading: **Learn. Grow. Succeed.**
+> - Buttons: **Explore Courses**, **Get Started**
+> - Responsive layout for desktop/laptop/tablet/mobile
+> - Angular Router
+> - Reusable Angular components
+> - Semantic HTML
+> - Strong TypeScript
+> - Accessibility
+> - Corporate blue/navy/light visual style
+>
+> **CodePrompt:**
+>
+> AI generated a landing-page concept with:
+>
+> - Professional training-platform branding
+> - Full navigation
+> - Large hero heading
+> - CTA buttons
+> - Employee learning through a laptop illustration
+> - Training visuals for certification, video learning, and progress
+> - Blue, white, and navy corporate styling
+> - Feature highlights such as Expert Instructors, Certification, and Progress Tracking
+>
+> Example Markdown reference:
+>
+> ```markdown
+> ![Employee Training Landing Page](./assets/training-landing-page.png)
+> ```
 
-To first reproduce the supplied visual reference accurately before changing the page into a more original SkillForge design.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Exact / Verbatim**
-
-I need the landing page to reproduce the attached reference image as closely as possible for this first version.
-
-Keep the visible text, sections, layout, navigation structure, buttons, feature items, illustration composition, and overall presentation close to the reference.
-
-Do not redesign the page based on your own preferences yet.
-
-Build it as real Angular HTML and CSS rather than using the whole screenshot as a background image.
-
-Preserve all existing application routes, services, authentication-related logic, course functionality, and responsive behavior.
-
-We will customize the branding, wording, navigation, and sections after the visual reproduction is working.
-
-Do not commit or push anything.
-
-### **Developer Feedback**
-
-\- Keep the first version close to the reference.
-
-\- Do not introduce unrelated design choices.
-
-\- Preserve responsive behavior.
-
-\- Preserve existing Angular functionality.
-
-### **Narrative**
-
-The first result was treated as a visual reproduction step rather than the final design. The developer reviewed it before moving to customization.
-
-### **Validation**
-
-\- Layout was checked visually.
-
-\- Navigation remained functional.
-
-\- Existing routes were preserved.
+AI was used to establish the visual direction before frontend coding. The design emphasized responsiveness, accessibility, reusable components, and a clean corporate learning-platform style.
 
 ---
 
-## **5. Header Alignment Correction**
+# **Phase 2 — Course Management, Certificate UI, and Module Management**
 
-### **Why This Prompt Was Used**
+## **04. Admin / Instructor Course Management Review**
 
-To fix only the header alignment after the developer noticed that the navigation links were positioned too high.
+> **Developer:**
+>
+> Review the Angular Admin/Instructor Course Management implementation for:
+>
+> - Security
+> - Performance
+> - Role authorization
+> - Authentication request handling
+> - Angular best practices
+> - Readability
+> - Reusability
+> - Maintainability
+> - Backend contract compatibility
+> - Tests
+>
+> Then perform only one focused correction pass.
+>
+> Do not modify backend files, unrelated code, dependencies, or Git state.
+>
+> **CodePrompt:**
+>
+> Reviewed implementation included:
+>
+> - `/management/courses`
+> - ADMIN/INSTRUCTOR guard
+> - Reuse of `AuthService`
+> - Duplicate `/api/auth/me` prevention
+> - Role-aware navigation
+> - Strongly typed management models
+> - Dedicated CRUD service
+> - Loading/empty/error/retry states
+> - Reusable create/edit form
+> - Duplicate-submit protection
+> - Accessible delete confirmation
+>
+> Review result:
+>
+> | Area | Result |
+> |---|---|
+> | Security | Good |
+> | Performance | Good |
+> | Role authorization | Correct |
+> | Duplicate auth prevention | Good |
+> | Readability | Minor cleanup |
+> | Angular best practice | Prefer `UrlTree` redirect |
+> | Reusability | Good |
+> | Maintainability | Good |
+>
+> Missing regression coverage was added for ADMIN/INSTRUCTOR/USER navigation, resolved/unresolved auth restoration, no-refetch behavior, delete-dialog interactions, and retry behavior.
 
-### **Codex Prompt**
+### **Filtered Summary:**
 
-**Type: Exact / Verbatim**
-
-Fix only the header alignment.
-
-Currently Home, Courses, About, and Contact are too high.
-
-I want the header on one horizontal line, vertically centered:
-
-Left: SkillForge logo
-
-Center: Home | Courses | About | Contact
-
-Right: Log In | Sign Up
-
-Use proper Flexbox or Grid alignment such as align-items: center.
-
-Keep the center navigation truly centered on desktop.
-
-Do not change the hero, illustration, colors, routes, authentication logic, or mobile behavior.
-
-Make the smallest HTML/CSS change possible.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Keep the correction small.
-
-\- Avoid duplicated CSS.
-
-\- Preserve responsiveness.
-
-\- Do not redesign unrelated parts of the page.
-
-### **Narrative**
-
-The developer identified a specific UI problem and requested a focused correction rather than allowing Codex to redesign the entire header.
-
-### **Validation**
-
-\- Header alignment was checked visually.
-
-\- Navigation still worked.
-
-\- Mobile behavior remained unchanged.
+The Course Management feature was reviewed through focused correction passes instead of broad refactoring. The architecture remained approved; only targeted routing, accessibility, validation, and regression issues were corrected.
 
 ---
 
-## **6. SkillForge Originality Customization**
+## **05. Learner Certificate UI Implementation & Review**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Implement the learner Certificate UI in the existing SkillForge Angular frontend.
+>
+> Important:
+>
+> - Frontend only
+> - Do not modify backend
+> - Do not modify `PROMPT.md`
+> - Do not commit or push
+> - Do not add a PDF dependency
+> - Use browser Print / Save as PDF
+> - Preserve existing authentication, quiz, progress, course, module, navigation, and accessibility behavior
+> - Follow standalone components, signals, `HttpClient`, and project test patterns
+>
+> Review the implementation one part at a time.
+>
+> **CodePrompt:**
+>
+> The certificate guard review confirmed:
+>
+> - Existing `AuthService` was reused
+> - No second auth mechanism was created
+> - Already-resolved authentication avoids another `/api/auth/me`
+> - Unresolved authentication restores only when required
+> - `UrlTree` is used for guard redirects
+> - Identity is not trusted from query parameters
+>
+> Frontend model matched the backend `CertificateResponse`:
+>
+> | Backend Field | Frontend |
+> |---|---|
+> | `certificateNumber` | `string` |
+> | `participantName` | `string` |
+> | `courseName` | `string` |
+> | `completionDate` | `string` |
+> | `finalScore` | `number` |
 
-To make the landing page original to SkillForge after the developer felt the reference reproduction looked too similar to the source.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Exact / Verbatim**
-
-Customize the current landing page so it feels original to SkillForge, not like a copy of the reference.
-
-Keep the existing layout, illustration, routes, authentication logic, responsive behavior, and Angular Material/CSS implementation.
-
-Change only the visible content:
-
-\- TRAINING PLATFORM → SKILL DEVELOPMENT PLATFORM
-
-\- Learn. Grow. Succeed. → Learn Skills. Build Confidence.
-
-\- Replace the hero paragraph with:
-
-  Develop practical skills through structured courses designed to support continuous learning and professional growth.
-
-\- Keep Explore Courses
-
-\- Change Get Started → Start Learning
-
-\- Change navigation to:
-
-  Home | Courses | How It Works | Certification
-
-\- Change feature items to:
-
-  - Practical Learning — Develop skills through structured courses
-
-  - Certification — Recognize completed learning achievements
-
-  - Track Progress — Follow your learning journey
-
-Remove the fake trusted-company logo section.
-
-Do not change business logic, routes, services, course functionality, or authentication behavior.
-
-Use existing real routes only.
-
-Make the smallest safe changes.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Make the presentation original to SkillForge.
-
-\- Preserve accessibility.
-
-\- Avoid unnecessary layout changes.
-
-\- Keep existing Angular functionality.
-
-\- Remove fictitious branding content.
-
-### **Narrative**
-
-The developer did not automatically accept the reference reproduction as the final design and requested changes to make the product identity more original.
-
-### **Validation**
-
-\- Updated content was checked.
-
-\- Navigation was manually tested.
-
-\- Course routes were verified.
-
-\- Angular production build passed.
+The Certificate UI reused existing authentication and backend contracts, avoided unnecessary dependencies, and followed the same review-first process used elsewhere in the project.
 
 ---
 
-## **7. REST API and PostgreSQL Integration**
+## **06. Certificate UI Final Corrections & Verification**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Make only the requested certificate corrections:
+>
+> - Fix broken encoding text
+> - Replace nested outer `<main>` with `<div>`
+> - Remove wording that implies public certificate verification exists
+> - Keep all already approved code unchanged
+>
+> Then review:
+>
+> - Code quality
+> - Security
+> - Authorization
+> - Validation
+> - API responses
+> - Sensitive-data exposure
+> - Performance
+> - Test coverage
+> - Regression risk
+> - Dead/debug code
+> - Maintainability
+>
+> **CodePrompt:**
+>
+> Final certificate review passed.
+>
+> | Check | Result |
+> |---|---|
+> | Full tests | 115 / 115 passed |
+> | Test files | 16 / 16 passed |
+> | TypeScript | Passed |
+> | Production build | Passed |
+> | Manual certificate flow | Passed |
+> | Print / PDF | Verified |
+> | Negative incomplete-course test | Blocked correctly |
+> | `git diff --check` | Clean |
+> | Backend changed | No |
 
-To replace temporary frontend course data with real Spring Boot REST API and PostgreSQL data.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Reconstructed / Verbatim**
-
-Inspect the existing SkillForge Angular frontend and Spring Boot backend before making changes.
-
-Replace the temporary frontend course-data source with real Spring Boot REST API and PostgreSQL integration.
-
-Use this architecture:
-
-Angular Component
-
-    -> CourseService
-
-    -> Angular HttpClient
-
-    -> Spring Boot REST Controller
-
-    -> Service Layer
-
-    -> Repository
-
-    -> PostgreSQL
-
-#### **Frontend requirements:**
-
-\- Keep HTTP communication inside Angular services.
-
-\- Do not make direct HTTP requests from Angular components.
-
-\- Use strongly typed TypeScript models.
-
-\- Preserve the existing Courses page.
-
-\- Preserve /courses/\:id.
-
-\- Preserve CourseService as the frontend data-access boundary.
-
-\- Handle loading, missing-data, and API-error states safely.
-
-#### **Backend requirements:**
-
-\- Use REST controllers only for HTTP concerns.
-
-\- Keep business logic inside the service layer.
-
-\- Use repositories for PostgreSQL access.
-
-\- Validate IDs and incoming data.
-
-\- Return appropriate HTTP status codes.
-
-\- Use DTOs where appropriate.
-
-\- Do not expose persistence internals or sensitive errors.
-
-#### **Database requirements:**
-
-\- Load course, module, and learning-content data from PostgreSQL.
-
-\- Do not hard-code database credentials.
-
-\- Continue using environment variables for database secrets.
-
-Preserve existing behavior.
-
-Do not introduce unrelated features or packages.
-
-Run relevant frontend and backend tests/builds.
-
-List all changed files and explain the changes.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Keep Angular components separate from HTTP logic.
-
-\- Follow controller/service/repository separation.
-
-\- Improve reusability.
-
-\- Reduce duplicated data-access logic.
-
-\- Review API error handling.
-
-\- Review performance.
-
-\- Avoid unnecessary complexity.
-
-### **Narrative**
-
-The integration was reviewed as an architecture change rather than only a data-source replacement. The developer required clear frontend/backend responsibility boundaries.
-
-### **Validation**
-
-\- Course API data was checked.
-
-\- Course details were verified.
-
-\- PostgreSQL loading was tested.
-
-\- Frontend and backend builds/tests were run.
+The Certificate UI was finalized with small accessibility/text corrections only. The feature passed tests, build, manual flow, PDF verification, and negative-case validation.
 
 ---
 
-## **8. PostgreSQL Secret Handling**
+## **07. Instructor Access & Test Account Setup**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> We did Instructor Course Management also or not yet?
+>
+> What is the username/password for instructor?
+>
+> How do we change Admin email/password in the database?
+>
+> **CodePrompt:**
+>
+> Instructor Course Management was already implemented together with Admin Course Management.
+>
+> There was no predefined instructor account.
+>
+> Suggested local testing flow:
+>
+> 1. Sign up a normal account
+> 2. Change its role in PostgreSQL from `USER` to `INSTRUCTOR`
+> 3. Log in using the same email/password
+>
+> Admin email can be changed directly, but password storage must remain hashed using the existing Spring `PasswordEncoder`.
 
-To ensure database credentials were not stored directly in committed application configuration.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Reconstructed / Not Verbatim**
-
-Review the Spring Boot PostgreSQL configuration for safe credential handling.
-
-#### **Requirements:**
-
-\- Do not hard-code the PostgreSQL password.
-
-\- Use environment variables for database credentials.
-
-\- Keep DB\_PASSWORD and other secrets outside Git.
-
-\- Do not log database passwords.
-
-\- Preserve local development configuration.
-
-\- Review application configuration for accidentally exposed secrets.
-
-\- Do not commit generated files, IDE files, or sensitive local configuration.
-
-Run the relevant backend tests.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Review security.
-
-\- Keep secrets outside source control.
-
-\- Avoid sensitive logging.
-
-\- Review ".gitignore".
-
-\- Preserve local development usability.
-
-### **Narrative**
-
-The developer treated configuration security as part of the implementation review rather than committing database credentials for convenience.
-
-### **Validation**
-
-\- "DB\_PASSWORD" environment configuration was verified.
-
-\- Git changes were reviewed for secrets.
-
-\- Backend tests were executed.
+The issue was account setup, not missing instructor functionality. Role changes could be used for local testing, while password hashing rules remained unchanged.
 
 ---
 
-## **9. Session-Based Authentication**
-
-### **Why This Prompt Was Used**
-
-To implement secure server-managed authentication with Spring Security and avoid relying on frontend-only authentication.
-
-### **Codex Prompt**
-
-**Type: Reconstructed / Not Verbatim**
-
-Implement secure session-based authentication for SkillForge using the existing Spring Boot and Angular architecture.
-
-Inspect the existing authentication-related code before making changes.
-
-#### **Backend requirements:**
-
-\- Use Spring Security.
-
-\- Use server-managed HTTP sessions.
-
-\- Hash passwords using BCrypt.
-
-\- Support:
-
-  - USER
-
-  - INSTRUCTOR
-
-  - ADMIN
-
-#### **Implement:**
-
-\- signup
-
-\- login
-
-\- logout
-
-\- /me for authenticated-user restoration
-
-\- CSRF bootstrap/protection
-
-#### **Security requirements:**
-
-\- Public signup must not allow the client to choose ADMIN or INSTRUCTOR.
-
-\- The backend must determine authenticated identity from the session.
-
-\- Never return password hashes.
-
-\- Never log passwords or authentication secrets.
-
-\- Preserve CSRF protection.
-
-\- Enforce authorization on the backend.
-
-\- Do not create frontend-only authorization as the security boundary.
-
-#### **Frontend requirements:**
-
-\- Reuse one central AuthService.
-
-\- Keep authentication state in memory.
-
-\- Do not use localStorage for authentication.
-
-\- Do not use sessionStorage for authentication.
-
-\- Do not introduce JWT authentication.
-
-\- Restore the session through /me.
-
-\- Handle login and logout state changes correctly.
-
-\- Protect against stale /me responses restoring an old authentication state after logout or another auth transition.
-
-#### **Testing should cover:**
-
-\- signup
-
-\- login
-
-\- invalid credentials
-
-\- authenticated /me
-
-\- unauthenticated /me
-
-\- refresh/session restoration
-
-\- logout
-
-\- refresh after logout
-
-\- role/authorization behavior
-
-Preserve existing routes and course functionality.
-
-Do not weaken CSRF protection.
-
-Run focused and relevant full tests.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Review authentication security.
-
-\- Keep authorization backend-enforced.
-
-\- Do not use unsafe browser token storage.
-
-\- Preserve CSRF protection.
-
-\- Prevent privileged role selection during public signup.
-
-\- Reduce duplicated authentication logic.
-
-\- Review stale-response behavior.
-
-### **Narrative**
-
-Authentication was treated as a security-sensitive feature. The developer reviewed identity ownership, role assignment, browser storage, CSRF, and session-restoration behavior.
-
-### **Validation**
-
-\- Signup was tested.
-
-\- Login was tested.
-
-\- "/me" restoration was tested.
-
-\- Logout was tested.
-
-\- Refresh after logout was tested.
-
-\- Security tests were run.
+## **08. Module & Content Management Planning**
+
+> **Developer:**
+>
+> Approve the frontend Module & Content Management structure, but before generating the Codex prompt confirm:
+>
+> - Reuse existing course API/service for course name
+> - Do not add a backend endpoint just for the page header
+> - Reuse existing models and common error handling
+> - Show `409` protection only where backend supports it
+> - Keep existing `managementRoleGuard`
+> - Do not create another role-check approach
+>
+> Proposed structure:
+>
+> ```text
+> pages/
+>   module-content-management/
+>     module-content-management.ts
+>     module-content-management.html
+>     module-content-management.css
+>     module-content-management.spec.ts
+>     module-form/
+>     content-form/
+>     delete-module-dialog/
+>     delete-content-dialog/
+>
+> services/
+>   course-module-management.ts
+>   course-module-management.spec.ts
+> ```
+>
+> **CodePrompt:**
+>
+> The structure was approved with reuse-first rules:
+>
+> - Reuse existing course service
+> - Reuse existing models/error handling
+> - Preserve existing guard
+> - Avoid unnecessary backend endpoints
+> - Keep Quiz Management out of this phase
+> - Keep architecture ready for a later **Manage Quiz** action
+
+### **Filtered Summary:**
+
+Module & Content Management was planned as an extension of the existing Course Management architecture, not as a new pattern.
 
 ---
 
-## **10. Auth-Protected Quizzes**
+## **09. Module & Content Management Frontend Implementation Prompt**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Prepare a focused Codex prompt for the frontend Module & Content Management phase.
+>
+> Preserve current architecture, learner behavior, Course Management behavior, and backend contracts.
+>
+> **CodePrompt:**
+>
+> Implement only the frontend Module & Content Management feature.
+>
+> Rules:
+>
+> - Frontend repository only
+> - No backend changes
+> - No `PROMPT.md` changes
+> - No dependency additions unless necessary
+> - No commit/push/stage
+> - Preserve learner behavior
+> - Preserve Course Management
+> - Do not implement quizzes
+> - Reuse standalone components, signals, `HttpClient`, strong typing, `managementRoleGuard`, existing error handling, accessibility, responsive UI, and tests
 
-To keep course learning content public while restricting quiz retrieval and submission to authenticated users.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Reconstructed / Not Verbatim**
-
-Protect the learner quiz flow using the existing SkillForge session authentication.
-
-#### **Backend requirements:**
-
-\- Require authentication for quiz retrieval.
-
-\- Require authentication for quiz submission.
-
-\- Preserve CSRF protection.
-
-\- Do not make nested quiz endpoints accidentally public.
-
-\- Continue enforcing quiz security on the backend.
-
-#### **Frontend requirements:**
-
-\- Reuse the existing AuthService.
-
-\- Do not create another /me restoration request.
-
-\- Do not use browser storage for authentication.
-
-#### **Authentication pending:**
-
-\- do not request protected quiz data
-
-#### **Logged out:**
-
-\- do not call the quiz API
-
-\- keep public course/module content visible
-
-\- show an accessible message such as "Log in to take this quiz."
-
-#### **Logged in:**
-
-\- load the quiz
-
-#### **Login while remaining on the same page:**
-
-\- load the quiz without requiring a page refresh
-
-#### **Logout:**
-
-\- clear quiz questions
-
-\- clear selected answers
-
-\- clear quiz result
-
-\- clear submission errors
-
-#### **Re-login:**
-
-\- request fresh quiz state
-
-Protect against stale HTTP responses:
-
-\- a response started under an older authentication state must not restore protected quiz data after logout
-
-Add focused frontend and backend tests.
-
-Preserve existing course/module functionality.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Keep quiz authorization on the backend.
-
-\- Preserve CSRF protection.
-
-\- Avoid duplicate authentication requests.
-
-\- Clear protected data after logout.
-
-\- Prevent stale protected responses.
-
-\- Keep public learning content accessible.
-
-### **Narrative**
-
-The developer reviewed both frontend behavior and backend authorization to ensure hiding quiz UI was not being treated as the security boundary.
-
-### **Validation**
-
-\- Logged-out behavior was checked.
-
-\- Login on the same page was tested.
-
-\- Logout clearing was verified.
-
-\- Re-login behavior was tested.
+The implementation prompt locked the feature scope before coding and emphasized reuse, minimal change, and consistency.
 
 ---
 
-## **11. Second Database-Backed Demo Quiz**
+# **Phase 3 — Quiz Management**
 
-### **Why This Prompt Was Used**
+## **10. Quiz Management Backend Design**
 
-To add another real PostgreSQL-backed quiz while preserving the existing Module 1 quiz.
+> **Developer:**
+>
+> I approve the Quiz Management backend design.
+>
+> Keep:
+>
+> - Learner quiz logic separate from management logic
+> - Existing ADMIN/INSTRUCTOR security
+> - One quiz per module
+> - Quiz/question/answer CRUD
+> - Validation for titles/text/passing score
+> - Full ownership-chain validation
+> - `404` for wrong parent-child combinations
+> - `409` for a second quiz in the same module
+> - Correct-answer visibility only in management responses
+> - Learner responses must never expose `correct`
+> - Backend scoring/pass-fail
+> - Existing learner retry/progress behavior
+>
+> **CodePrompt:**
+>
+> Approved rules:
+>
+> | Rule | Decision |
+> |---|---|
+> | Quizzes per module | One |
+> | Passing score | `0–100` |
+> | Blank quiz/question/answer text | Rejected |
+> | Question/answer positions | Backend assigned |
+> | Management correct-answer visibility | Allowed |
+> | Learner correct-answer visibility | Never |
+> | Wrong ownership chain | `404` |
+> | Second quiz for module | `409` |
+>
+> Deleting a question safely deletes answers. Deleting a quiz safely deletes questions/answers. A single-choice question cannot end with multiple correct answers.
 
-### **Codex Prompt**
+### **Filtered Summary:**
 
-**Type: Reconstructed / Not Verbatim**
-
-Add the second database-backed demo quiz required for Module 2.
-
-Inspect the existing quiz entities, repositories, services, controllers, and demo seeder first.
-
-#### **Requirements:**
-
-\- Preserve the existing Module 1 quiz.
-
-\- Do not replace the existing Module 1 quiz.
-
-\- Do not duplicate existing quiz data.
-
-\- Store the Module 2 quiz in PostgreSQL using the existing quiz model.
-
-\- Reuse existing quiz entities, repositories, services, and APIs.
-
-\- Preserve the existing passing-score and scoring behavior.
-
-#### **Seeder requirements:**
-
-\- Keep demo-data seeding safe and repeatable.
-
-\- Do not create duplicate rows when the application starts repeatedly.
-
-\- Do not unexpectedly delete unrelated application data.
-
-\- Preserve the existing Module 1 demo data.
-
-Run focused quiz tests and the relevant full backend tests.
-
-Report all changed files.
-
-Do not modify unrelated features.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Reuse existing quiz architecture.
-
-\- Avoid duplicate seeded data.
-
-\- Preserve existing Module 1 behavior.
-
-\- Keep database logic maintainable.
-
-\- Avoid unnecessary new models or services.
-
-### **Narrative**
-
-The developer chose database-backed quizzes so future Admin/Instructor CRUD could manage quiz content instead of depending on hard-coded Angular data.
-
-### **Validation**
-
-\- Database reseeding was checked.
-
-\- Module 1 quiz was preserved.
-
-\- Module 2 quiz was verified.
-
-\- Backend quiz tests were run.
+Management quiz authoring was separated from learner quiz execution, with backend ownership validation and strict protection against correct-answer leakage.
 
 ---
 
-## **12. Learner Module Progress Backend**
-
-### **Why This Prompt Was Used**
-
-To persist quiz attempts, scores, and completion status for each authenticated learner.
-
-### **Codex Prompt**
-
-**Type: Reconstructed / Verbatim**
-
-Implement persistent learner module progress in the SkillForge Spring Boot backend.
-
-Use the authenticated Spring Security principal as the learner identity.
-
-Do not accept a client userId for progress ownership.
-
-Create a ModuleProgress model containing:
-
-\- user
-
-\- module
-
-\- attemptsCount
-
-\- lastScore
-
-\- bestScore
-
-\- completed
-
-\- completedAt
-
-Enforce one progress row per user/module:
-
-UNIQUE(user\_id, module\_id)
-
-Quiz scoring and progress persistence must be transactional.
-
-Failed attempt:
-
-\- increment attemptsCount
-
-\- update lastScore
-
-\- update bestScore only when the new score is higher
-
-\- completed remains false unless it was already completed
-
-Passing attempt:
-
-\- increment attemptsCount
-
-\- update lastScore
-
-\- update bestScore when appropriate
-
-\- set completed = true
-
-\- set completedAt only on the first passing attempt
-
-Retry after completion:
-
-\- increment attemptsCount
-
-\- update lastScore
-
-\- bestScore must never decrease
-
-\- completed must remain true
-
-\- completedAt must remain unchanged
-
-Invalid quiz submissions:
-
-\- do not persist progress
-
-\- do not modify existing progress
-
-Provide an authenticated learner-progress endpoint.
-
-When loading course progress:
-
-\- include every course module
-
-\- treat a module with no progress row as Pending
-
-\- avoid N+1 database queries
-
-\- use bulk progress loading where appropriate
-
-Preserve the existing Spring Security session and CSRF behavior.
-
-Use controller, service, repository, and DTO separation.
-
-Add tests covering:
-
-\- failed attempt
-
-\- first passing attempt
-
-\- retry after completion
-
-\- attemptsCount
-
-\- lastScore
-
-\- bestScore preservation
-
-\- completed preservation
-
-\- completedAt preservation
-
-\- separate users
-
-\- invalid quiz submission
-
-\- unauthenticated access
-
-Run focused and full relevant backend tests.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Do not trust client-supplied learner identity.
-
-\- Reduce duplicated progress logic.
-
-\- Preserve completion after passing.
-
-\- Preserve best score correctly.
-
-\- Review transaction boundaries.
-
-\- Avoid N+1 queries.
-
-\- Improve readability and maintainability.
-
-### **Narrative**
-
-The developer reviewed progress as both a security and data-integrity feature. Particular attention was given to retry behavior and preventing completed modules from regressing.
-
-### **Validation**
-
-\- Failed attempt was tested.
-
-\- Passing attempt was tested.
-
-\- Retry after completion was tested.
-
-\- Best score was checked.
-
-\- Completion persistence was verified.
+## **11. Quiz Management Backend Implementation**
+
+> **Developer:**
+>
+> Implement only Admin/Instructor Quiz, Question, Answer-Option, and Passing-Score Management in the Spring Boot backend.
+>
+> Do not modify frontend, dependencies, migrations, `PROMPT.md`, or Git state.
+>
+> **CodePrompt:**
+>
+> Implementation scope:
+>
+> - Quiz create/update/delete
+> - Passing-score management
+> - Question CRUD
+> - Answer-option CRUD
+>
+> Security expectations:
+>
+> - Anonymous → `401`
+> - Authenticated USER → `403`
+> - ADMIN → allowed
+> - INSTRUCTOR → allowed
+> - CSRF required for mutations
+>
+> Validation included blank text rejection, score bounds, and ownership checks.
+
+### **Filtered Summary:**
+
+The backend extended the existing Spring/JPA/security architecture without creating a separate quiz subsystem.
 
 ---
 
-## **13. Learner Progress Test Strengthening**
+## **12. Quiz Management Backend Review & Test Coverage**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> The production implementation is manually reviewed and functionally approved.
+>
+> Fix remaining automated-test gaps only.
+>
+> Do not redesign, change contracts, change security rules, add migrations/dependencies, or change production behavior unless a new test exposes a real defect.
+>
+> **CodePrompt:**
+>
+> Controller/security tests covered:
+>
+> - Anonymous `401`
+> - USER `403`
+> - ADMIN/INSTRUCTOR allowed
+> - CSRF enforcement
+> - Blank quiz/question validation
+> - Passing-score bounds
+> - Invalid answer option
+> - Management responses may expose `correct`
+> - Learner JSON must not expose `correct`
+> - Client-supplied score/passed values are ignored in favor of backend-calculated values
 
-To strengthen tests after reviewing the first progress implementation and prove important retry and invalid-submission behavior directly.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: constructed / Verbatim**
-
-Strengthen only the learner module-progress backend tests.
-
-Do not redesign the production implementation.
-
-Do not modify unrelated production behavior unless a test exposes a genuine defect.
-
-Add direct test coverage proving:
-
-## **1. A retry for the same user/module reuses the existing ModuleProgress row.**
-
-## **2. A retry does not create a second progress row.**
-
-## **3. attemptsCount increments correctly.**
-
-## **4. lastScore records the latest valid score.**
-
-## **5. bestScore never decreases after a lower-scoring retry.**
-
-## **6. completed remains true after the module has already been passed.**
-
-## **7. completedAt remains unchanged after later attempts.**
-
-## **8. An invalid quiz submission does not create progress.**
-
-## **9. An invalid quiz submission does not modify existing progress.**
-
-Run the focused progress tests and the relevant full backend test suite.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Improve test coverage.
-
-\- Test database-row reuse directly.
-
-\- Verify invalid submissions do not modify progress.
-
-\- Avoid changing production logic unless a real defect is exposed.
-
-### **Narrative**
-
-The developer did not rely only on the original test suite and requested stronger tests around persistence and retry edge cases.
-
-### **Validation**
-
-\- Focused progress tests were run.
-
-\- Retry behavior was verified.
-
-\- Invalid-submission behavior was verified.
+The feature moved from implementation to regression hardening. Production code remained stable while tests verified security, validation, and learner-data safety.
 
 ---
 
-## **14. Learner Progress Frontend**
+## **13. Quiz Management Frontend Architecture**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Keep Quiz Management simple and separate from Module Management.
+>
+> Use:
+>
+> - Existing route guard
+> - Separate management quiz service
+> - Separate learner and management models
+> - Angular for forms/messages
+> - Backend for security, authoritative validation, scoring, and pass/fail
+>
+> Do not add extra features.
+>
+> **CodePrompt:**
+>
+> Approved route:
+>
+> ```text
+> /management/courses/:courseId/modules/:moduleId/quiz
+> ```
+>
+> Reuse:
+>
+> ```text
+> managementRoleGuard
+> ```
+>
+> Add **Manage Quiz** from each module.
+>
+> Keep management models separate from learner models so correct-answer flags never enter learner-facing code.
 
-To display authenticated learner progress on Angular Course Details while preserving public course content.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: constructed / Verbatim**
-
-Integrate learner module progress into the Angular Course Details flow.
-
-Use the existing SkillForge architecture.
-
-#### **Requirements:**
-
-\- Create strongly typed progress models.
-
-\- Add progress API access to the appropriate Angular service.
-
-\- Use relative API URLs.
-
-\- Reuse the existing AuthService.
-
-\- Do not create duplicate /me requests.
-
-\- Do not introduce unnecessary global state.
-
-#### **Authentication pending:**
-
-\- do not call the progress API
-
-#### **Logged out:**
-
-\- keep public course and module content visible
-
-\- do not call the learner progress API
-
-#### **Logged in:**
-
-\- load the authenticated learner's progress
-
-\- display the number of completed modules
-
-\- display each module's completion state
-
-#### **Logout:**
-
-\- immediately clear learner-specific progress state
-
-#### **Re-login:**
-
-\- request fresh progress
-
-#### **Stale-response protection:**
-
-\- a request started before logout must not restore progress after logout
-
-Match progress using moduleId.
-
-Do not depend on array position or visible module text.
-
-#### **Failure behavior:**
-
-\- progress API failure must not hide public course content
-
-\- display a small safe progress error when appropriate
-
-Keep status information accessible.
-
-Add focused Angular tests.
-
-#### **Run:**
-
-\- focused frontend tests
-
-\- full frontend tests
-
-\- TypeScript compilation
-
-\- npm run build
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Follow Angular best practices.
-
-\- Reuse "AuthService".
-
-\- Avoid duplicate "/me" calls.
-
-\- Reduce duplicated component logic.
-
-\- Keep TypeScript strongly typed.
-
-\- Review accessibility.
-
-\- Prevent stale learner data after logout.
-
-\- Preserve public course content on API failure.
-
-### **Narrative**
-
-The developer reviewed the frontend for authentication-state reuse, accessibility, API efficiency, and stale-response behavior.
-
-### **Validation**
-
-\- Login progress loading was tested.
-
-\- Logout clearing was tested.
-
-\- Re-login was tested.
-
-\- Progress API failure behavior was checked.
-
-\- Frontend tests and build were run.
+Quiz Management received a dedicated management page, service, models, and route while preserving learner quiz isolation.
 
 ---
 
-## **15. Progress Status Badges**
+## **14. Quiz Management Frontend Implementation & Correction**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> Implement only the Admin/Instructor Quiz Management frontend.
+>
+> Preserve approved architecture.
+>
+> After review, fix only identified issues.
+>
+> One blocker:
+>
+> ```text
+> src/app/pages/quiz-management/quiz-forms.ts
+> ```
+>
+> was truncated around `QuizDeleteDialog`.
+>
+> Repair the file while preserving:
+>
+> - `QuizFormComponent`
+> - `QuestionFormComponent`
+> - `OptionFormComponent`
+> - `QuizDeleteDialog`
+>
+> **CodePrompt:**
+>
+> Frontend implementation included:
+>
+> - Dedicated management route
+> - Existing role guard
+> - Manage Quiz navigation
+> - Separate management API service
+> - Separate management models
+> - Quiz/question/answer CRUD
+> - Passing-score configuration
+> - Reactive forms
+> - Responsive accessible UI
+>
+> Correction remained limited to repairing the incomplete forms file.
 
-To make module completion status easier to understand visually while preserving accessible text.
+### **Filtered Summary:**
 
-### **Codex Prompt**
-
-**Type: Reconstructed / Not Verbatim**
-
-Make only a focused frontend UI change for module progress status.
-
-Display:
-
-Completed -> green badge
-
-Pending -> orange badge
-
-#### **Requirements:**
-
-\- Keep the visible words "Completed" and "Pending".
-
-\- Do not communicate status using color alone.
-
-\- Do not invent a new In Progress backend state.
-
-\- Do not modify backend APIs.
-
-\- Do not change progress calculations.
-
-\- Do not change authentication.
-
-\- Preserve responsive behavior.
-
-\- Preserve accessibility.
-
-\- Make the smallest safe HTML/CSS change.
-
-Run the relevant frontend tests and npm run build.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Keep visible status text.
-
-\- Review accessibility.
-
-\- Avoid unnecessary backend changes.
-
-\- Do not invent unsupported states.
-
-\- Keep CSS simple and reusable.
-
-### **Narrative**
-
-The developer requested a visual improvement but kept the change aligned with the real backend domain model.
-
-### **Validation**
-
-\- Completed badge was checked.
-
-\- Pending badge was checked.
-
-\- Visible text remained accessible.
-
-\- Frontend build was verified.
+The frontend followed the approval-first workflow and used narrow repair passes rather than redesigning approved code.
 
 ---
 
-## **16. Certificate Backend**
-
-### **Why This Prompt Was Used**
-
-To generate and persist certificates after a learner completes every module in a course.
-
-### **Codex Prompt**
-
-**Type: Reconstructed / Not Verbatim**
-
-Implement certificate generation in the SkillForge Spring Boot backend.
-
-A certificate must contain:
-
-\- participant name
-
-\- course name
-
-\- completion date
-
-\- final score
-
-\- certificate number
-
-Persist certificates in PostgreSQL.
-
-Use one certificate per authenticated user/course:
-
-UNIQUE(user\_id, course\_id)
-
-Use the authenticated Spring Security principal as the learner identity.
-
-Do not accept a client userId.
-
-#### **Eligibility requirements:**
-
-\- the course must exist
-
-\- the course must contain at least one module
-
-\- the learner must have completed every course module
-
-\- an incomplete learner must not receive a new certificate
-
-#### **Final score:**
-
-\- calculate using each completed module's bestScore
-
-\- do not allow later lower attempts to reduce the certificate score
-
-\- calculate the final score consistently
-
-#### **Completion date:**
-
-\- use the latest completedAt value among the course modules
-
-#### **Certificate number:**
-
-\- generate an opaque certificate identifier
-
-\- persist it
-
-\- do not expose the internal database ID as the certificate number
-
-#### **Idempotency:**
-
-\- only one certificate should exist per learner/course
-
-\- repeated requests must return the same persisted certificate
-
-#### **Performance:**
-
-\- avoid N+1 progress queries
-
-\- use efficient bulk loading where appropriate
-
-#### **Security:**
-
-\- derive identity only from the authenticated principal
-
-\- do not trust client-supplied user identity
-
-\- preserve authentication
-
-\- preserve authorization
-
-\- preserve CSRF behavior
-
-\- do not expose unnecessary persistence data
-
-Certificate creation must be transactional.
-
-#### **Add focused:**
-
-\- service tests
-
-\- controller tests
-
-\- security tests
-
-\- PostgreSQL-backed integration tests
-
-Run focused and full relevant backend tests.
-
-Do not commit or push.
-
-### **Developer Feedback**
-
-\- Review certificate eligibility carefully.
-
-\- Do not trust client-supplied identity.
-
-\- Keep certificate creation idempotent.
-
-\- Use persistent opaque certificate numbers.
-
-\- Avoid N+1 database access.
-
-\- Preserve transaction safety.
-
-\- Improve readability and maintainability.
-
-### **Narrative**
-
-The certificate implementation was reviewed for security, data integrity, performance, eligibility, and repeat-request behavior.
-
-### **Validation**
-
-\- Eligibility was tested.
-
-\- Required certificate fields were checked.
-
-\- Repeated requests were tested.
-
-\- Persisted certificate number was verified.
+## **15. Quiz Management Final Cleanup & Verification**
+
+> **Developer:**
+>
+> Perform only final cleanup and missing-test work:
+>
+> - Compile-time assertion that `'correct'` is not a key of learner `QuizAnswerOption`
+> - Direct tests for question create/edit/delete
+> - Direct tests for option create/edit/delete
+> - Correct-answer replacement test
+> - Normal formatting in `quiz-management.html`
+> - Consistent `type="button"` / disabled states
+>
+> **CodePrompt:**
+>
+> Final verification:
+>
+> | Test Area | Result |
+> |---|---|
+> | Test files | 6 passed |
+> | Total tests | 46 / 46 |
+> | Quiz Management component | 15 |
+> | Forms/dialogs | 8 |
+> | Management service | 10 |
+> | Module integration | 10 |
+> | Routing | 2 |
+> | Learner security regression | 1 |
+>
+> Learner-model security was strengthened at compile time.
+
+### **Filtered Summary:**
+
+Quiz Management finished with strong regression coverage, including type-level protection against leaking correct answers into learner models.
 
 ---
 
-## **17. Certificate Lifecycle Correction**
+## **16. Quiz Management Usage Clarification**
 
-### **Why This Prompt Was Used**
+> **Developer:**
+>
+> How do we add answer option?
+>
+> **CodePrompt:**
+>
+> On the Quiz Management page:
+>
+> 1. Open the required question
+> 2. Click **Add Option**
+> 3. Enter option text
+> 4. Choose whether it is correct
+> 5. Save
+>
+> Management UI may know the correct option; learner UI must not.
 
-To correct a lifecycle problem discovered during review after the initial certificate implementation.
+### **Filtered Summary:**
 
-### **Codex Prompt**
+Answer options are managed inside a specific question, keeping management authoring separate from learner quiz delivery.
 
-**Type: Reconstructed / Not Verbatim**
+---
 
-Make a focused correction to the existing certificate implementation.
+# **Phase 4 — Admin User Management & Course Assignment**
 
-Do not redesign the entire certificate feature.
+## **17. Admin User Management & Course Assignment Architecture**
 
-#### **Problem 1:**
+> **Developer:**
+>
+> I approve an ADMIN-only User Management & Course Assignment feature.
+>
+> Scope:
+>
+> - List users using safe fields
+> - View a user's assigned courses
+> - Assign/unassign courses
+> - Prevent duplicates
+> - Validate IDs
+> - Never expose password/authentication data
+> - Keep role editing, user deletion, password reset, bulk assignment, search/filter, and dashboard out of scope
+>
+> Before creating a new entity, inspect whether assignment/enrollment already exists and reuse it if appropriate.
+>
+> **CodePrompt:**
+>
+> Inspection showed course assignment and learner progress are different concepts.
+>
+> Recommended new components:
+>
+> ```text
+> CourseAssignment
+> CourseAssignmentRepository
+> UserAssignmentService
+> AdminUserManagementController
+> CourseAssignmentResponse
+> ```
+>
+> Reuse:
+>
+> ```text
+> AppUser
+> Course
+> UserResponse
+> existing repositories
+> ```
+>
+> Keep `ModuleProgress`, quiz scoring, certificates, roles, auth, public catalog, frontend, and dashboard unchanged.
 
-The current implementation evaluates current course/progress eligibility before checking whether a certificate has already been issued.
+### **Filtered Summary:**
 
-A previously issued certificate must remain retrievable even if the course structure later changes.
+A dedicated assignment relationship was chosen because administrative assignment should not corrupt the meaning of learner progress.
 
-#### **Required behavior:**
+---
 
-## **1. Identify the authenticated learner.**
+## **18. Course Assignment Domain Approval**
 
-## **2. Check whether a certificate already exists for that learner/course.**
+> **Developer:**
+>
+> Approved.
+>
+> Use a separate `CourseAssignment`.
+>
+> Requirements:
+>
+> - ADMIN-only APIs
+> - Reuse safe `UserResponse`
+> - One assignment per user/course
+> - Validate user/course existence
+> - Duplicate → `409`
+> - Unassignment deletes only the assignment
+> - Preserve progress, scores, completion, certificates
+> - Add explicit `/api/admin/**` ADMIN rule
+> - Include assignments in course-deletion dependency check
+> - Keep public course catalog unchanged
+>
+> **CodePrompt:**
+>
+> Approved domain:
+>
+> ```text
+> User ← CourseAssignment → Course
+> ```
+>
+> Assignment is not progress, quiz state, completion state, or certificate state.
+>
+> `/api/admin/**` remains the explicit ADMIN security boundary.
 
-## **3. If an existing certificate is found:**
+### **Filtered Summary:**
 
-   - return the persisted certificate immediately
+The assignment lifecycle was formally separated from learner activity and historical progress.
 
-   - do not re-evaluate current completion eligibility
+---
 
-## **4. Only when no certificate exists:**
+## **19. Admin User Management & Course Assignment Backend Prompt**
 
-   - evaluate the current course
+> **Developer:**
+>
+> Implement only the approved backend phase.
+>
+> Do not modify frontend, dependencies, `PROMPT.md`, or Git state.
+>
+> If an existing code constraint makes the architecture impossible, stop and report instead of inventing a different design.
+>
+> **CodePrompt:**
+>
+> Implement:
+>
+> - ADMIN user listing
+> - Assigned-course viewing
+> - Assignment
+> - Unassignment
+> - Persistence
+> - Duplicate prevention
+> - Validation
+> - Safe responses
+>
+> Add `CourseAssignment` and related repository/service/controller response components.
+>
+> Preserve learner history and course catalog behavior.
 
-   - evaluate current learner completion
+### **Filtered Summary:**
 
-   - create the certificate if eligible
+The backend prompt locked the domain and security boundaries before implementation.
 
-#### **Problem 2:**
+---
 
-participantName and courseName must be immutable issuance snapshots.
+## **20. Admin User Assignment Backend Test Hardening**
 
-When the certificate is first created:
+> **Developer:**
+>
+> Strengthen only existing Admin User Management and Course Assignment tests.
+>
+> Modify tests only.
+>
+> Do not change production Java, dependencies, properties, unrelated code, or Git state.
+>
+> **CodePrompt:**
+>
+> Focused quality gate:
+>
+> | Check | Result |
+> |---|---|
+> | Code quality | Pass |
+> | Security | Pass |
+> | Authorization | Pass |
+> | Validation | Pass |
+> | Sensitive data | Pass |
+> | Duplicate protection | Pass |
+> | Race-condition handling | Pass |
+> | Focused admin tests | 15 passed |
+> | Full backend tests | 150 passed |
+> | PostgreSQL unique constraint | Verified |
+> | User/Course foreign keys | Verified |
+> | Nullability | Verified |
 
-\- persist participantName
+### **Filtered Summary:**
 
-\- persist courseName
+The backend was hardened without production changes. PostgreSQL constraints and regression behavior were verified.
 
-When reading an existing certificate:
+---
 
-\- return the persisted participantName
+## **21. Admin User Course Assignment UI Planning**
 
-\- return the persisted courseName
+> **Developer:**
+>
+> Backend is done, but the UI is not.
+>
+> I want an Admin Users page similar to:
+>
+> ```text
+> /admin/users
+>
+> Users
+> ───────────────────────────────
+> Ganesh   USER        ganesh@...
+> John     USER        john@...
+> Mary     INSTRUCTOR  mary@...
+>
+> Select user
+>       ↓
+>
+> Assigned Courses
+> ───────────────────────────────
+> Java Fundamentals
+> Spring Boot Basics
+>
+> Assign Course
+> [ Select available course ] [ Assign ]
+> ```
+>
+> **CodePrompt:**
+>
+> Proposed frontend architecture:
+>
+> - Dedicated ADMIN-only guard
+> - `/admin/users`
+> - ADMIN-only navigation link
+> - Typed assignment models
+> - `AdminUserService`
+> - Reuse `CourseManagementService.getCourses()`
+> - Standalone Admin User Management component
+> - Exclude already assigned courses from selector
+> - Prevent duplicate clicks
+> - Handle `403`, `404`, `409`, network, and generic errors
 
-\- do not rebuild these values from the learner's current name
+### **Filtered Summary:**
 
-\- do not rebuild these values from the course's current title
+The UI phase began only after backend APIs and persistence were stable.
 
-#### **Preserve:**
+---
 
-\- one certificate per user/course
+## **22. Admin Assignment UI Acceptance Criteria**
 
-\- the existing certificate number
+> **Developer:**
+>
+> Make sure the UI follows:
+>
+> - Existing Angular Material design
+> - Current colors, spacing, typography, layout
+> - Responsive design
+> - Standalone components
+> - Signals / `inject()` where consistent
+> - Strong typing
+> - No `any`
+> - Small focused components
+> - API logic in services
+> - Simple templates
+> - ADMIN authorization separate from broader management guard
+> - Existing XSRF behavior
+> - Duplicate-click prevention
+> - Clean `403` / `404` / `409` handling
+>
+> **CodePrompt:**
+>
+> These requirements were treated as mandatory acceptance criteria, especially ADMIN-only authorization, existing Angular Material reuse, strong typing, existing XSRF handling, and preserving unrelated pages.
 
-\- completion date
+### **Filtered Summary:**
 
-\- final score
+The UI quality bar was defined before coding, preventing a separate visual or architectural style from being introduced.
 
-\- authentication
+---
 
-\- authorization
+## **23. Admin User Course Assignment Frontend Prompt**
 
-\- CSRF
+> **Developer:**
+>
+> Implement the SkillForge Admin User Course Assignment frontend UI using existing backend endpoints and Angular architecture.
+>
+> **CodePrompt:**
+>
+> Implement:
+>
+> - Dedicated ADMIN route guard
+> - ADMIN-only navigation link
+> - Safe typed user/assignment models
+> - Dedicated `AdminUserService`
+> - Reuse existing course service
+> - User list and selection
+> - Assigned-course list
+> - Available-course selector
+> - Assignment action
+> - Duplicate-submit prevention
+> - Explicit `403`, `404`, `409` handling
+> - Existing Angular Material/XSRF/accessibility patterns
 
-\- idempotency
+### **Filtered Summary:**
 
-\- the current API contract where possible
+The frontend architecture remained small, typed, secure, and consistent with existing project patterns.
 
-#### **Add or update tests proving:**
+---
 
-\- repeated requests return the same certificate number
+# **Phase 5 — Learner Course Authentication & Backend Protection**
 
-\- an existing certificate remains retrievable after later course changes
+## **24. Learner Course Access Authentication Architecture Review**
 
-\- participantName remains the original issuance snapshot
+> **Developer:**
+>
+> Fix Learner Course Access authentication.
+>
+> First inspect the catalog, course navigation, learner/module routes, guard, `AuthService`, login/signup flow, and backend security.
+>
+> Public users may browse courses, but must authenticate before:
+>
+> - Starting learning
+> - Opening modules
+> - Viewing training content
+> - Taking quizzes
+> - Viewing progress/scores
+> - Completing courses
+> - Accessing certificates
+>
+> This must work for every dynamically created course.
+>
+> **CodePrompt:**
+>
+> Current issue:
+>
+> - `/courses` was public
+> - `/courses/:id` was public
+> - Module-learning route was not fully protected
+>
+> Approved flow:
+>
+> ```text
+> Public catalog
+>      ↓
+> Public course details
+>      ↓
+> Start Learning
+>      ↓
+> authenticatedGuard
+>      ↓
+> logged in? ─ yes → module
+>      │
+>      no
+>      ↓
+> return to course details
+> + login=required
+> + validated local returnUrl
+>      ↓
+> existing Login dialog
+>      ↓
+> successful login
+>      ↓
+> attempted module URL
+> ```
+>
+> Public module summaries may remain public only if they contain safe metadata and no lesson/quiz/progress data.
 
-\- courseName remains the original issuance snapshot
+### **Filtered Summary:**
 
-\- an ineligible learner cannot create a new certificate
+The authentication boundary was moved to the point where learning starts while preserving public discovery.
 
-Run focused certificate tests and the full relevant PostgreSQL-backed backend test suite.
+---
 
-Do not commit or push.
+## **25. Learner Course Access Frontend Implementation**
 
-### **Developer Feedback**
+> **Developer:**
+>
+> Implement the approved learner-auth fix in Angular only.
+>
+> Reuse:
+>
+> - `authenticatedGuard`
+> - `AuthService`
+> - `AuthDialog`
+>
+> Preserve attempted URL through login.
+>
+> Do not redesign catalog/auth UI, hard-code course IDs, or change ADMIN/INSTRUCTOR behavior.
+>
+> **CodePrompt:**
+>
+> The frontend guard redirects anonymous users back to course details with:
+>
+> ```text
+> ?login=required&returnUrl=...
+> ```
+>
+> `CourseDetails` validates the return URL, opens the existing login dialog, and after successful login navigates to the validated learner route.
 
-\- Preserve already-issued certificates.
+### **Filtered Summary:**
 
-\- Keep certificate data immutable after issuance.
+The smallest safe frontend change reused the existing authentication system instead of creating a second flow.
 
-\- Do not redesign unrelated certificate logic.
+---
 
-\- Strengthen lifecycle tests.
+## **26. Learner Authentication Route-Reuse & Dialog Corrections**
 
-\- Preserve security and idempotency.
+> **Developer:**
+>
+> Fix one route-reuse problem:
+>
+> If the learner is already on `/courses/:id`, Angular may reuse `CourseDetails` after redirecting back with login query params.
+>
+> Do not rely only on `snapshot.queryParamMap`.
+>
+> Then fix one more edge case: prevent a second AuthDialog from opening while one is already open.
+>
+> Keep consuming query params with `replaceUrl`.
+>
+> **CodePrompt:**
+>
+> Corrections:
+>
+> - React to `queryParamMap` changes
+> - Track real dialog-open state / `MatDialogRef`
+> - Validate return URL
+> - Consume login params
+> - Avoid reopening loops
+> - Navigate after successful login
 
-\- Keep the correction focused and maintainable.
+### **Filtered Summary:**
 
-### **Narrative**
+Two Angular edge cases were fixed without changing the approved design: route reuse and duplicate login dialogs.
 
-The initial implementation passed tests, but further review identified a lifecycle problem. The developer requested a focused correction instead of accepting the first successful implementation.
+---
 
-### **Validation**
+## **27. Learner Authentication Frontend Verification**
 
-\- Existing certificate retrieval was tested.
+> **Developer:**
+>
+> Verify the frontend implementation fully. Do not commit or push.
+>
+> **CodePrompt:**
+>
+> Final verification:
+>
+> | Check | Result |
+> |---|---|
+> | Focused tests | 35 / 35 |
+> | Full regression | 216 / 216 |
+> | Production build | Passed |
+> | Scope | Limited to intended changes |
+> | Existing `courses.css` budget warning | Unrelated |
 
-\- Participant-name snapshot was checked.
+### **Filtered Summary:**
 
-\- Course-name snapshot was checked.
+The frontend learner-authentication fix passed focused tests, full regression, and production build.
 
-\- Repeated certificate requests were tested.
+---
 
-\- Ineligible certificate creation was checked.
+## **28. Learner Course Access Backend Security Prompt**
+
+> **Developer:**
+>
+> Approved.
+>
+> Now implement backend-only protection.
+>
+> Keep public:
+>
+> - Course catalog
+> - Course details
+> - Safe module summaries
+>
+> Protect full learner content.
+>
+> Do not add assignment-based authorization, change quiz/progress/certificate rules, weaken management security, or create a new auth mechanism.
+>
+> **CodePrompt:**
+>
+> Public:
+>
+> ```text
+> GET /api/courses
+> GET /api/courses/{courseId}
+> GET /api/courses/{courseId}/modules
+> ```
+>
+> Public module summary may contain only:
+>
+> ```text
+> id
+> title
+> description
+> position
+> ```
+>
+> Protected:
+>
+> - Lesson/module content
+> - Quiz activity
+> - Progress
+> - Scores
+> - Completion
+> - Certificates
+>
+> Reuse existing Spring Security/session behavior.
+
+### **Filtered Summary:**
+
+Frontend route protection was backed by server-side access control so protected APIs could not be bypassed directly.
+
+---
+
+# **Phase 6 — Learner Progress Bug Fixes & Reporting**
+
+## **29. Failed Quiz Attempt Persistence Bug**
+
+> **Developer:**
+>
+> Urgent bug:
+>
+> Learner fails a quiz, but Admin/Instructor Learner Progress still shows:
+>
+> ```text
+> Last score: Not attempted
+> Best score: Not attempted
+> Attempts: 0
+> Completed: Not completed
+> ```
+>
+> Every valid failed or passed submission must persist attempt information.
+>
+> First failed attempt:
+>
+> ```text
+> attemptCount = 1
+> lastScore = failed score
+> bestScore = failed score
+> completed = false
+> ```
+>
+> Second failed attempt increments count and keeps highest best score.
+>
+> **CodePrompt:**
+>
+> The bug was narrowed to quiz-attempt persistence.
+>
+> Existing `ModuleProgress` could continue storing aggregate progress:
+>
+> ```text
+> Learner + Module
+> attemptCount = 3
+> lastScore = 45
+> bestScore = 55
+> completed = false
+> completedAt = null
+> ```
+>
+> No new row per quiz attempt was required for this project scope.
+
+### **Filtered Summary:**
+
+Failed attempts needed to update persisted aggregate progress just like passing attempts, without introducing a new attempt-history architecture.
+
+---
+
+## **30. Course Progress Status Correction**
+
+> **Developer:**
+>
+> Quiz attempts are now persisted, but a learner with failed attempts can still show `NOT_STARTED`.
+>
+> Once the learner has meaningful activity, classify the course as `IN_PROGRESS`.
+>
+> **CodePrompt:**
+>
+> Correct classification:
+>
+> ```text
+> No activity       → NOT_STARTED
+> Activity exists   → IN_PROGRESS
+> Requirements met  → COMPLETED
+> ```
+
+### **Filtered Summary:**
+
+Persistence and status classification were corrected separately so reporting accurately reflected learner activity.
+
+---
+
+## **31. Self-Started Course Activity in Learner Progress**
+
+> **Developer:**
+>
+> Admin-assigned courses appear in Learner Progress, but a learner who independently starts another course may not appear.
+>
+> I expect Learner Progress to update when the learner:
+>
+> - Presses Start Learning
+> - Attempts a quiz
+> - Makes progress
+>
+> Do not create fake assignments.
+>
+> **CodePrompt:**
+>
+> Reporting population should include:
+>
+> ```text
+> Administrative assignment
+>        OR
+> Actual learner activity/progress
+> ```
+>
+> Self-started progress should appear without creating a `CourseAssignment`.
+
+### **Filtered Summary:**
+
+Course assignment and learner activity remained separate concepts, while reporting learned to include either source.
+
+---
+
+## **32. Learner Progress Automatic Refresh**
+
+> **Developer:**
+>
+> Next, implement frontend Learner Progress auto-refresh so Admin/Instructor can see new learner activity without manually reloading.
+>
+> Keep code quality and existing UI consistency.
+>
+> Do not touch unrelated files or Git state.
+>
+> **CodePrompt:**
+>
+> Add safe automatic refresh behavior using the existing reporting API and component lifecycle.
+>
+> Preserve:
+>
+> - Existing UI state where possible
+> - Current polling/report semantics
+> - Error/loading behavior
+> - Maintainability
+>
+> Avoid duplicate or unsafe requests.
+
+### **Filtered Summary:**
+
+Backend correctness and frontend freshness were treated separately. The frontend was responsible for keeping reporting current.
+
+---
+
+## **33. Dashboard Requirement Audit**
+
+> **Developer:**
+>
+> Audit the Dashboard requirement.
+>
+> Inspect:
+>
+> - Dashboard component
+> - Routes
+> - Navigation
+> - Services
+> - Models
+> - Tests
+> - Existing APIs
+>
+> Do not modify code yet.
+>
+> **CodePrompt:**
+>
+> Perform an audit-first review:
+>
+> - What already exists
+> - What mandatory dashboard data is missing
+> - What APIs can be reused
+> - Role differences between ADMIN and INSTRUCTOR
+> - Test/security gaps
+> - Duplicate implementation risk
+>
+> No implementation until the gap is understood.
+
+### **Filtered Summary:**
+
+The Dashboard phase followed the same inspect → identify gaps → approve scope → implement workflow used throughout the project.
+
+---
+
+# **Phase 7 — Admin Account Creation and Account Management**
+
+## **34. Admin-Only User Creation Backend**
+
+> **Developer:**
+>
+> Add ADMIN-only user creation.
+>
+> On Admin Users page, ADMIN should be able to create:
+>
+> - USER
+> - INSTRUCTOR
+> - ADMIN
+>
+> Fields:
+>
+> - First Name
+> - Last Name
+> - Email
+> - Password
+> - Role
+>
+> Reuse existing user entity, role enum, authentication, password encoder, and `/api/admin/**`.
+>
+> The database has one `name` field, so combine first and last name. Do not add columns.
+>
+> Save only encoded passwords and never return raw passwords.
+>
+> First inspect the exact files that need changes.
+>
+> **CodePrompt:**
+>
+> Extend the existing Admin Users backend under:
+>
+> ```text
+> /api/admin/users
+> ```
+>
+> Reuse:
+>
+> - Existing user entity
+> - Role enum
+> - Password encoder
+> - User repository
+> - Safe user DTO
+> - Existing ADMIN authorization
+>
+> Duplicate email must be rejected.
+> No schema change is required.
+
+### **Filtered Summary:**
+
+Admin User Creation was designed as a small extension of the existing user-management architecture without changing the database or login model.
+
+---
+
+## **35. Admin User Creation Frontend UI**
+
+> **Developer:**
+>
+> Backend is complete.
+>
+> Add `+ Add User` to the existing Admin Users page.
+>
+> Form:
+>
+> - First Name
+> - Last Name
+> - Email
+> - Password
+> - Role
+>
+> Use:
+>
+> ```text
+> POST /api/admin/users
+> ```
+>
+> Handle `201`, duplicate email `409`, and refresh the existing user list.
+>
+> Do not redesign auth, guards, login, roles, or course assignment behavior.
+>
+> **CodePrompt:**
+>
+> Frontend responsibilities:
+>
+> - Form validation
+> - Role selection
+> - Loading state
+> - Duplicate-submit prevention
+> - Success/error messages
+> - Refresh user list
+>
+> Backend remains authoritative for authorization, password hashing, persistence, and duplicate-email protection.
+
+### **Filtered Summary:**
+
+The Add User UI was integrated into the existing Admin Users flow without disturbing course assignments.
+
+---
+
+## **36. Admin User Edit & Account Status Backend Handoff**
+
+> **Developer:**
+>
+> The backend now supports:
+>
+> ```text
+> PUT /api/admin/users/{userId}
+> PATCH /api/admin/users/{userId}/enabled
+> ```
+>
+> Move to frontend implementation.
+>
+> **CodePrompt:**
+>
+> Edit API supports name/email/role updates.
+>
+> Enabled API supports:
+>
+> ```text
+> Active → Deactivated
+> Deactivated → Reactivated
+> ```
+>
+> Both return safe user data without password/authentication internals.
+
+### **Filtered Summary:**
+
+The frontend phase began only after stable backend APIs were available.
+
+---
+
+## **37. Admin User Edit, Deactivate & Reactivate Frontend**
+
+> **Developer:**
+>
+> Implement ADMIN-only Edit User and Deactivate/Reactivate on the existing Admin Users page.
+>
+> Improve the crowded Actions UI.
+>
+> Preferred:
+>
+> ```text
+> View assignments | Edit | ⋮
+> ```
+>
+> Keep View assignments and Edit visible.
+>
+> Put Deactivate/Reactivate in a three-dot menu if consistent with the design system.
+>
+> Requirements:
+>
+> - Destructive Deactivate visually distinct
+> - Reactivate for disabled users
+> - Prevent/hide self-deactivation for logged-in ADMIN
+> - Preserve sticky table header and scrolling
+> - Responsive layout
+> - No backend/unrelated changes
+>
+> **CodePrompt:**
+>
+> Use existing edit/status APIs.
+>
+> Reuse Angular Material menu if available.
+>
+> Active user menu:
+>
+> ```text
+> Deactivate
+> ```
+>
+> Inactive user menu:
+>
+> ```text
+> Reactivate
+> ```
+>
+> Prevent self-deactivation and preserve assignment behavior.
+
+### **Filtered Summary:**
+
+Admin Users evolved into a broader but still focused account-management interface while retaining the existing assignment workflow.
+
+---
+
+# **Phase 8 — Learner Progress UI/UX Refinement**
+
+## **38. Learner Progress Grouping Refactor**
+
+> **Developer:**
+>
+> Refactor Learner Progress so course reports are grouped professionally by learner instead of repeating learner identity for every course.
+>
+> This is frontend presentation only.
+>
+> Do not change APIs, database behavior, authorization, report semantics, assignment semantics, polling, or progress calculations.
+>
+> **CodePrompt:**
+>
+> New structure:
+>
+> ```text
+> Learner
+> │
+> ├── Course 1
+> ├── Course 2
+> └── Course 3
+> ```
+>
+> `learnerGroups` was implemented in frontend-only code.
+>
+> No extra HTTP calls, subscriptions, sensitive data, race conditions, or database changes were introduced.
+
+### **Filtered Summary:**
+
+The reporting page became easier to scan by grouping multiple course reports under one learner identity.
+
+---
+
+## **39. Learner Progress Dashboard UI Polish**
+
+> **Developer:**
+>
+> I checked the browser design and want the Learner Progress page improved further.
+>
+> Do not change database, backend business logic, APIs, DTOs, entities, or stored data.
+>
+> Focus only on:
+>
+> - Frontend
+> - Template
+> - CSS
+> - Layout
+> - Text presentation
+>
+> Make it a professional, compact admin-dashboard experience.
+>
+> **CodePrompt:**
+>
+> UI polish focused on:
+>
+> - Cleaner learner grouping
+> - Compact course cards
+> - Better typography
+> - Better spacing
+> - Clear metrics
+> - Responsive layout
+> - Existing Angular Material style
+>
+> Presentation-only changes such as `TitleCasePipe` did not mutate data.
+
+### **Filtered Summary:**
+
+The page was visually improved without touching reporting logic or backend behavior.
+
+---
+
+## **40. Learner Progress Final Layout Corrections**
+
+> **Developer:**
+>
+> Apply only final presentation corrections.
+>
+> Do not redesign again.
+>
+> Change visible label:
+>
+> ```text
+> Assignment state
+> ```
+>
+> to:
+>
+> ```text
+> Assignment Status
+> ```
+>
+> Also improve Completed Modules display and spacing between course cards.
+>
+> Do not rename backend/frontend fields.
+>
+> **CodePrompt:**
+>
+> Final correction pass was presentation-only:
+>
+> - Better wording
+> - Consistent metric formatting
+> - Clearer spacing
+> - Better separation between course cards
+> - Existing grouping/report logic preserved
+
+### **Filtered Summary:**
+
+The correction pass improved readability without changing data semantics.
+
+---
+
+## **41. Learner Progress Metric Icons & Alignment**
+
+> **Developer:**
+>
+> I first considered `info_outline` icons, but after checking the browser:
+>
+> - Remove generic info icons
+> - Use meaningful icons per metric
+> - Fix Pending Modules so its value is below the label like other metrics
+>
+> Final mapping:
+>
+> ```text
+> Overall Progress   → track_changes
+> Completed Modules  → check_circle
+> Pending Modules    → schedule
+> Completion Date    → event
+> Certificate        → workspace_premium
+> ```
+>
+> **CodePrompt:**
+>
+> Replace repeated info icons with section-specific Angular Material icons.
+>
+> Use a consistent metric layout:
+>
+> ```text
+> [Icon] Metric Label
+>        Metric Value
+> ```
+>
+> Correct Pending Modules alignment and keep icons subtle.
+
+### **Filtered Summary:**
+
+The final Learner Progress metric design became more meaningful and consistent without introducing new dependencies or backend changes.
+
+---
+
+# **Overall AI-Assisted Engineering Approach**
+
+The prompt history shows a repeated engineering workflow rather than one-shot code generation:
+
+1. **Understand the requirement**
+2. **Inspect the existing implementation**
+3. **Define or approve architecture**
+4. **Set strict scope boundaries**
+5. **Prepare a focused Codex implementation prompt**
+6. **Review the produced implementation**
+7. **Fix only identified issues**
+8. **Add regression tests**
+9. **Run focused and full verification**
+10. **Developer gives final approval**
+
+## **What ChatGPT Contributed**
+
+ChatGPT was mainly used for:
+
+- Requirements analysis
+- Architecture
+- Project sequencing
+- Code-review guidance
+- Security review
+- Authorization review
+- Test planning
+- Bug analysis
+- Optimization
+- UI/UX refinement
+- Preparing implementation prompts
+- Keeping features focused and maintainable
+
+## **What Codex Contributed**
+
+Codex was mainly used for:
+
+- Implementing approved features
+- Editing frontend/backend code
+- Creating or correcting tests
+- Applying focused bug fixes
+- Following approved project patterns in VS Code
+- Avoiding unrelated changes when instructed
+
+## **Developer Responsibility**
+
+The final architecture and approval remained with the developer.
+
+The developer repeatedly:
+
+- Reviewed AI suggestions
+- Approved or rejected architecture
+- Narrowed scope
+- Requested focused corrections
+- Verified behavior manually
+- Required tests/build checks
+- Controlled when implementation was considered complete
+
+This made AI a supporting engineering tool rather than the owner of the project decisions.
