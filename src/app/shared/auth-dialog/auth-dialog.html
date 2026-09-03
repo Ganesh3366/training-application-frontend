@@ -1,11 +1,16 @@
 <section class="auth-dialog" aria-labelledby="auth-dialog-title">
   <div class="dialog-heading">
-    <div>      
+    <div>
       <h2 id="auth-dialog-title">
         {{ activeMode() === 'login' ? 'Welcome back' : 'Create your account' }}
       </h2>
     </div>
-    <button mat-icon-button type="button" (click)="close()" aria-label="Close authentication dialog">
+    <button
+      mat-icon-button
+      type="button"
+      (click)="close()"
+      aria-label="Close authentication dialog"
+    >
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -55,12 +60,20 @@
             formControlName="email"
             autocomplete="email"
             placeholder="Email"
-            [attr.aria-invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched"
-            [attr.aria-describedby]="loginForm.controls.email.invalid && loginForm.controls.email.touched ? 'login-email-error' : null"
+            [attr.aria-invalid]="
+              loginForm.controls.email.invalid && loginForm.controls.email.touched
+            "
+            [attr.aria-describedby]="
+              loginForm.controls.email.invalid && loginForm.controls.email.touched
+                ? 'login-email-error'
+                : null
+            "
           />
           @if (loginForm.controls.email.touched && loginForm.controls.email.hasError('required')) {
             <p id="login-email-error" class="field-error">Email is required.</p>
-          } @else if (loginForm.controls.email.touched && loginForm.controls.email.hasError('email')) {
+          } @else if (
+            loginForm.controls.email.touched && loginForm.controls.email.hasError('email')
+          ) {
             <p id="login-email-error" class="field-error">Enter a valid email address.</p>
           }
         </div>
@@ -73,10 +86,18 @@
             formControlName="password"
             autocomplete="current-password"
             placeholder="Password"
-            [attr.aria-invalid]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
-            [attr.aria-describedby]="loginForm.controls.password.invalid && loginForm.controls.password.touched ? 'login-password-error' : null"
+            [attr.aria-invalid]="
+              loginForm.controls.password.invalid && loginForm.controls.password.touched
+            "
+            [attr.aria-describedby]="
+              loginForm.controls.password.invalid && loginForm.controls.password.touched
+                ? 'login-password-error'
+                : null
+            "
           />
-          @if (loginForm.controls.password.touched && loginForm.controls.password.hasError('required')) {
+          @if (
+            loginForm.controls.password.touched && loginForm.controls.password.hasError('required')
+          ) {
             <p id="login-password-error" class="field-error">Password is required.</p>
           }
         </div>
@@ -100,10 +121,19 @@
               formControlName="firstName"
               autocomplete="given-name"
               placeholder="First Name"
-              [attr.aria-invalid]="signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched"
-              [attr.aria-describedby]="signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched ? 'first-name-error' : null"
+              [attr.aria-invalid]="
+                signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched
+              "
+              [attr.aria-describedby]="
+                signupForm.controls.firstName.invalid && signupForm.controls.firstName.touched
+                  ? 'first-name-error'
+                  : null
+              "
             />
-            @if (signupForm.controls.firstName.touched && signupForm.controls.firstName.hasError('required')) {
+            @if (
+              signupForm.controls.firstName.touched &&
+              signupForm.controls.firstName.hasError('required')
+            ) {
               <p id="first-name-error" class="field-error">First name is required.</p>
             }
           </div>
@@ -115,10 +145,19 @@
               formControlName="lastName"
               autocomplete="family-name"
               placeholder="Last Name"
-              [attr.aria-invalid]="signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched"
-              [attr.aria-describedby]="signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched ? 'last-name-error' : null"
+              [attr.aria-invalid]="
+                signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched
+              "
+              [attr.aria-describedby]="
+                signupForm.controls.lastName.invalid && signupForm.controls.lastName.touched
+                  ? 'last-name-error'
+                  : null
+              "
             />
-            @if (signupForm.controls.lastName.touched && signupForm.controls.lastName.hasError('required')) {
+            @if (
+              signupForm.controls.lastName.touched &&
+              signupForm.controls.lastName.hasError('required')
+            ) {
               <p id="last-name-error" class="field-error">Last name is required.</p>
             }
           </div>
@@ -132,12 +171,22 @@
             formControlName="email"
             autocomplete="email"
             placeholder="Email"
-            [attr.aria-invalid]="signupForm.controls.email.invalid && signupForm.controls.email.touched"
-            [attr.aria-describedby]="signupForm.controls.email.invalid && signupForm.controls.email.touched ? 'signup-email-error' : null"
+            [attr.aria-invalid]="
+              signupForm.controls.email.invalid && signupForm.controls.email.touched
+            "
+            [attr.aria-describedby]="
+              signupForm.controls.email.invalid && signupForm.controls.email.touched
+                ? 'signup-email-error'
+                : null
+            "
           />
-          @if (signupForm.controls.email.touched && signupForm.controls.email.hasError('required')) {
+          @if (
+            signupForm.controls.email.touched && signupForm.controls.email.hasError('required')
+          ) {
             <p id="signup-email-error" class="field-error">Email is required.</p>
-          } @else if (signupForm.controls.email.touched && signupForm.controls.email.hasError('email')) {
+          } @else if (
+            signupForm.controls.email.touched && signupForm.controls.email.hasError('email')
+          ) {
             <p id="signup-email-error" class="field-error">Enter a valid email address.</p>
           }
         </div>
@@ -150,13 +199,27 @@
             formControlName="password"
             autocomplete="new-password"
             placeholder="Password"
-            [attr.aria-invalid]="signupForm.controls.password.invalid && signupForm.controls.password.touched"
-            [attr.aria-describedby]="signupForm.controls.password.invalid && signupForm.controls.password.touched ? 'signup-password-error' : null"
+            [attr.aria-invalid]="
+              signupForm.controls.password.invalid && signupForm.controls.password.touched
+            "
+            [attr.aria-describedby]="
+              signupForm.controls.password.invalid && signupForm.controls.password.touched
+                ? 'signup-password-error'
+                : null
+            "
           />
-          @if (signupForm.controls.password.touched && signupForm.controls.password.hasError('required')) {
+          @if (
+            signupForm.controls.password.touched &&
+            signupForm.controls.password.hasError('required')
+          ) {
             <p id="signup-password-error" class="field-error">Password is required.</p>
-          } @else if (signupForm.controls.password.touched && signupForm.controls.password.hasError('minlength')) {
-            <p id="signup-password-error" class="field-error">Password must be at least 8 characters.</p>
+          } @else if (
+            signupForm.controls.password.touched &&
+            signupForm.controls.password.hasError('minlength')
+          ) {
+            <p id="signup-password-error" class="field-error">
+              Password must be at least 8 characters.
+            </p>
           }
         </div>
 
@@ -172,8 +235,13 @@
     }
 
     @if (submissionMessage()) {
-      <p class="submission-message" [class.error-message]="submissionIsError()"
-        [attr.role]="submissionIsError() ? 'alert' : 'status'">{{ submissionMessage() }}</p>
+      <p
+        class="submission-message"
+        [class.error-message]="submissionIsError()"
+        [attr.role]="submissionIsError() ? 'alert' : 'status'"
+      >
+        {{ submissionMessage() }}
+      </p>
     }
   </mat-dialog-content>
 </section>

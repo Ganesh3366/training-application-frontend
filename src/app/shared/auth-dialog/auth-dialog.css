@@ -217,7 +217,9 @@ form {
   outline-offset: 3px;
 }
 
-.submit-button:disabled { opacity: 0.65; }
+.submit-button:disabled {
+  opacity: 0.65;
+}
 
 .mode-prompt {
   margin: 12px 0 0;

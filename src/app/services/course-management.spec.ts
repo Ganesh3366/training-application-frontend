@@ -9,7 +9,9 @@ describe('CourseManagementService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(CourseManagementService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -53,7 +55,11 @@ describe('CourseManagementService', () => {
 });
 
 const request: CourseManagementRequest = {
-  title: 'Angular Basics', description: 'Learn Angular', instructor: 'Ada', duration: 8,
-  level: 'BEGINNER', category: 'INFORMATION_TECHNOLOGY',
+  title: 'Angular Basics',
+  description: 'Learn Angular',
+  instructor: 'Ada',
+  duration: 8,
+  level: 'BEGINNER',
+  category: 'INFORMATION_TECHNOLOGY',
 };
 const course: CourseManagementResponse = { id: 7, ...request };
