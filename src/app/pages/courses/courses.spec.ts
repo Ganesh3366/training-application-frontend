@@ -9,7 +9,10 @@ describe('Courses', () => {
   function create(response: Observable<Course[]>): ComponentFixture<Courses> {
     TestBed.configureTestingModule({
       imports: [Courses],
-      providers: [provideRouter([]), { provide: CourseService, useValue: { getCourses: () => response } }],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: { getCourses: () => response } },
+      ],
     });
     const fixture = TestBed.createComponent(Courses);
     fixture.detectChanges();
@@ -22,8 +25,9 @@ describe('Courses', () => {
     const fixture = create(of([course, { ...course, id: 2, title: 'Second Course' }]));
     expect(fixture.nativeElement.textContent).toContain('API Course');
     expect(fixture.nativeElement.textContent).toContain('Second Course');
-    const businessCard = [...fixture.nativeElement.querySelectorAll('.category-card')]
-      .find((element: Element) => element.textContent?.includes('Business'));
+    const businessCard = [...fixture.nativeElement.querySelectorAll('.category-card')].find(
+      (element: Element) => element.textContent?.includes('Business'),
+    );
     expect(businessCard?.textContent).toContain('2 Courses');
   });
 
@@ -32,12 +36,18 @@ describe('Courses', () => {
   });
 
   it('displays a safe API error', () => {
-    expect(create(throwError(() => new Error('secret'))).nativeElement.textContent)
-      .toContain('Unable to load courses.');
+    expect(create(throwError(() => new Error('secret'))).nativeElement.textContent).toContain(
+      'Unable to load courses.',
+    );
   });
 });
 
 const course: Course = {
-  id: 1, title: 'API Course', description: 'Backend data', instructor: 'Ada', duration: 4,
-  level: 'Beginner', category: 'Business',
+  id: 1,
+  title: 'API Course',
+  description: 'Backend data',
+  instructor: 'Ada',
+  duration: 4,
+  level: 'Beginner',
+  category: 'Business',
 };

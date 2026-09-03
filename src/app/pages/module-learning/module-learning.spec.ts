@@ -3,7 +3,13 @@ import { computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { Observable, of, throwError } from 'rxjs';
-import { AppUser, CourseModuleDetail, ModuleQuiz, QuizResult, QuizSubmission } from '../../models/app.models';
+import {
+  AppUser,
+  CourseModuleDetail,
+  ModuleQuiz,
+  QuizResult,
+  QuizSubmission,
+} from '../../models/app.models';
 import { AuthService } from '../../services/auth';
 import { CourseService } from '../../services/course';
 import { ModuleLearning } from './module-learning';
@@ -17,7 +23,8 @@ describe('ModuleLearning', () => {
     quizResponse: Observable<ModuleQuiz> = of(moduleQuiz),
     getQuiz = () => quizResponse,
     submissionResponse: Observable<QuizResult> = of(passedResult),
-    submitQuiz = (_courseId: number, _moduleId: number, _submission: QuizSubmission) => submissionResponse,
+    submitQuiz = (_courseId: number, _moduleId: number, _submission: QuizSubmission) =>
+      submissionResponse,
     currentUser = signal<AppUser | null>(user),
     authResolved = signal(true),
   ): ComponentFixture<ModuleLearning> {
@@ -25,11 +32,18 @@ describe('ModuleLearning', () => {
       imports: [ModuleLearning],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ courseId, moduleId }) } } },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { paramMap: convertToParamMap({ courseId, moduleId }) } },
+        },
         { provide: CourseService, useValue: { getModule, getQuiz, submitQuiz } },
         {
           provide: AuthService,
-          useValue: { currentUser, authResolved, isLoggedIn: computed(() => currentUser() !== null) },
+          useValue: {
+            currentUser,
+            authResolved,
+            isLoggedIn: computed(() => currentUser() !== null),
+          },
         },
       ],
     });
@@ -49,9 +63,7 @@ describe('ModuleLearning', () => {
 
   it('links back to the current course using the course route id', () => {
     const fixture = create(of(moduleDetail), '47', '9');
-    const link = fixture.nativeElement.querySelector(
-      'app-back-navigation a',
-    ) as HTMLAnchorElement;
+    const link = fixture.nativeElement.querySelector('app-back-navigation a') as HTMLAnchorElement;
 
     expect(link.textContent).toContain('Back to Course');
     expect(link.getAttribute('href')).toBe('/courses/47');
@@ -81,17 +93,22 @@ describe('ModuleLearning', () => {
 
   it('shows module not found for a 404', () => {
     const error = new HttpErrorResponse({ status: 404 });
-    expect(create(throwError(() => error)).nativeElement.textContent).toContain('Module not found.');
+    expect(create(throwError(() => error)).nativeElement.textContent).toContain(
+      'Module not found.',
+    );
   });
 
   it('shows a safe general API error', () => {
     const error = new HttpErrorResponse({ status: 500 });
-    expect(create(throwError(() => error)).nativeElement.textContent).toContain('Unable to load module.');
+    expect(create(throwError(() => error)).nativeElement.textContent).toContain(
+      'Unable to load module.',
+    );
   });
 
   it('shows the empty content state', () => {
-    expect(create(of({ ...moduleDetail, contents: [] })).nativeElement.textContent)
-      .toContain('No content is available for this module yet.');
+    expect(create(of({ ...moduleDetail, contents: [] })).nativeElement.textContent).toContain(
+      'No content is available for this module yet.',
+    );
   });
 
   it('rejects invalid route ids without calling the service', () => {
@@ -103,7 +120,14 @@ describe('ModuleLearning', () => {
 
   it('loads the quiz for valid route ids and renders its questions and options', () => {
     const getQuiz = vi.fn(() => of(moduleQuiz));
-    const fixture = create(of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz);
+    const fixture = create(
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      getQuiz,
+    );
 
     expect(getQuiz).toHaveBeenCalledWith(3, 9);
     expect(fixture.nativeElement.textContent).toContain('HTTP Knowledge Check');
@@ -114,7 +138,9 @@ describe('ModuleLearning', () => {
   it('keeps submit disabled until every question has an answer', () => {
     const fixture = create(of(moduleDetail));
     const submit = fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement;
-    const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+    const radios = fixture.nativeElement.querySelectorAll(
+      'input[type="radio"]',
+    ) as NodeListOf<HTMLInputElement>;
 
     expect(submit.disabled).toBe(true);
     radios[0].click();
@@ -128,14 +154,23 @@ describe('ModuleLearning', () => {
   it('submits only the selected question and option ids', () => {
     const submitQuiz = vi.fn(() => of(passedResult));
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
-      of(passedResult), submitQuiz,
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      () => of(moduleQuiz),
+      of(passedResult),
+      submitQuiz,
     );
     selectAllAnswers(fixture);
     (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
 
     expect(submitQuiz).toHaveBeenCalledWith(3, 9, {
-      answers: [{ questionId: 201, optionId: 301 }, { questionId: 202, optionId: 303 }],
+      answers: [
+        { questionId: 201, optionId: 301 },
+        { questionId: 202, optionId: 303 },
+      ],
     });
   });
 
@@ -152,10 +187,21 @@ describe('ModuleLearning', () => {
   });
 
   it('shows Retry Quiz for a failed result and retry clears result and selections', () => {
-    const failedResult: QuizResult = { ...passedResult, correctAnswers: 1, score: 50, passed: false };
+    const failedResult: QuizResult = {
+      ...passedResult,
+      correctAnswers: 1,
+      score: 50,
+      passed: false,
+    };
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
-      of(failedResult), () => of(failedResult),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      () => of(moduleQuiz),
+      of(failedResult),
+      () => of(failedResult),
     );
     selectAllAnswers(fixture);
     (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
@@ -165,23 +211,39 @@ describe('ModuleLearning', () => {
     (fixture.nativeElement.querySelector('.retry-quiz') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.quiz-result')).toBeNull();
-    expect([...fixture.nativeElement.querySelectorAll('input[type="radio"]')]
-      .every((radio: HTMLInputElement) => !radio.checked)).toBe(true);
-    expect((fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      [...fixture.nativeElement.querySelectorAll('input[type="radio"]')].every(
+        (radio: HTMLInputElement) => !radio.checked,
+      ),
+    ).toBe(true);
+    expect(
+      (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled,
+    ).toBe(true);
   });
 
   it('keeps module content visible when the quiz is unavailable', () => {
     const quizError = new HttpErrorResponse({ status: 404 });
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), throwError(() => quizError),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      throwError(() => quizError),
     );
     expect(fixture.nativeElement.textContent).toContain('Plain text lesson');
-    expect(fixture.nativeElement.textContent).toContain('Quiz is not available for this module yet.');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Quiz is not available for this module yet.',
+    );
   });
 
   it('preserves selected answers after a submission error', () => {
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), () => of(moduleQuiz),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      () => of(moduleQuiz),
       throwError(() => new Error('server error')),
     );
     selectAllAnswers(fixture);
@@ -189,16 +251,29 @@ describe('ModuleLearning', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Unable to submit quiz. Please try again.');
-    expect([...fixture.nativeElement.querySelectorAll('input[type="radio"]')]
-      .filter((radio: HTMLInputElement) => radio.checked)).toHaveLength(2);
-    expect((fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled).toBe(false);
+    expect(
+      [...fixture.nativeElement.querySelectorAll('input[type="radio"]')].filter(
+        (radio: HTMLInputElement) => radio.checked,
+      ),
+    ).toHaveLength(2);
+    expect(
+      (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).disabled,
+    ).toBe(false);
   });
 
   it('shows module content and a login message without requesting the quiz when logged out', () => {
     const getQuiz = vi.fn(() => of(moduleQuiz));
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
-      of(passedResult), () => of(passedResult), signal<AppUser | null>(null), signal(true),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      getQuiz,
+      of(passedResult),
+      () => of(passedResult),
+      signal<AppUser | null>(null),
+      signal(true),
     );
     expect(fixture.nativeElement.textContent).toContain('Plain text lesson');
     expect(fixture.nativeElement.textContent).toContain('Log in to take this quiz.');
@@ -209,8 +284,16 @@ describe('ModuleLearning', () => {
     const currentUser = signal<AppUser | null>(null);
     const getQuiz = vi.fn(() => of(moduleQuiz));
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
-      of(passedResult), () => of(passedResult), currentUser, signal(true),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      getQuiz,
+      of(passedResult),
+      () => of(passedResult),
+      currentUser,
+      signal(true),
     );
     currentUser.set(user);
     fixture.detectChanges();
@@ -222,8 +305,16 @@ describe('ModuleLearning', () => {
     const currentUser = signal<AppUser | null>(user);
     const getQuiz = vi.fn(() => of(moduleQuiz));
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
-      of(passedResult), () => of(passedResult), currentUser, signal(true),
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      getQuiz,
+      of(passedResult),
+      () => of(passedResult),
+      currentUser,
+      signal(true),
     );
     selectAllAnswers(fixture);
     (fixture.nativeElement.querySelector('.submit-quiz') as HTMLButtonElement).click();
@@ -249,8 +340,16 @@ describe('ModuleLearning', () => {
     const authResolved = signal(false);
     const getQuiz = vi.fn(() => of(moduleQuiz));
     const fixture = create(
-      of(moduleDetail), '3', '9', () => of(moduleDetail), of(moduleQuiz), getQuiz,
-      of(passedResult), () => of(passedResult), currentUser, authResolved,
+      of(moduleDetail),
+      '3',
+      '9',
+      () => of(moduleDetail),
+      of(moduleQuiz),
+      getQuiz,
+      of(passedResult),
+      () => of(passedResult),
+      currentUser,
+      authResolved,
     );
     expect(fixture.nativeElement.textContent).toContain('Checking quiz access...');
     expect(fixture.nativeElement.textContent).not.toContain('Log in to take this quiz.');
@@ -268,27 +367,31 @@ const moduleDetail: CourseModuleDetail = {
   title: 'HTTP Foundations',
   description: 'Learn request fundamentals.',
   position: 1,
-  contents: [{
-    id: 100,
-    type: 'TEXT',
-    title: 'Read this',
-    textContent: 'Plain text lesson',
-    videoUrl: null,
-    position: 1,
-  }],
+  contents: [
+    {
+      id: 100,
+      type: 'TEXT',
+      title: 'Read this',
+      textContent: 'Plain text lesson',
+      videoUrl: null,
+      position: 1,
+    },
+  ],
 };
 
 function withVideo(videoUrl: string): CourseModuleDetail {
   return {
     ...moduleDetail,
-    contents: [{
-      id: 101,
-      type: 'VIDEO',
-      title: 'Watch this',
-      textContent: null,
-      videoUrl,
-      position: 1,
-    }],
+    contents: [
+      {
+        id: 101,
+        type: 'VIDEO',
+        title: 'Watch this',
+        textContent: null,
+        videoUrl,
+        position: 1,
+      },
+    ],
   };
 }
 
@@ -326,10 +429,18 @@ const passedResult: QuizResult = {
   passed: true,
 };
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };
+const user: AppUser = {
+  id: 1,
+  name: 'Ganesh',
+  email: 'ganesh@example.com',
+  role: 'USER',
+  enabled: true,
+};
 
 function selectAllAnswers(fixture: ComponentFixture<ModuleLearning>): void {
-  const radios = fixture.nativeElement.querySelectorAll('input[type="radio"]') as NodeListOf<HTMLInputElement>;
+  const radios = fixture.nativeElement.querySelectorAll(
+    'input[type="radio"]',
+  ) as NodeListOf<HTMLInputElement>;
   radios[0].click();
   radios[2].click();
   fixture.detectChanges();

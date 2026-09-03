@@ -65,7 +65,9 @@ export class AuthDialog {
       this.auth.login(this.loginForm.getRawValue()).subscribe({
         next: () => this.dialogRef.close(),
         error: () => {
-          this.submissionMessage.set('Unable to log in. Check your email and password and try again.');
+          this.submissionMessage.set(
+            'Unable to log in. Check your email and password and try again.',
+          );
           this.submissionIsError.set(true);
           this.submitting.set(false);
         },
@@ -74,28 +76,30 @@ export class AuthDialog {
     }
 
     const signup = this.signupForm.getRawValue();
-    this.auth.signup({
-      name: `${signup.firstName.trim()} ${signup.lastName.trim()}`.trim(),
-      email: signup.email,
-      password: signup.password,
-    }).subscribe({
-      next: () => {
-        this.loginForm.controls.email.setValue(signup.email);
-        this.signupForm.controls.password.reset();
-        this.activeMode.set('login');
-        this.submissionMessage.set('Account created. You can now log in.');
-        this.submitting.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.submissionMessage.set(
-          error.status === 409
-            ? 'An account with this email already exists.'
-            : 'Unable to create your account. Check your details and try again.',
-        );
-        this.submissionIsError.set(true);
-        this.submitting.set(false);
-      },
-    });
+    this.auth
+      .signup({
+        name: `${signup.firstName.trim()} ${signup.lastName.trim()}`.trim(),
+        email: signup.email,
+        password: signup.password,
+      })
+      .subscribe({
+        next: () => {
+          this.loginForm.controls.email.setValue(signup.email);
+          this.signupForm.controls.password.reset();
+          this.activeMode.set('login');
+          this.submissionMessage.set('Account created. You can now log in.');
+          this.submitting.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.submissionMessage.set(
+            error.status === 409
+              ? 'An account with this email already exists.'
+              : 'Unable to create your account. Check your details and try again.',
+          );
+          this.submissionIsError.set(true);
+          this.submitting.set(false);
+        },
+      });
   }
 
   close(): void {

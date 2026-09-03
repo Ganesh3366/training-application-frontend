@@ -25,12 +25,16 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
       } @else if (errorMessage()) {
         <section>
           <h1>{{ errorMessage() }}</h1>
-          @if (notFound()) { <p>The requested module does not exist.</p> }
+          @if (notFound()) {
+            <p>The requested module does not exist.</p>
+          }
         </section>
       } @else if (module(); as selectedModule) {
         <section>
           <h1>{{ selectedModule.title }}</h1>
-          @if (selectedModule.description) { <p>{{ selectedModule.description }}</p> }
+          @if (selectedModule.description) {
+            <p>{{ selectedModule.description }}</p>
+          }
 
           @if (selectedModule.contents.length === 0) {
             <p class="empty-message">No content is available for this module yet.</p>
@@ -40,7 +44,9 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
                 <article>
                   <h2>{{ content.title }}</h2>
                   @if (content.type === 'TEXT') {
-                    <p class="text-content">{{ content.textContent?.trim() || 'Content unavailable.' }}</p>
+                    <p class="text-content">
+                      {{ content.textContent?.trim() || 'Content unavailable.' }}
+                    </p>
                   } @else if (content.type === 'VIDEO') {
                     @if (videoEmbedUrl(content); as embedUrl) {
                       <div class="video-frame">
@@ -49,7 +55,8 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
                           [title]="content.title"
                           loading="lazy"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowfullscreen>
+                          allowfullscreen
+                        >
                         </iframe>
                       </div>
                     } @else {
@@ -74,7 +81,9 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
         } @else if (quizUnavailable()) {
           <section class="quiz-section"><p>Quiz is not available for this module yet.</p></section>
         } @else if (quizLoadError()) {
-          <section class="quiz-section"><p role="alert">{{ quizLoadError() }}</p></section>
+          <section class="quiz-section">
+            <p role="alert">{{ quizLoadError() }}</p>
+          </section>
         } @else if (quiz(); as moduleQuiz) {
           <section class="quiz-section">
             <h2>{{ moduleQuiz.title }}</h2>
@@ -96,7 +105,8 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
                           [value]="option.id"
                           [checked]="selectedAnswers().get(question.id) === option.id"
                           [disabled]="submissionLoading() || quizResult() !== null"
-                          (change)="selectAnswer(question.id, option.id)">
+                          (change)="selectAnswer(question.id, option.id)"
+                        />
                         <label [for]="'quiz-option-' + option.id">{{ option.optionText }}</label>
                       </div>
                     }
@@ -107,7 +117,8 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
                   <button
                     class="submit-quiz"
                     type="submit"
-                    [disabled]="!allQuestionsAnswered() || submissionLoading()">
+                    [disabled]="!allQuestionsAnswered() || submissionLoading()"
+                  >
                     {{ submissionLoading() ? 'Submitting...' : 'Submit Quiz' }}
                   </button>
                 }
@@ -124,7 +135,9 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
                   <p>Correct answers: {{ result.correctAnswers }} / {{ result.totalQuestions }}</p>
                   <p>Passing score: {{ result.passingScore }}%</p>
                   @if (!result.passed) {
-                    <button class="retry-quiz" type="button" (click)="retryQuiz()">Retry Quiz</button>
+                    <button class="retry-quiz" type="button" (click)="retryQuiz()">
+                      Retry Quiz
+                    </button>
                   }
                 </div>
               }
@@ -135,34 +148,144 @@ import { BackNavigationComponent } from '../../shared/back-navigation/back-navig
     </div>
   `,
   styles: `
-    :host { display: block; background: #f6f9ff; }
-    .learning-page { max-width: 900px; margin: 0 auto; padding: 36px; }
-    section, article { border: 1px solid #dce7f5; border-radius: 14px; background: #fff; }
-    section { margin-top: 18px; padding: 28px; box-shadow: 0 12px 32px rgba(19, 61, 112, 0.09); }
-    article { padding: 20px; }
-    h1, h2 { color: #06183a; }
-    h1, h2 { margin-top: 0; }
-    h2 { font-size: 19px; }
-    p { color: #536073; line-height: 1.6; }
-    .content-list { display: grid; gap: 16px; margin-top: 24px; }
-    .text-content { white-space: pre-wrap; }
-    .video-frame { position: relative; width: 100%; padding-top: 56.25%; overflow: hidden; border-radius: 10px; background: #06183a; }
-    iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    .empty-message { margin-top: 24px; }
-    .quiz-section h2 { font-size: 24px; }
-    fieldset { margin: 20px 0; padding: 18px; border: 1px solid #dce7f5; border-radius: 10px; }
-    legend { padding: 0 6px; color: #06183a; font-weight: 700; }
-    .quiz-option { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; }
-    .quiz-option input { margin-top: 3px; accent-color: #0873db; }
-    .quiz-option input:focus-visible { outline: 3px solid #73b7f5; outline-offset: 3px; }
-    .quiz-option label { color: #17243a; line-height: 1.4; cursor: pointer; }
-    button { padding: 10px 16px; border: 0; border-radius: 8px; color: #fff; background: #0873db; font: inherit; font-weight: 700; cursor: pointer; }
-    button:focus-visible { outline: 3px solid #06183a; outline-offset: 3px; }
-    button:disabled { color: #718096; background: #dce7f5; cursor: not-allowed; }
-    .quiz-error { color: #9b1c1c; font-weight: 700; }
-    .quiz-result { margin-top: 20px; padding: 18px; border: 2px solid #0873db; border-radius: 10px; }
-    .quiz-result h3 { margin-top: 0; color: #06183a; }
-    @media (max-width: 640px) { .learning-page { padding: 22px 18px; } section { padding: 20px; } }
+    :host {
+      display: block;
+      background: #f6f9ff;
+    }
+    .learning-page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 36px;
+    }
+    section,
+    article {
+      border: 1px solid #dce7f5;
+      border-radius: 14px;
+      background: #fff;
+    }
+    section {
+      margin-top: 18px;
+      padding: 28px;
+      box-shadow: 0 12px 32px rgba(19, 61, 112, 0.09);
+    }
+    article {
+      padding: 20px;
+    }
+    h1,
+    h2 {
+      color: #06183a;
+    }
+    h1,
+    h2 {
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 19px;
+    }
+    p {
+      color: #536073;
+      line-height: 1.6;
+    }
+    .content-list {
+      display: grid;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .text-content {
+      white-space: pre-wrap;
+    }
+    .video-frame {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      overflow: hidden;
+      border-radius: 10px;
+      background: #06183a;
+    }
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .empty-message {
+      margin-top: 24px;
+    }
+    .quiz-section h2 {
+      font-size: 24px;
+    }
+    fieldset {
+      margin: 20px 0;
+      padding: 18px;
+      border: 1px solid #dce7f5;
+      border-radius: 10px;
+    }
+    legend {
+      padding: 0 6px;
+      color: #06183a;
+      font-weight: 700;
+    }
+    .quiz-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quiz-option input {
+      margin-top: 3px;
+      accent-color: #0873db;
+    }
+    .quiz-option input:focus-visible {
+      outline: 3px solid #73b7f5;
+      outline-offset: 3px;
+    }
+    .quiz-option label {
+      color: #17243a;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+    button {
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      background: #0873db;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:focus-visible {
+      outline: 3px solid #06183a;
+      outline-offset: 3px;
+    }
+    button:disabled {
+      color: #718096;
+      background: #dce7f5;
+      cursor: not-allowed;
+    }
+    .quiz-error {
+      color: #9b1c1c;
+      font-weight: 700;
+    }
+    .quiz-result {
+      margin-top: 20px;
+      padding: 18px;
+      border: 2px solid #0873db;
+      border-radius: 10px;
+    }
+    .quiz-result h3 {
+      margin-top: 0;
+      color: #06183a;
+    }
+    @media (max-width: 640px) {
+      .learning-page {
+        padding: 22px 18px;
+      }
+      section {
+        padding: 20px;
+      }
+    }
   `,
 })
 export class ModuleLearning {
@@ -188,7 +311,9 @@ export class ModuleLearning {
   readonly quizResult = signal<QuizResult | null>(null);
   readonly allQuestionsAnswered = computed(() => {
     const questions = this.quiz()?.questions ?? [];
-    return questions.length > 0 && questions.every((question) => this.selectedAnswers().has(question.id));
+    return (
+      questions.length > 0 && questions.every((question) => this.selectedAnswers().has(question.id))
+    );
   });
   private quizStateVersion = 0;
 

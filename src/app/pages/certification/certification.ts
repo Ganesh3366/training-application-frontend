@@ -14,8 +14,8 @@ import { RouterLink } from '@angular/router';
         <p class="eyebrow">Recognition that travels with you</p>
         <h1 id="certification-title">SkillForge Certificates</h1>
         <p class="intro">
-          Earn a Certificate of Completion by finishing every module and passing the
-          required quizzes in your course.
+          Earn a Certificate of Completion by finishing every module and passing the required
+          quizzes in your course.
         </p>
         <a mat-flat-button routerLink="/courses">Explore Courses</a>
       </section>

@@ -9,7 +9,9 @@ describe('AuthService', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
     service = TestBed.inject(AuthService);
     http = TestBed.inject(HttpTestingController);
   });
@@ -29,7 +31,11 @@ describe('AuthService', () => {
   });
 
   it('signs up without a role field', () => {
-    const request: SignupRequest = { name: 'Ganesh', email: 'ganesh@example.com', password: 'SecurePass123!' };
+    const request: SignupRequest = {
+      name: 'Ganesh',
+      email: 'ganesh@example.com',
+      password: 'SecurePass123!',
+    };
     service.signup(request).subscribe((result) => expect(result).toEqual(user));
     const signup = http.expectOne('/api/auth/signup');
     expect(signup.request.method).toBe('POST');
@@ -128,7 +134,7 @@ describe('AuthService', () => {
 
   it('treats a me 401 as logged out', () => {
     let result: AppUser | null | undefined;
-    service.loadCurrentUser().subscribe((value) => result = value);
+    service.loadCurrentUser().subscribe((value) => (result = value));
     http.expectOne('/api/auth/me').flush(null, { status: 401, statusText: 'Unauthorized' });
     expect(result).toBeNull();
     expect(service.currentUser()).toBeNull();
@@ -163,7 +169,15 @@ describe('AuthService', () => {
   });
 });
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };
+const user: AppUser = {
+  id: 1,
+  name: 'Ganesh',
+  email: 'ganesh@example.com',
+  role: 'USER',
+  enabled: true,
+};
 const csrf: CsrfTokenResponse = {
-  token: 'test-token', headerName: 'X-XSRF-TOKEN', parameterName: '_csrf',
+  token: 'test-token',
+  headerName: 'X-XSRF-TOKEN',
+  parameterName: '_csrf',
 };

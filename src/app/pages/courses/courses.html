@@ -13,7 +13,10 @@
           </div>
           <h2>{{ category.name }}</h2>
           <div class="category-meta">
-            <span>{{ category.courseCount }} {{ category.courseCount === 1 ? 'Course' : 'Courses' }}</span>
+            <span
+              >{{ category.courseCount }}
+              {{ category.courseCount === 1 ? 'Course' : 'Courses' }}</span
+            >
             <mat-icon aria-hidden="true">arrow_forward</mat-icon>
           </div>
         </article>
@@ -28,47 +31,51 @@
   } @else if (courses().length === 0) {
     <p class="status-message">No courses are available yet.</p>
   } @else {
-  <section class="course-grid" aria-label="Available courses">
-    @for (course of courses(); track course.id) {
-      <mat-card class="course-card">
-        <div class="card-visual">
-          <span class="level-badge">{{ course.level }}</span>
-          <div class="course-icon" aria-hidden="true">
-            <mat-icon>{{ courseIcon(course) }}</mat-icon>
-          </div>
-        </div>
-
-        <div class="card-body">
-          <div class="course-content">
-            <p class="course-level">{{ course.level }} COURSE</p>
-            <h2>{{ course.title }}</h2>
-            <p class="course-description">{{ course.description }}</p>
-
-            <dl class="course-meta">
-              <div>
-                <dt><mat-icon aria-hidden="true">schedule</mat-icon>Duration</dt>
-                <dd>{{ course.duration }} hours</dd>
-              </div>
-              <div>
-                <dt><mat-icon aria-hidden="true">signal_cellular_alt</mat-icon>Level</dt>
-                <dd>{{ course.level }}</dd>
-              </div>
-            </dl>
-
-            <div class="instructor">
-              <span class="instructor-avatar" aria-hidden="true">{{ course.instructor.charAt(0) }}</span>
-              <div><span>Instructor</span><strong>{{ course.instructor }}</strong></div>
+    <section class="course-grid" aria-label="Available courses">
+      @for (course of courses(); track course.id) {
+        <mat-card class="course-card">
+          <div class="card-visual">
+            <span class="level-badge">{{ course.level }}</span>
+            <div class="course-icon" aria-hidden="true">
+              <mat-icon>{{ courseIcon(course) }}</mat-icon>
             </div>
           </div>
 
-          <mat-card-actions>
-            <a mat-flat-button [routerLink]="['/courses', course.id]" class="view-course">
-              View Course <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-            </a>
-          </mat-card-actions>
-        </div>
-      </mat-card>
-    }
-  </section>
+          <div class="card-body">
+            <div class="course-content">
+              <p class="course-level">{{ course.level }} COURSE</p>
+              <h2>{{ course.title }}</h2>
+              <p class="course-description">{{ course.description }}</p>
+
+              <dl class="course-meta">
+                <div>
+                  <dt><mat-icon aria-hidden="true">schedule</mat-icon>Duration</dt>
+                  <dd>{{ course.duration }} hours</dd>
+                </div>
+                <div>
+                  <dt><mat-icon aria-hidden="true">signal_cellular_alt</mat-icon>Level</dt>
+                  <dd>{{ course.level }}</dd>
+                </div>
+              </dl>
+
+              <div class="instructor">
+                <span class="instructor-avatar" aria-hidden="true">{{
+                  course.instructor.charAt(0)
+                }}</span>
+                <div>
+                  <span>Instructor</span><strong>{{ course.instructor }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <mat-card-actions>
+              <a mat-flat-button [routerLink]="['/courses', course.id]" class="view-course">
+                View Course <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </mat-card-actions>
+          </div>
+        </mat-card>
+      }
+    </section>
   }
 </div>

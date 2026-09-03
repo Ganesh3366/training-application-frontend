@@ -1,7 +1,23 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, finalize, map, Observable, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
-import { AppUser, CsrfTokenResponse, LoginRequest, Role, SignupRequest } from '../models/app.models';
+import {
+  catchError,
+  finalize,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
+import {
+  AppUser,
+  CsrfTokenResponse,
+  LoginRequest,
+  Role,
+  SignupRequest,
+} from '../models/app.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

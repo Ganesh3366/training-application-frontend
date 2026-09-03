@@ -43,24 +43,33 @@ describe('AuthDialog', () => {
   });
 
   it('shows an accessible generic invalid-login error', () => {
-    const { fixture } = create('login', () => throwError(() => new HttpErrorResponse({ status: 401 })));
+    const { fixture } = create('login', () =>
+      throwError(() => new HttpErrorResponse({ status: 401 })),
+    );
     fixture.componentInstance.loginForm.setValue({ email: user.email, password: 'wrongpass' });
     fixture.componentInstance.submit();
     fixture.detectChanges();
     const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
-    expect(alert.textContent).toContain('Unable to log in. Check your email and password and try again.');
+    expect(alert.textContent).toContain(
+      'Unable to log in. Check your email and password and try again.',
+    );
   });
 
   it('signs up with only name, email, and password and switches to login', () => {
     const signup = vi.fn(() => of(user));
     const { fixture } = create('signup', () => of(user), signup);
     fixture.componentInstance.signupForm.setValue({
-      firstName: 'Ganesh', lastName: 'Kumar', email: user.email, password: 'SecurePass123!',
+      firstName: 'Ganesh',
+      lastName: 'Kumar',
+      email: user.email,
+      password: 'SecurePass123!',
     });
     fixture.componentInstance.submit();
     fixture.detectChanges();
     expect(signup).toHaveBeenCalledWith({
-      name: 'Ganesh Kumar', email: user.email, password: 'SecurePass123!',
+      name: 'Ganesh Kumar',
+      email: user.email,
+      password: 'SecurePass123!',
     });
     expect(fixture.componentInstance.activeMode()).toBe('login');
     expect(fixture.nativeElement.textContent).toContain('Account created. You can now log in.');
@@ -68,15 +77,29 @@ describe('AuthDialog', () => {
 
   it('shows a useful accessible duplicate-signup error', () => {
     const duplicate = new HttpErrorResponse({ status: 409 });
-    const { fixture } = create('signup', () => of(user), () => throwError(() => duplicate));
+    const { fixture } = create(
+      'signup',
+      () => of(user),
+      () => throwError(() => duplicate),
+    );
     fixture.componentInstance.signupForm.setValue({
-      firstName: 'Ganesh', lastName: 'Kumar', email: user.email, password: 'SecurePass123!',
+      firstName: 'Ganesh',
+      lastName: 'Kumar',
+      email: user.email,
+      password: 'SecurePass123!',
     });
     fixture.componentInstance.submit();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent)
-      .toContain('An account with this email already exists.');
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'An account with this email already exists.',
+    );
   });
 });
 
-const user: AppUser = { id: 1, name: 'Ganesh', email: 'ganesh@example.com', role: 'USER', enabled: true };
+const user: AppUser = {
+  id: 1,
+  name: 'Ganesh',
+  email: 'ganesh@example.com',
+  role: 'USER',
+  enabled: true,
+};

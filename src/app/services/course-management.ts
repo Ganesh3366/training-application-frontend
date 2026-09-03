@@ -1,10 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import {
-  CourseManagementRequest,
-  CourseManagementResponse,
-} from '../models/app.models';
+import { CourseManagementRequest, CourseManagementResponse } from '../models/app.models';
 
 @Injectable({ providedIn: 'root' })
 export class CourseManagementService {
@@ -23,10 +20,7 @@ export class CourseManagementService {
     return this.http.post<CourseManagementResponse>(this.apiUrl, request);
   }
 
-  updateCourse(
-    id: number,
-    request: CourseManagementRequest,
-  ): Observable<CourseManagementResponse> {
+  updateCourse(id: number, request: CourseManagementRequest): Observable<CourseManagementResponse> {
     return this.http.put<CourseManagementResponse>(`${this.apiUrl}/${id}`, request);
   }
 
