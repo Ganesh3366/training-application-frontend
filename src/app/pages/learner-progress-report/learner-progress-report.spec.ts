@@ -150,7 +150,7 @@ describe('LearnerProgressReportComponent', () => {
     expect(text).toContain('Angular Essentials');
     expect(text).toContain('50%');
     expect(text).toContain('1 of 2');
-    expect(text).toContain('Pending modules');
+    expect(text).toContain('Pending Modules');
     expect(text).toContain('In Progress');
     expect(
       fixture.nativeElement.querySelector('mat-progress-bar')?.getAttribute('aria-valuenow'),
@@ -192,7 +192,7 @@ describe('LearnerProgressReportComponent', () => {
     const { fixture } = create();
     const text = fixture.nativeElement.textContent;
 
-    expect(text).toContain('Completed modules');
+    expect(text).toContain('Completed Modules');
     expect(text).toContain('1 of 2');
     expect(text).not.toContain('1 / 2');
   });
